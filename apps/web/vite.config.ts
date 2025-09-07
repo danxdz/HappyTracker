@@ -24,7 +24,9 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
-          modules: ['@modules/avatar', '@modules/health', '@modules/social']
+          redux: ['@reduxjs/toolkit', 'react-redux'],
+          router: ['react-router-dom'],
+          ui: ['framer-motion', 'lucide-react']
         }
       }
     }

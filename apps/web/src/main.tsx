@@ -26,7 +26,7 @@ const LoadingScreen = () => {
         <div className="loading-spinner"></div>
         <div className="loading-emoji">🥗✨🎯</div>
         <div className="loading-text">
-          Creating your personalized health journey...<br>
+          Creating your personalized health journey...<br />
           <small>Powered by AI magic! ✨</small>
         </div>
       </div>
