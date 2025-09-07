@@ -1,9 +1,27 @@
 # HappyTracker - Development Documentation
 
-**Version: 1.6.0** | **Commits: 6** | **Status: Web App Complete** ✅
+**Version: 1.7.0** | **Commits: 7** | **Status: Web App Complete** ✅
 
 ## Project Overview
 A health-focused mobile app that gamifies positive lifestyle choices through an avatar system, emphasizing nutrition, movement, sleep, and mindful technology use.
+
+---
+
+## 🚀 **Magic Deploy Links**
+
+### **One-Click Deploy to Netlify**
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/danxdz/321)
+
+**How it works:**
+1. Click the button above
+2. Connect your GitHub account
+3. Netlify automatically detects the `netlify.toml` configuration
+4. Your HappyTracker app deploys instantly! 🎉
+
+### **Alternative Deploy Options**
+- **Vercel**: [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/danxdz/321)
+- **Railway**: [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template?template=https://github.com/danxdz/321)
+- **Render**: [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/danxdz/321)
 
 ---
 

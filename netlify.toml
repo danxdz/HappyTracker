@@ -15,6 +15,10 @@
   # Build settings
   NPM_FLAGS = "--production=false"
 
+# Auto-deploy settings
+[build.processing]
+  skip_processing = false
+
 # Redirect rules for SPA
 [[redirects]]
   from = "/*"
