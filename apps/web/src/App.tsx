@@ -1,0 +1,78 @@
+import React from 'react'
+import { Routes, Route } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
+import { HomePage } from './pages/HomePage'
+import { AvatarPage } from './pages/AvatarPage'
+import { HealthPage } from './pages/HealthPage'
+import { SocialPage } from './pages/SocialPage'
+import { Navigation } from './components/Navigation'
+import { Footer } from './components/Footer'
+
+function App() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900">
+      <Navigation />
+      
+      <AnimatePresence mode="wait">
+        <Routes>
+          <Route 
+            path="/" 
+            element={
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.5 }}
+              >
+                <HomePage />
+              </motion.div>
+            } 
+          />
+          <Route 
+            path="/avatar" 
+            element={
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.5 }}
+              >
+                <AvatarPage />
+              </motion.div>
+            } 
+          />
+          <Route 
+            path="/health" 
+            element={
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.5 }}
+              >
+                <HealthPage />
+              </motion.div>
+            } 
+          />
+          <Route 
+            path="/social" 
+            element={
+              <motion.div
+                initial={{ opacity: 0, rotateY: 90 }}
+                animate={{ opacity: 1, rotateY: 0 }}
+                exit={{ opacity: 0, rotateY: -90 }}
+                transition={{ duration: 0.5 }}
+              >
+                <SocialPage />
+              </motion.div>
+            } 
+          />
+        </Routes>
+      </AnimatePresence>
+      
+      <Footer />
+    </div>
+  )
+}
+
+export default App

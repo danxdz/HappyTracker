@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HappyTracker - Your Health MMO Adventure! 🎮🥗</title>
+    <meta name="description" content="Transform your health journey into an epic adventure! Create your avatar, track your wellness, and go viral with HappyTracker!" />
+    
+    <!-- Fun fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fredoka+One:wght@400&display=swap" rel="stylesheet">
+    
+    <style>
+      /* Fun loading animation */
+      body {
+        margin: 0;
+        font-family: 'Inter', sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        overflow: hidden;
+      }
+      
+      .loading-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        z-index: 9999;
+      }
+      
+      .loading-title {
+        font-family: 'Fredoka One', cursive;
+        font-size: 3rem;
+        color: white;
+        margin-bottom: 2rem;
+        text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        animation: bounce 2s infinite;
+      }
+      
+      .loading-subtitle {
+        font-size: 1.2rem;
+        color: rgba(255,255,255,0.8);
+        margin-bottom: 3rem;
+        text-align: center;
+      }
+      
+      .loading-spinner {
+        width: 60px;
+        height: 60px;
+        border: 4px solid rgba(255,255,255,0.3);
+        border-top: 4px solid white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 2rem;
+      }
+      
+      .loading-emoji {
+        font-size: 2rem;
+        animation: pulse 1.5s infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+        40% { transform: translateY(-10px); }
+        60% { transform: translateY(-5px); }
+      }
+      
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+      }
+      
+      .loading-text {
+        color: rgba(255,255,255,0.7);
+        font-size: 0.9rem;
+        text-align: center;
+        max-width: 300px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <!-- Fun loading screen -->
+      <div class="loading-container">
+        <div class="loading-title">🎮 HappyTracker</div>
+        <div class="loading-subtitle">Your Health MMO Adventure Awaits!</div>
+        <div class="loading-spinner"></div>
+        <div class="loading-emoji">🥗✨🎯</div>
+        <div class="loading-text">
+          Creating your personalized health journey...<br>
+          <small>Powered by AI magic! ✨</small>
+        </div>
+      </div>
+    </div>
+    
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
