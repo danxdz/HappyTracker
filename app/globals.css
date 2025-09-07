@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-3 px-6 rounded-full hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl;
+  }
+  
+  .btn-secondary {
+    @apply bg-white text-purple-600 font-bold py-3 px-6 rounded-full border-2 border-purple-500 hover:bg-purple-50 transition-all duration-300 transform hover:scale-105;
+  }
+  
+  .canvas-container {
+    @apply bg-white rounded-2xl shadow-2xl border-4 border-gray-100 overflow-hidden;
+  }
+}
