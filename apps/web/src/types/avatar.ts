@@ -14,20 +14,43 @@ export interface AvatarAppearance {
   background: string;
 }
 
-export interface HealthData {
-  meals: MealLog[];
-  water: number;
-  sleep: number;
-  movement: number;
-  lastUpdated: Date;
-}
-
 export interface MealLog {
   id: string;
   food: string;
   nutritionScore: number;
   timestamp: Date;
   image?: string;
+  category: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+}
+
+export interface WaterLog {
+  id: string;
+  amount: number; // glasses of water
+  timestamp: Date;
+}
+
+export interface SleepLog {
+  id: string;
+  duration: number; // hours
+  quality: 'poor' | 'fair' | 'good' | 'excellent';
+  timestamp: Date;
+}
+
+export interface MovementLog {
+  id: string;
+  steps: number;
+  distance?: number; // km
+  calories?: number;
+  activity: 'walking' | 'running' | 'cycling' | 'other';
+  timestamp: Date;
+}
+
+export interface HealthData {
+  meals: MealLog[];
+  water: WaterLog[];
+  sleep: SleepLog[];
+  movement: MovementLog[];
+  lastUpdated: Date;
 }
 
 // Avatar personality traits
@@ -75,15 +98,20 @@ export const calculateWellnessScore = (healthData: HealthData): number => {
   }
   
   // Water scoring (0-20 points)
-  const waterScore = Math.min(healthData.water / 8, 1) * 20; // 8 glasses = 20 points
+  const totalWater = healthData.water.reduce((sum, log) => sum + log.amount, 0);
+  const waterScore = Math.min(totalWater / 8, 1) * 20; // 8 glasses = 20 points
   score += waterScore - 10; // Center around 0
   
   // Sleep scoring (0-20 points)
-  const sleepScore = Math.min(healthData.sleep / 8, 1) * 20; // 8 hours = 20 points
-  score += sleepScore - 10; // Center around 0
+  const latestSleep = healthData.sleep[healthData.sleep.length - 1];
+  if (latestSleep) {
+    const sleepScore = Math.min(latestSleep.duration / 8, 1) * 20; // 8 hours = 20 points
+    score += sleepScore - 10; // Center around 0
+  }
   
   // Movement scoring (0-10 points)
-  const movementScore = Math.min(healthData.movement / 10000, 1) * 10; // 10k steps = 10 points
+  const totalSteps = healthData.movement.reduce((sum, log) => sum + log.steps, 0);
+  const movementScore = Math.min(totalSteps / 10000, 1) * 10; // 10k steps = 10 points
   score += movementScore - 5; // Center around 0
   
   return Math.max(0, Math.min(100, Math.round(score)));

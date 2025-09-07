@@ -1,78 +1,139 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Heart, Droplets, Moon, Activity } from 'lucide-react'
+import { HealthTracking } from '../components/HealthTracking'
 
 export const HealthPage: React.FC = () => {
   return (
-    <div className="container mx-auto px-4 py-16">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="text-center"
-      >
-        <h1 className="text-5xl font-bold text-white mb-8">
-          <span className="bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
-            Track Your Health! 🥗
-          </span>
-        </h1>
-        
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          <motion.div 
-            className="card-glow text-center"
-            whileHover={{ scale: 1.05 }}
-          >
-            <Heart className="w-12 h-12 text-red-400 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-white mb-2">Meals</h3>
-            <p className="text-gray-300 text-sm">Photo-based tracking</p>
-            <div className="text-2xl font-bold text-green-400 mt-2">85%</div>
-          </motion.div>
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="container mx-auto px-4 py-16 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="mb-8"
+        >
+          <div className="inline-block mb-6">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              className="text-6xl"
+            >
+              🏥
+            </motion.div>
+          </div>
           
-          <motion.div 
-            className="card-glow text-center"
-            whileHover={{ scale: 1.05 }}
-          >
-            <Droplets className="w-12 h-12 text-blue-400 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-white mb-2">Water</h3>
-            <p className="text-gray-300 text-sm">Hydration goals</p>
-            <div className="text-2xl font-bold text-blue-400 mt-2">6/8</div>
-          </motion.div>
+          <h1 className="text-5xl font-bold text-white mb-6">
+            <span className="bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
+              Health Tracking
+            </span>
+          </h1>
           
-          <motion.div 
-            className="card-glow text-center"
-            whileHover={{ scale: 1.05 }}
+          <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
+            Track your meals, water intake, sleep, and movement. Watch your avatar respond 
+            to your health choices in real-time!
+          </p>
+        </motion.div>
+      </section>
+
+      {/* Health Tracking Component */}
+      <HealthTracking />
+
+      {/* Features Section */}
+      <section className="container mx-auto px-4 py-16">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="text-center mb-12"
+        >
+          <h2 className="text-3xl font-bold text-white mb-4">
+            Why Track Your Health?
+          </h2>
+          <p className="text-gray-300 max-w-2xl mx-auto">
+            Every health choice you make affects your avatar and helps you build better habits!
+          </p>
+        </motion.div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="text-center p-6 bg-white/5 rounded-lg backdrop-blur-sm"
           >
-            <Moon className="w-12 h-12 text-purple-400 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-white mb-2">Sleep</h3>
-            <p className="text-gray-300 text-sm">Rest quality</p>
-            <div className="text-2xl font-bold text-purple-400 mt-2">7.5h</div>
+            <div className="text-4xl mb-4">🍽️</div>
+            <h3 className="text-xl font-semibold text-white mb-2">Smart Nutrition</h3>
+            <p className="text-gray-300">
+              Get instant nutrition scores for your meals and see how they affect your avatar!
+            </p>
           </motion.div>
-          
-          <motion.div 
-            className="card-glow text-center"
-            whileHover={{ scale: 1.05 }}
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="text-center p-6 bg-white/5 rounded-lg backdrop-blur-sm"
           >
-            <Activity className="w-12 h-12 text-orange-400 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-white mb-2">Activity</h3>
-            <p className="text-gray-300 text-sm">Daily movement</p>
-            <div className="text-2xl font-bold text-orange-400 mt-2">8,500</div>
+            <div className="text-4xl mb-4">💧</div>
+            <h3 className="text-xl font-semibold text-white mb-2">Hydration Goals</h3>
+            <p className="text-gray-300">
+              Track your daily water intake and keep your avatar hydrated and happy!
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            className="text-center p-6 bg-white/5 rounded-lg backdrop-blur-sm"
+          >
+            <div className="text-4xl mb-4">😴</div>
+            <h3 className="text-xl font-semibold text-white mb-2">Sleep Quality</h3>
+            <p className="text-gray-300">
+              Log your sleep duration and quality to help your avatar rest and recharge!
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+            className="text-center p-6 bg-white/5 rounded-lg backdrop-blur-sm"
+          >
+            <div className="text-4xl mb-4">🚶‍♂️</div>
+            <h3 className="text-xl font-semibold text-white mb-2">Active Living</h3>
+            <p className="text-gray-300">
+              Track your steps and movement to keep your avatar energetic and active!
+            </p>
           </motion.div>
         </div>
-        
-        <motion.div 
-          className="card-fun max-w-2xl mx-auto"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
+      </section>
+
+      {/* Call to Action */}
+      <section className="container mx-auto px-4 py-16 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.9 }}
+          className="bg-gradient-to-r from-green-400/20 to-blue-400/20 backdrop-blur-sm rounded-2xl p-8 max-w-2xl mx-auto"
         >
-          <h3 className="text-2xl font-bold text-white mb-6">Today's Wellness Score</h3>
-          <div className="text-6xl font-bold text-green-400 mb-4">87</div>
-          <div className="w-full bg-gray-700 rounded-full h-4 mb-4">
-            <div className="bg-gradient-to-r from-green-500 to-emerald-500 h-4 rounded-full" style={{ width: '87%' }}></div>
-          </div>
-          <p className="text-gray-300">Excellent! Keep up the great work! 🎉</p>
+          <h2 className="text-2xl font-bold text-white mb-4">
+            Ready to Start Your Health Journey?
+          </h2>
+          <p className="text-gray-300 mb-6">
+            Create your avatar and start tracking your health today. Every choice you make 
+            will help your digital companion grow stronger and happier!
+          </p>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="bg-gradient-to-r from-green-400 to-blue-400 text-white px-8 py-3 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300"
+          >
+            Create Your Avatar Now! ✨
+          </motion.button>
         </motion.div>
-      </motion.div>
+      </section>
     </div>
   )
 }

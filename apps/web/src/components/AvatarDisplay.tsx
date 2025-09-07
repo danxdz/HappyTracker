@@ -16,12 +16,18 @@ export const AvatarDisplay: React.FC = () => {
     // Simulate avatar generation with sample health data
     const sampleHealthData: HealthData = {
       meals: [
-        { id: '1', food: 'Salad', nutritionScore: 85, timestamp: new Date() },
-        { id: '2', food: 'Apple', nutritionScore: 90, timestamp: new Date() }
+        { id: '1', food: 'Salad', nutritionScore: 85, timestamp: new Date(), category: 'lunch' },
+        { id: '2', food: 'Apple', nutritionScore: 90, timestamp: new Date(), category: 'snack' }
       ],
-      water: 6, // 6 glasses
-      sleep: 7.5, // 7.5 hours
-      movement: 8000, // 8000 steps
+      water: [
+        { id: '1', amount: 6, timestamp: new Date() }
+      ],
+      sleep: [
+        { id: '1', duration: 7.5, quality: 'good', timestamp: new Date() }
+      ],
+      movement: [
+        { id: '1', steps: 8000, activity: 'walking', timestamp: new Date() }
+      ],
       lastUpdated: new Date()
     }
 
