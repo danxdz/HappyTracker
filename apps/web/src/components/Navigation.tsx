@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Home, User, Heart, Users } from 'lucide-react'
+import { Home, User, Heart, Users, Globe } from 'lucide-react'
 
 export const Navigation: React.FC = () => {
   const location = useLocation()
@@ -10,6 +10,7 @@ export const Navigation: React.FC = () => {
     { path: '/', label: 'Home', icon: Home },
     { path: '/avatar', label: 'Avatar', icon: User },
     { path: '/health', label: 'Health', icon: Heart },
+    { path: '/pop-world', label: 'Pop World', icon: Globe },
     { path: '/social', label: 'Social', icon: Users },
   ]
   

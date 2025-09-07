@@ -5,6 +5,7 @@ import { HomePage } from './pages/HomePage'
 import { AvatarPage } from './pages/AvatarPage'
 import { HealthPage } from './pages/HealthPage'
 import { SocialPage } from './pages/SocialPage'
+import { PopWorldPage } from './pages/PopWorldPage'
 import { Navigation } from './components/Navigation'
 import { Footer } from './components/Footer'
 
@@ -64,6 +65,19 @@ function App() {
                 transition={{ duration: 0.5 }}
               >
                 <SocialPage />
+              </motion.div>
+            } 
+          />
+          <Route 
+            path="/pop-world" 
+            element={
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.5 }}
+              >
+                <PopWorldPage />
               </motion.div>
             } 
           />
