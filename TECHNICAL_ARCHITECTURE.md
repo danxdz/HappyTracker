@@ -22,10 +22,12 @@
 ## 📱 Mobile App Architecture
 
 ### Tech Stack
-- **Framework**: React Native with Expo
+- **Web Framework**: Vite + React + TypeScript
+- **Mobile Framework**: React Native with Expo
 - **State Management**: Redux Toolkit
-- **Navigation**: React Navigation
-- **UI Components**: React Native Elements
+- **Web Routing**: React Router
+- **Mobile Navigation**: React Navigation
+- **UI Components**: Headless UI (Web), React Native Elements (Mobile)
 - **Camera**: Expo Camera
 - **Sensors**: Expo Sensors
 - **Storage**: AsyncStorage + Supabase

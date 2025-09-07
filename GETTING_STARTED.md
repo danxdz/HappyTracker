@@ -37,10 +37,25 @@ npm run dev
 
 ## 📱 Mobile App Setup
 
-### React Native with Expo
+### Vite + React (Web Dashboard)
+```bash
+# Initialize Vite project
+npm create vite@latest happytracker-web --template react-ts
+cd happytracker-web
+
+# Install required dependencies
+npm install @reduxjs/toolkit react-redux
+npm install react-router-dom
+npm install tailwindcss @headlessui/react
+npm install @supabase/supabase-js
+npm install lucide-react
+```
+
+### React Native with Expo (Mobile App)
 ```bash
 # Initialize new Expo project
-npx create-expo-app HappyTracker --template blank-typescript
+npx create-expo-app happytracker-mobile --template blank-typescript
+cd happytracker-mobile
 
 # Install required dependencies
 npm install @react-navigation/native @react-navigation/stack
