@@ -352,13 +352,17 @@ function GalaxyInfoPanel({ config, healthEnergy }: { config: GalaxyConfig, healt
 }
 
 // Touch Controls Overlay
-function TouchControlsOverlay() {
+function TouchControlsOverlay({ isVisible, onHide }: { isVisible: boolean, onHide: () => void }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 50 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 1 }}
-      className="fixed bottom-4 left-4 right-4 z-30 bg-gradient-to-r from-black/40 to-purple-900/40 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-2xl"
+      animate={{ 
+        opacity: isVisible ? 1 : 0,
+        y: isVisible ? 0 : 50
+      }}
+      transition={{ duration: 0.3 }}
+      className={`fixed bottom-4 left-4 right-4 z-30 bg-gradient-to-r from-black/40 to-purple-900/40 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-2xl ${isVisible ? 'pointer-events-auto' : 'pointer-events-none'}`}
+      onClick={onHide}
     >
       <div className="text-center">
         <h4 className="text-white font-semibold text-lg mb-2">🌌 Galaxy Controls</h4>
@@ -379,6 +383,9 @@ function TouchControlsOverlay() {
         <p className="text-gray-300 text-sm mt-3">
           ☀️ Feed the sun with healthy choices to make it brighter!
         </p>
+        <p className="text-gray-400 text-xs mt-2">
+          👆 Tap anywhere to hide controls
+        </p>
       </div>
     </motion.div>
   )
@@ -389,11 +396,35 @@ export const GalaxySystem: React.FC = () => {
   const { currentAvatar } = useSelector((state: RootState) => state.avatar)
   const [selectedGalaxy, setSelectedGalaxy] = useState<GalaxyType>('bright')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [showControls, setShowControls] = useState(true)
   
   // Calculate health energy from avatar
   const healthEnergy = currentAvatar?.wellnessScore || 50
   
   const config = GALAXY_TYPES[selectedGalaxy]
+  
+  // Auto-hide controls after 2 seconds
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowControls(false)
+    }, 2000)
+    
+    return () => clearTimeout(timer)
+  }, [])
+  
+  // Show controls when galaxy changes
+  React.useEffect(() => {
+    setShowControls(true)
+    const timer = setTimeout(() => {
+      setShowControls(false)
+    }, 2000)
+    
+    return () => clearTimeout(timer)
+  }, [selectedGalaxy])
+  
+  const handleHideControls = () => {
+    setShowControls(false)
+  }
   
   return (
     <div className="fixed inset-0 w-full h-full bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900 overflow-hidden">
@@ -472,7 +503,10 @@ export const GalaxySystem: React.FC = () => {
       </Canvas>
       
       {/* Touch Controls Overlay */}
-      <TouchControlsOverlay />
+      <TouchControlsOverlay 
+        isVisible={showControls}
+        onHide={handleHideControls}
+      />
     </div>
   )
 }
