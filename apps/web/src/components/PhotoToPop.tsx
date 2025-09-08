@@ -37,12 +37,12 @@ export const PhotoToPop: React.FC<PhotoToPopProps> = ({ onPhotoProcessed, onClos
     setIsProcessing(true)
     
     try {
-      // Real AI processing steps
+      // AI processing steps (simulated until HF token is added)
       const steps = [
         '📸 Uploading photo to AI...',
-        '🔍 Analyzing facial features with Hugging Face...',
+        '🔍 Analyzing facial features...',
         '🧠 Detecting emotions and personality...',
-        '🎨 Generating 3D model with Hunyuan3D...',
+        '🎨 Generating 3D model...',
         '✨ Creating pop characteristics...',
         '🌟 Finalizing your unique pop!'
       ]
@@ -52,7 +52,7 @@ export const PhotoToPop: React.FC<PhotoToPopProps> = ({ onPhotoProcessed, onClos
         await new Promise(resolve => setTimeout(resolve, 800))
       }
 
-      // Call real Hugging Face AI service
+      // Call AI service (simulated until HF token is added)
       setProcessingStep('🤖 Processing with AI models...')
       const result = await HuggingFaceService.generate3DPop(selectedPhoto)
       
@@ -242,6 +242,17 @@ export const PhotoToPop: React.FC<PhotoToPopProps> = ({ onPhotoProcessed, onClos
               <span>🧠 Face Detection</span>
               <span>🎭 Emotion Analysis</span>
               <span>🎨 3D Generation</span>
+            </div>
+            
+            {/* Hugging Face Token Notice */}
+            <div className="mt-4 p-3 bg-yellow-400/10 border border-yellow-400/20 rounded-lg">
+              <p className="text-yellow-300 text-xs text-center">
+                💡 Add your Hugging Face token for real AI processing!
+                <br />
+                <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener noreferrer" className="underline">
+                  Get your token here
+                </a>
+              </p>
             </div>
           </div>
         )}

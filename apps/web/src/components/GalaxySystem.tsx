@@ -535,6 +535,15 @@ export const GalaxySystem: React.FC = () => {
           top: 0,
           left: 0
         }}
+        gl={{ 
+          antialias: true,
+          alpha: true,
+          powerPreference: "high-performance",
+          preserveDrawingBuffer: true
+        }}
+        onCreated={({ gl }) => {
+          gl.setClearColor(0x000000, 0)
+        }}
       >
         <Suspense fallback={null}>
           {/* Realistic Lighting System */}

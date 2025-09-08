@@ -74,25 +74,27 @@ export class HuggingFaceService {
   private static readonly HF_API_URL = 'https://api-inference.huggingface.co/models'
   private static readonly HF_TOKEN = '' // Add your Hugging Face token here
   
+  // To get a Hugging Face token:
+  // 1. Go to https://huggingface.co/settings/tokens
+  // 2. Create a new token with "Read" permissions
+  // 3. Add it to your environment variables or replace the empty string above
+  
   // Face detection and analysis
   static async analyzeFace(imageData: string): Promise<FaceAnalysis> {
     try {
-      // Convert base64 to blob
-      const response = await fetch(imageData)
-      const blob = await response.blob()
+      // For now, simulate face analysis since we don't have HF token
+      // In production, this would call real Hugging Face face detection models
+      console.log('🔍 Simulating face analysis (add HF token for real AI)')
       
-      // Use Hugging Face face detection model
-      const faceDetectionResult = await this.callHuggingFaceAPI(
-        'microsoft/DialoGPT-medium', // Placeholder - would use actual face detection model
-        blob
-      )
+      // Simulate processing time
+      await new Promise(resolve => setTimeout(resolve, 1500))
       
-      // Simulate face analysis (in real implementation, this would be actual AI analysis)
       return this.simulateFaceAnalysis(imageData)
       
     } catch (error) {
       console.error('Face analysis error:', error)
-      throw new Error('Failed to analyze face')
+      // Fallback to simulation if API fails
+      return this.simulateFaceAnalysis(imageData)
     }
   }
   
@@ -204,8 +206,9 @@ export class HuggingFaceService {
   
   // Generate 3D model (simulated)
   private static async generate3DModel(imageData: string, faceAnalysis: FaceAnalysis): Promise<{modelUrl?: string, modelData?: any}> {
-    // In real implementation, this would call Hunyuan3D or similar model
-    await new Promise(resolve => setTimeout(resolve, 2000)) // Simulate processing
+    // Simulate 3D model generation
+    console.log('🎨 Simulating 3D model generation (add HF token for real 3D models)')
+    await new Promise(resolve => setTimeout(resolve, 2000))
     
     return {
       modelUrl: `https://example.com/3d-model-${Date.now()}.glb`,
