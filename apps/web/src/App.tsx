@@ -13,8 +13,6 @@ import { Footer } from './components/Footer'
 function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900">
-      <Navigation />
-      
       <Routes>
         <Route 
           path="/" 
@@ -78,19 +76,20 @@ function App() {
         />
         <Route 
           path="/galaxy" 
-          element={
-            <motion.div
-              initial={{ opacity: 0, rotateY: 180 }}
-              animate={{ opacity: 1, rotateY: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              <GalaxyPage />
-            </motion.div>
-          } 
+          element={<GalaxyPage />}
         />
       </Routes>
       
-      <Footer />
+      {/* Conditional Navigation and Footer - not shown on galaxy page */}
+      <Routes>
+        <Route path="/galaxy" element={null} />
+        <Route path="*" element={
+          <>
+            <Navigation />
+            <Footer />
+          </>
+        } />
+      </Routes>
     </div>
   )
 }

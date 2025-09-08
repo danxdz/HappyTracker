@@ -53,107 +53,59 @@ export const GALAXY_TYPES: Record<GalaxyType, GalaxyConfig> = {
   }
 }
 
-// Star Field Component
+// Realistic Star Field Component
 function StarField({ galaxyType }: { galaxyType: GalaxyType }) {
-  const meshRef = useRef<THREE.Points>(null!)
+  const groupRef = useRef<THREE.Group>(null!)
   const config = GALAXY_TYPES[galaxyType]
   
-  const starGeometry = useMemo(() => {
-    const geometry = new THREE.BufferGeometry()
-    const starCount = 5000
-    const positions = new Float32Array(starCount * 3)
+  const stars = useMemo(() => {
+    const starCount = 2000
+    const starArray = []
     
     for (let i = 0; i < starCount; i++) {
       // Create spiral galaxy pattern
-      const radius = Math.random() * 50 + 10
+      const radius = Math.random() * 60 + 15
       const angle = Math.random() * Math.PI * 2
-      const height = (Math.random() - 0.5) * 10
+      const height = (Math.random() - 0.5) * 15
       
       // Spiral arm effect
-      const spiralFactor = radius * 0.1
+      const spiralFactor = radius * 0.08
       const spiralAngle = angle + spiralFactor
       
-      positions[i * 3] = Math.cos(spiralAngle) * radius
-      positions[i * 3 + 1] = height
-      positions[i * 3 + 2] = Math.sin(spiralAngle) * radius
+      const x = Math.cos(spiralAngle) * radius
+      const y = height
+      const z = Math.sin(spiralAngle) * radius
+      
+      // Star size variation
+      const size = Math.random() * 0.3 + 0.1
+      const brightness = Math.random() * 0.5 + 0.5
+      
+      starArray.push({
+        position: [x, y, z] as [number, number, number],
+        size,
+        brightness,
+        color: config.starColor
+      })
     }
     
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-    return geometry
-  }, [])
-  
-  const starMaterial = useMemo(() => {
-    return new THREE.PointsMaterial({
-      color: config.starColor,
-      size: 0.5,
-      sizeAttenuation: true,
-      transparent: true,
-      opacity: 0.8
-    })
+    return starArray
   }, [config.starColor])
   
   useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y += 0.001
+    if (groupRef.current) {
+      groupRef.current.rotation.y += 0.0005
     }
   })
   
   return (
-    <points ref={meshRef} geometry={starGeometry} material={starMaterial} />
-  )
-}
-
-// Central Sun Component
-function CentralSun({ galaxyType, healthEnergy }: { galaxyType: GalaxyType, healthEnergy: number }) {
-  const meshRef = useRef<THREE.Mesh>(null!)
-  const config = GALAXY_TYPES[galaxyType]
-  
-  useFrame((state) => {
-    if (meshRef.current) {
-      // Pulsing animation based on health energy
-      const pulse = Math.sin(state.clock.elapsedTime * 2) * 0.1 + 1
-      const scale = 1 + (healthEnergy / 100) * 0.5 + pulse * 0.2
-      meshRef.current.scale.setScalar(scale)
-      
-      // Rotation
-      meshRef.current.rotation.y += 0.01
-    }
-  })
-  
-  return (
-    <group>
-      {/* Main Sun */}
-      <Sphere ref={meshRef} args={[2, 32, 32]} position={[0, 0, 0]}>
-        <meshStandardMaterial 
-          color={config.color}
-          emissive={config.color}
-          emissiveIntensity={healthEnergy / 100}
-        />
-      </Sphere>
-      
-      {/* Energy Ring */}
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[3, 4, 32]} />
-        <meshBasicMaterial 
-          color={config.nebulaColor}
-          transparent
-          opacity={healthEnergy / 200}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-      
-      {/* Energy Particles */}
-      {Array.from({ length: 20 }, (_, i) => (
-        <mesh key={i} position={[
-          Math.cos(i * 0.3) * 4,
-          Math.sin(i * 0.3) * 4,
-          Math.sin(i * 0.5) * 2
-        ]}>
-          <sphereGeometry args={[0.1, 8, 8]} />
+    <group ref={groupRef}>
+      {stars.map((star, index) => (
+        <mesh key={index} position={star.position}>
+          <sphereGeometry args={[star.size, 8, 8]} />
           <meshBasicMaterial 
-            color={config.starColor}
+            color={star.color}
             transparent
-            opacity={healthEnergy / 150}
+            opacity={star.brightness}
           />
         </mesh>
       ))}
@@ -161,38 +113,160 @@ function CentralSun({ galaxyType, healthEnergy }: { galaxyType: GalaxyType, heal
   )
 }
 
-// Nebula Effect Component
+// Realistic Central Sun Component
+function CentralSun({ galaxyType, healthEnergy }: { galaxyType: GalaxyType, healthEnergy: number }) {
+  const meshRef = useRef<THREE.Mesh>(null!)
+  const coronaRef = useRef<THREE.Mesh>(null!)
+  const config = GALAXY_TYPES[galaxyType]
+  
+  useFrame((state) => {
+    if (meshRef.current) {
+      // Pulsing animation based on health energy
+      const pulse = Math.sin(state.clock.elapsedTime * 1.5) * 0.15 + 1
+      const scale = 1 + (healthEnergy / 100) * 0.3 + pulse * 0.1
+      meshRef.current.scale.setScalar(scale)
+      
+      // Rotation
+      meshRef.current.rotation.y += 0.005
+    }
+    
+    if (coronaRef.current) {
+      // Corona rotation
+      coronaRef.current.rotation.y += 0.002
+      coronaRef.current.rotation.z += 0.001
+    }
+  })
+  
+  return (
+    <group>
+      {/* Sun Corona - Outer glow */}
+      <Sphere ref={coronaRef} args={[3.5, 32, 32]} position={[0, 0, 0]}>
+        <meshBasicMaterial 
+          color={config.color}
+          transparent
+          opacity={healthEnergy / 300}
+        />
+      </Sphere>
+      
+      {/* Main Sun Core */}
+      <Sphere ref={meshRef} args={[2.5, 64, 64]} position={[0, 0, 0]}>
+        <meshStandardMaterial 
+          color={config.color}
+          emissive={config.color}
+          emissiveIntensity={healthEnergy / 80}
+          roughness={0.1}
+          metalness={0.8}
+        />
+      </Sphere>
+      
+      {/* Solar Flares */}
+      {Array.from({ length: 8 }, (_, i) => (
+        <mesh key={i} position={[
+          Math.cos(i * 0.785) * 4,
+          Math.sin(i * 0.785) * 4,
+          (Math.random() - 0.5) * 2
+        ]}>
+          <sphereGeometry args={[0.2, 8, 8]} />
+          <meshBasicMaterial 
+            color={config.starColor}
+            transparent
+            opacity={healthEnergy / 200}
+          />
+        </mesh>
+      ))}
+      
+      {/* Energy Rings */}
+      {Array.from({ length: 3 }, (_, i) => (
+        <mesh key={`ring-${i}`} rotation={[Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[3 + i * 1.5, 3.5 + i * 1.5, 64]} />
+          <meshBasicMaterial 
+            color={config.nebulaColor}
+            transparent
+            opacity={healthEnergy / (250 + i * 100)}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+      ))}
+    </group>
+  )
+}
+
+// Realistic Nebula Landscape Component
 function NebulaEffect({ galaxyType }: { galaxyType: GalaxyType }) {
   const config = GALAXY_TYPES[galaxyType]
   
   return (
     <group>
-      {/* Background Nebula */}
-      <mesh position={[0, 0, -20]}>
-        <planeGeometry args={[100, 100]} />
+      {/* Distant Galaxy Background */}
+      <mesh position={[0, 0, -80]}>
+        <planeGeometry args={[200, 200]} />
         <meshBasicMaterial 
           color={config.nebulaColor}
           transparent
-          opacity={0.3}
+          opacity={0.1}
           side={THREE.DoubleSide}
         />
       </mesh>
       
-      {/* Floating Nebula Clouds */}
-      {Array.from({ length: 5 }, (_, i) => (
-        <mesh key={i} position={[
-          (Math.random() - 0.5) * 60,
-          (Math.random() - 0.5) * 60,
-          (Math.random() - 0.5) * 40
-        ]}>
-          <sphereGeometry args={[Math.random() * 5 + 2, 16, 16]} />
-          <meshBasicMaterial 
-            color={config.nebulaColor}
-            transparent
-            opacity={0.2}
-          />
-        </mesh>
-      ))}
+      {/* Nebula Clouds with realistic shapes */}
+      {Array.from({ length: 12 }, (_, i) => {
+        const size = Math.random() * 8 + 3
+        const opacity = Math.random() * 0.3 + 0.1
+        const x = (Math.random() - 0.5) * 100
+        const y = (Math.random() - 0.5) * 100
+        const z = (Math.random() - 0.5) * 60 - 20
+        
+        return (
+          <mesh key={i} position={[x, y, z]}>
+            <sphereGeometry args={[size, 32, 32]} />
+            <meshBasicMaterial 
+              color={config.nebulaColor}
+              transparent
+              opacity={opacity}
+            />
+          </mesh>
+        )
+      })}
+      
+      {/* Gas Clouds */}
+      {Array.from({ length: 8 }, (_, i) => {
+        const size = Math.random() * 4 + 1
+        const opacity = Math.random() * 0.4 + 0.2
+        const x = (Math.random() - 0.5) * 80
+        const y = (Math.random() - 0.5) * 80
+        const z = (Math.random() - 0.5) * 40
+        
+        return (
+          <mesh key={`gas-${i}`} position={[x, y, z]}>
+            <sphereGeometry args={[size, 24, 24]} />
+            <meshBasicMaterial 
+              color={config.starColor}
+              transparent
+              opacity={opacity}
+            />
+          </mesh>
+        )
+      })}
+      
+      {/* Dust Clouds */}
+      {Array.from({ length: 15 }, (_, i) => {
+        const size = Math.random() * 2 + 0.5
+        const opacity = Math.random() * 0.2 + 0.05
+        const x = (Math.random() - 0.5) * 120
+        const y = (Math.random() - 0.5) * 120
+        const z = (Math.random() - 0.5) * 80
+        
+        return (
+          <mesh key={`dust-${i}`} position={[x, y, z]}>
+            <sphereGeometry args={[size, 16, 16]} />
+            <meshBasicMaterial 
+              color={config.color}
+              transparent
+              opacity={opacity}
+            />
+          </mesh>
+        )
+      })}
     </group>
   )
 }
@@ -463,11 +537,38 @@ export const GalaxySystem: React.FC = () => {
         }}
       >
         <Suspense fallback={null}>
-          {/* Enhanced Lighting */}
-          <ambientLight intensity={0.2} />
-          <directionalLight position={[10, 10, 5]} intensity={0.3} />
-          <pointLight position={[0, 0, 0]} intensity={healthEnergy / 30} color={config.color} />
-          <pointLight position={[5, 5, 5]} intensity={healthEnergy / 60} color={config.starColor} />
+          {/* Realistic Lighting System */}
+          <ambientLight intensity={0.1} color="#1a1a2e" />
+          <directionalLight 
+            position={[20, 20, 10]} 
+            intensity={0.4} 
+            color="#ffffff"
+            castShadow
+          />
+          <pointLight 
+            position={[0, 0, 0]} 
+            intensity={healthEnergy / 20} 
+            color={config.color}
+            distance={50}
+            decay={2}
+          />
+          <pointLight 
+            position={[10, 10, 10]} 
+            intensity={healthEnergy / 40} 
+            color={config.starColor}
+            distance={30}
+            decay={1.5}
+          />
+          <pointLight 
+            position={[-10, -10, -10]} 
+            intensity={healthEnergy / 60} 
+            color={config.nebulaColor}
+            distance={25}
+            decay={2}
+          />
+          <hemisphereLight 
+            args={["#0f0f23", "#1a1a2e", 0.3]}
+          />
           
           {/* Galaxy Components */}
           <StarField galaxyType={selectedGalaxy} />
