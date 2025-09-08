@@ -88,37 +88,37 @@ export const HealthTracking: React.FC = () => {
   ] as const
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-8"
+        className="text-center mb-4 sm:mb-8"
       >
-        <h1 className="text-4xl font-bold text-white mb-4">
+        <h1 className="text-2xl sm:text-4xl font-bold text-white mb-2 sm:mb-4">
           <span className="bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
             Track Your Health! 📊
           </span>
         </h1>
-        <p className="text-gray-300 max-w-2xl mx-auto">
+        <p className="text-sm sm:text-base text-gray-300 max-w-2xl mx-auto px-2">
           Log your meals, water, sleep, and movement to see your avatar respond in real-time!
         </p>
       </motion.div>
 
       {/* Tab Navigation */}
-      <div className="flex flex-wrap justify-center gap-2 mb-8">
+      <div className="flex flex-wrap justify-center gap-1 sm:gap-2 mb-4 sm:mb-8">
         {tabs.map((tab) => (
           <motion.button
             key={tab.id}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 rounded-full font-semibold transition-all duration-300 ${
+            className={`px-2 sm:px-4 py-1 sm:py-2 rounded-full font-semibold transition-all duration-300 text-xs sm:text-sm ${
               activeTab === tab.id
                 ? `bg-gradient-to-r ${tab.color} text-white shadow-lg`
                 : 'bg-white/10 text-gray-300 hover:bg-white/20'
             }`}
           >
-            {tab.icon} {tab.label}
+            {tab.icon} <span className="hidden sm:inline">{tab.label}</span>
           </motion.button>
         ))}
       </div>
@@ -129,18 +129,18 @@ export const HealthTracking: React.FC = () => {
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.3 }}
-        className="max-w-md mx-auto"
+        className="max-w-sm sm:max-w-md mx-auto"
       >
         {/* Meal Logging */}
         {activeTab === 'meal' && (
-          <div className="bg-white/5 backdrop-blur-sm rounded-lg p-6">
-            <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
-              <span className="text-2xl mr-2">🍽️</span>
+          <div className="bg-white/5 backdrop-blur-sm rounded-lg p-3 sm:p-6">
+            <h3 className="text-lg sm:text-xl font-semibold text-white mb-3 sm:mb-4 flex items-center">
+              <span className="text-xl sm:text-2xl mr-2">🍽️</span>
               Log Your Meal
             </h3>
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1 sm:mb-2">
                   What did you eat?
                 </label>
                 <input
@@ -148,17 +148,17 @@ export const HealthTracking: React.FC = () => {
                   value={mealForm.food}
                   onChange={(e) => setMealForm({ ...mealForm, food: e.target.value })}
                   placeholder="e.g., Salad, Pizza, Chicken..."
-                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  className="w-full px-3 sm:px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm sm:text-base"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1 sm:mb-2">
                   Meal Type
                 </label>
                 <select
                   value={mealForm.category}
                   onChange={(e) => setMealForm({ ...mealForm, category: e.target.value as any })}
-                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  className="w-full px-3 sm:px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm sm:text-base"
                 >
                   <option value="breakfast">Breakfast</option>
                   <option value="lunch">Lunch</option>
@@ -171,9 +171,9 @@ export const HealthTracking: React.FC = () => {
                 whileTap={{ scale: 0.95 }}
                 onClick={handleLogMeal}
                 disabled={!mealForm.food.trim()}
-                className="w-full bg-gradient-to-r from-orange-400 to-red-400 text-white py-3 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-orange-400 to-red-400 text-white py-2 sm:py-3 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
               >
-                Log Meal <Plus className="inline ml-2" size={20} />
+                Log Meal <Plus className="inline ml-2" size={16} />
               </motion.button>
             </div>
           </div>
@@ -326,42 +326,42 @@ export const HealthTracking: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="mt-8 max-w-2xl mx-auto"
+          className="mt-4 sm:mt-8 max-w-2xl mx-auto"
         >
-          <div className="bg-white/5 backdrop-blur-sm rounded-lg p-6">
-            <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
-              <span className="text-2xl mr-2">📊</span>
+          <div className="bg-white/5 backdrop-blur-sm rounded-lg p-3 sm:p-6">
+            <h3 className="text-lg sm:text-xl font-semibold text-white mb-3 sm:mb-4 flex items-center">
+              <span className="text-xl sm:text-2xl mr-2">📊</span>
               Today's Summary
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 text-center">
               <div>
-                <div className="text-2xl font-bold text-orange-400">{healthData.meals.length}</div>
-                <div className="text-sm text-gray-300">Meals</div>
+                <div className="text-xl sm:text-2xl font-bold text-orange-400">{healthData.meals.length}</div>
+                <div className="text-xs sm:text-sm text-gray-300">Meals</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-blue-400">
+                <div className="text-xl sm:text-2xl font-bold text-blue-400">
                   {healthData.water.reduce((sum, log) => sum + log.amount, 0)}
                 </div>
-                <div className="text-sm text-gray-300">Glasses</div>
+                <div className="text-xs sm:text-sm text-gray-300">Glasses</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-purple-400">
+                <div className="text-xl sm:text-2xl font-bold text-purple-400">
                   {healthData.sleep.length > 0 ? healthData.sleep[healthData.sleep.length - 1].duration : 0}h
                 </div>
-                <div className="text-sm text-gray-300">Sleep</div>
+                <div className="text-xs sm:text-sm text-gray-300">Sleep</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-green-400">
+                <div className="text-xl sm:text-2xl font-bold text-green-400">
                   {healthData.movement.reduce((sum, log) => sum + log.steps, 0).toLocaleString()}
                 </div>
-                <div className="text-sm text-gray-300">Steps</div>
+                <div className="text-xs sm:text-sm text-gray-300">Steps</div>
               </div>
             </div>
-            <div className="mt-4 text-center">
-              <div className="text-lg font-semibold text-white">
+            <div className="mt-3 sm:mt-4 text-center">
+              <div className="text-base sm:text-lg font-semibold text-white">
                 Wellness Score: {currentAvatar.wellnessScore}/100
               </div>
-              <div className="text-sm text-gray-300 mt-1">
+              <div className="text-xs sm:text-sm text-gray-300 mt-1">
                 {currentAvatar.emotions.current}
               </div>
             </div>

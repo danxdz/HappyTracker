@@ -160,12 +160,13 @@ export const PopWorld: React.FC = () => {
 
   return (
     <div className="w-full h-screen bg-gradient-to-b from-blue-400 to-green-400">
-      <div className="absolute top-4 left-4 z-10 bg-white/20 backdrop-blur-sm rounded-lg p-4">
-        <h2 className="text-white font-bold text-lg mb-2">Your Pop World 🌍</h2>
-        <p className="text-white text-sm">
-          Wellness Score: {sampleHealthData.wellnessScore}/100
+      {/* Mobile-friendly header */}
+      <div className="absolute top-2 left-2 right-2 sm:top-4 sm:left-4 sm:right-auto z-10 bg-white/20 backdrop-blur-sm rounded-lg p-2 sm:p-4">
+        <h2 className="text-white font-bold text-sm sm:text-lg mb-1 sm:mb-2">Your Pop World 🌍</h2>
+        <p className="text-white text-xs sm:text-sm">
+          Wellness: {sampleHealthData.wellnessScore}/100
         </p>
-        <p className="text-white text-sm">
+        <p className="text-white text-xs sm:text-sm">
           Mood: {sampleHealthData.mood}
         </p>
       </div>
@@ -196,13 +197,18 @@ export const PopWorld: React.FC = () => {
             enableRotate={true}
             minDistance={3}
             maxDistance={15}
+            touches={{
+              ONE: 2, // Single finger for rotation
+              TWO: 1  // Two fingers for zoom
+            }}
           />
         </Suspense>
       </Canvas>
       
-      <div className="absolute bottom-4 left-4 right-4 z-10 bg-white/20 backdrop-blur-sm rounded-lg p-4">
-        <p className="text-white text-center text-sm">
-          🎮 Use mouse to rotate, scroll to zoom, drag to pan around your pop world!
+      {/* Mobile-friendly footer */}
+      <div className="absolute bottom-2 left-2 right-2 sm:bottom-4 sm:left-4 sm:right-4 z-10 bg-white/20 backdrop-blur-sm rounded-lg p-2 sm:p-4">
+        <p className="text-white text-center text-xs sm:text-sm">
+          📱 Touch to rotate, pinch to zoom, drag to pan around your pop world!
         </p>
       </div>
     </div>

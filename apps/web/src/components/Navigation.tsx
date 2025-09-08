@@ -21,19 +21,19 @@ export const Navigation: React.FC = () => {
       animate={{ y: 0 }}
       transition={{ duration: 0.8 }}
     >
-      <div className="container mx-auto px-4 py-4">
+      <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4">
         <div className="flex items-center justify-between">
           <motion.div 
-            className="flex items-center gap-2"
+            className="flex items-center gap-1 sm:gap-2"
             whileHover={{ scale: 1.05 }}
           >
-            <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-emerald-400 rounded-lg flex items-center justify-center">
-              <Heart className="w-5 h-5 text-white" />
+            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-green-400 to-emerald-400 rounded-lg flex items-center justify-center">
+              <Heart className="w-3 h-3 sm:w-5 sm:h-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-white text-fun">HappyTracker</span>
+            <span className="text-sm sm:text-xl font-bold text-white text-fun">HappyTracker</span>
           </motion.div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             {navItems.map((item) => {
               const Icon = item.icon
               const isActive = location.pathname === item.path
@@ -41,7 +41,7 @@ export const Navigation: React.FC = () => {
               return (
                 <Link key={item.path} to={item.path}>
                   <motion.div
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 ${
+                    className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-full transition-all duration-200 ${
                       isActive 
                         ? 'bg-white/20 text-white' 
                         : 'text-gray-300 hover:text-white hover:bg-white/10'
@@ -49,8 +49,8 @@ export const Navigation: React.FC = () => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <Icon className="w-5 h-5" />
-                    <span className="hidden sm:block font-medium">{item.label}</span>
+                    <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="hidden md:block font-medium text-xs sm:text-sm">{item.label}</span>
                   </motion.div>
                 </Link>
               )
