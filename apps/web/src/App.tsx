@@ -7,6 +7,7 @@ import { HealthPage } from './pages/HealthPage'
 import { SocialPage } from './pages/SocialPage'
 import { PopWorldPage } from './pages/PopWorldPage'
 import { GalaxyPage } from './pages/GalaxyPage'
+import { PhotoToPopPage } from './pages/PhotoToPopPage'
 import { Navigation } from './components/Navigation'
 import { Footer } from './components/Footer'
 
@@ -77,6 +78,18 @@ function App() {
         <Route 
           path="/galaxy" 
           element={<GalaxyPage />}
+        />
+        <Route 
+          path="/photo-to-pop" 
+          element={
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <PhotoToPopPage />
+            </motion.div>
+          } 
         />
       </Routes>
       
