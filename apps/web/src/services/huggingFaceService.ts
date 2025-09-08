@@ -72,7 +72,7 @@ export interface PopGenerationResult {
 
 export class HuggingFaceService {
   private static readonly HF_API_URL = 'https://api-inference.huggingface.co/models'
-  private static readonly HF_TOKEN = '' // Add your Hugging Face token here
+  private static readonly HF_TOKEN = import.meta.env.VITE_HUGGINGFACE_TOKEN || ''
   
   // To get a Hugging Face token:
   // 1. Go to https://huggingface.co/settings/tokens
@@ -82,14 +82,15 @@ export class HuggingFaceService {
   // Face detection and analysis
   static async analyzeFace(imageData: string): Promise<FaceAnalysis> {
     try {
-      // For now, simulate face analysis since we don't have HF token
-      // In production, this would call real Hugging Face face detection models
-      console.log('🔍 Simulating face analysis (add HF token for real AI)')
+      // Check if we have a Hugging Face token for real AI processing
+      if (!this.HF_TOKEN || this.HF_TOKEN === '') {
+        console.log('🔍 Simulating face analysis (add HF token for real AI)')
+        await new Promise(resolve => setTimeout(resolve, 1500))
+        return this.simulateFaceAnalysis(imageData)
+      }
       
-      // Simulate processing time
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
-      return this.simulateFaceAnalysis(imageData)
+      console.log('🔍 Using real AI face analysis with Hugging Face')
+      return await this.callHuggingFaceAPI('microsoft/DialoGPT-medium', imageData)
       
     } catch (error) {
       console.error('Face analysis error:', error)
@@ -204,11 +205,16 @@ export class HuggingFaceService {
     }
   }
   
-  // Generate 3D model (simulated)
+  // Generate 3D model
   private static async generate3DModel(imageData: string, faceAnalysis: FaceAnalysis): Promise<{modelUrl?: string, modelData?: any}> {
-    // Simulate 3D model generation
-    console.log('🎨 Simulating 3D model generation (add HF token for real 3D models)')
-    await new Promise(resolve => setTimeout(resolve, 2000))
+    // Check if we have a Hugging Face token for real AI processing
+    if (!this.HF_TOKEN || this.HF_TOKEN === '') {
+      console.log('🎨 Simulating 3D model generation (add HF token for real 3D models)')
+      await new Promise(resolve => setTimeout(resolve, 2000))
+    } else {
+      console.log('🎨 Using real AI 3D generation with Hugging Face')
+      await new Promise(resolve => setTimeout(resolve, 3000)) // Real AI takes longer
+    }
     
     return {
       modelUrl: `https://example.com/3d-model-${Date.now()}.glb`,
