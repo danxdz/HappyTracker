@@ -72,12 +72,12 @@ export interface PopGenerationResult {
 
 export class HuggingFaceService {
   private static readonly HF_API_URL = 'https://api-inference.huggingface.co/models'
-  private static readonly HF_TOKEN = import.meta.env.VITE_HUGGINGFACE_TOKEN || ''
+  private static readonly HF_TOKEN = (import.meta as any).env?.VITE_HUGGINGFACE_TOKEN || ''
   
   // Debug token loading
   static {
     console.log('🔑 HF Token loaded:', this.HF_TOKEN ? '✅ Yes' : '❌ No')
-    console.log('🌍 Environment:', import.meta.env.MODE)
+    console.log('🌍 Environment:', (import.meta as any).env?.MODE || 'unknown')
   }
   
   // To get a Hugging Face token:
@@ -96,7 +96,9 @@ export class HuggingFaceService {
       }
       
       console.log('🔍 Using real AI face analysis with Hugging Face')
-      return await this.callHuggingFaceAPI('microsoft/DialoGPT-medium', imageData)
+      // Convert base64 string to Blob
+      const imageBlob = await this.base64ToBlob(imageData)
+      return await this.callHuggingFaceAPI('microsoft/DialoGPT-medium', imageBlob)
       
     } catch (error) {
       console.error('Face analysis error:', error)
@@ -167,6 +169,21 @@ export class HuggingFaceService {
       reader.onerror = reject
       reader.readAsDataURL(blob)
     })
+  }
+  
+  // Convert base64 string to blob
+  private static async base64ToBlob(base64: string): Promise<Blob> {
+    // Remove data URL prefix if present
+    const base64Data = base64.includes(',') ? base64.split(',')[1] : base64
+    const byteCharacters = atob(base64Data)
+    const byteNumbers = new Array(byteCharacters.length)
+    
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i)
+    }
+    
+    const byteArray = new Uint8Array(byteNumbers)
+    return new Blob([byteArray], { type: 'image/jpeg' })
   }
   
   // Simulate face analysis (replace with real AI)
