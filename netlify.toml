@@ -1,6 +1,6 @@
 [build]
   # Build command for the web app
-  command = "cd apps/web && npm install && npm run build"
+  command = "cd apps/web && npm install --legacy-peer-deps && npm run build"
   
   # Publish directory (where the built files are)
   publish = "apps/web/dist"
