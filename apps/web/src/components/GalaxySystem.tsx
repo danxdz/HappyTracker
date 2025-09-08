@@ -2,6 +2,7 @@ import React, { Suspense, useRef, useState, useMemo } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls, Environment, Text, Sphere, Box } from '@react-three/drei'
 import { useSelector } from 'react-redux'
+import { motion } from 'framer-motion'
 import { RootState } from '../store'
 import * as THREE from 'three'
 
@@ -196,35 +197,190 @@ function NebulaEffect({ galaxyType }: { galaxyType: GalaxyType }) {
   )
 }
 
-// Galaxy Selection UI
-function GalaxySelector({ 
+// Modern Touch Menu Component
+function ModernTouchMenu({ 
   selectedGalaxy, 
-  onGalaxyChange 
+  onGalaxyChange,
+  isOpen,
+  onToggle
 }: { 
   selectedGalaxy: GalaxyType
-  onGalaxyChange: (galaxy: GalaxyType) => void 
+  onGalaxyChange: (galaxy: GalaxyType) => void
+  isOpen: boolean
+  onToggle: () => void
 }) {
   return (
-    <div className="absolute top-4 left-4 z-10 bg-black/20 backdrop-blur-sm rounded-lg p-4">
-      <h3 className="text-white font-bold text-lg mb-3">Choose Your Galaxy 🌌</h3>
-      <div className="space-y-2">
-        {Object.entries(GALAXY_TYPES).map(([key, config]) => (
-          <button
-            key={key}
-            onClick={() => onGalaxyChange(key as GalaxyType)}
-            className={`w-full text-left px-3 py-2 rounded-lg transition-all duration-200 ${
-              selectedGalaxy === key
-                ? 'bg-white/20 text-white'
-                : 'bg-white/10 text-gray-300 hover:bg-white/15'
-            }`}
+    <>
+      {/* Menu Toggle Button */}
+      <motion.button
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={onToggle}
+        className="fixed top-4 left-4 z-50 w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full shadow-lg backdrop-blur-sm border border-white/20 flex items-center justify-center"
+      >
+        <motion.div
+          animate={{ rotate: isOpen ? 45 : 0 }}
+          transition={{ duration: 0.3 }}
+          className="text-white text-xl"
+        >
+          ⚡
+        </motion.div>
+      </motion.button>
+
+      {/* Full Screen Menu Overlay */}
+      <motion.div
+        initial={false}
+        animate={{ 
+          opacity: isOpen ? 1 : 0,
+          scale: isOpen ? 1 : 0.8
+        }}
+        transition={{ duration: 0.3 }}
+        className={`fixed inset-0 z-40 ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
+      >
+        {/* Backdrop */}
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+        
+        {/* Menu Content */}
+        <div className="relative h-full flex items-center justify-center p-4">
+          <motion.div
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.1 }}
+            className="bg-gradient-to-br from-purple-900/90 to-blue-900/90 backdrop-blur-xl rounded-3xl p-8 max-w-md w-full border border-white/20 shadow-2xl"
           >
-            <span className="text-lg mr-2">{config.emoji}</span>
-            <span className="font-medium">{config.name}</span>
-            <div className="text-xs text-gray-400">{config.description}</div>
-          </button>
-        ))}
+            <h2 className="text-white font-bold text-2xl mb-6 text-center">
+              🌌 Choose Your Galaxy
+            </h2>
+            
+            <div className="space-y-4">
+              {Object.entries(GALAXY_TYPES).map(([key, config]) => (
+                <motion.button
+                  key={key}
+                  whileHover={{ scale: 1.05, x: 10 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    onGalaxyChange(key as GalaxyType)
+                    onToggle()
+                  }}
+                  className={`w-full text-left p-4 rounded-2xl transition-all duration-300 ${
+                    selectedGalaxy === key
+                      ? 'bg-gradient-to-r from-yellow-400/20 to-orange-400/20 border-2 border-yellow-400/50'
+                      : 'bg-white/10 hover:bg-white/20 border border-white/20'
+                  }`}
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="text-3xl">{config.emoji}</div>
+                    <div>
+                      <div className="text-white font-semibold text-lg">{config.name}</div>
+                      <div className="text-gray-300 text-sm">{config.description}</div>
+                    </div>
+                    {selectedGalaxy === key && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="ml-auto text-yellow-400 text-xl"
+                      >
+                        ✓
+                      </motion.div>
+                    )}
+                  </div>
+                </motion.button>
+              ))}
+            </div>
+            
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="mt-6 text-center"
+            >
+              <p className="text-gray-300 text-sm">
+                🌟 Your galaxy choice affects the entire universe!
+              </p>
+            </motion.div>
+          </motion.div>
+        </div>
+      </motion.div>
+    </>
+  )
+}
+
+// Galaxy Info Panel Component
+function GalaxyInfoPanel({ config, healthEnergy }: { config: GalaxyConfig, healthEnergy: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 50 }}
+      animate={{ opacity: 1, x: 0 }}
+      className="fixed top-4 right-4 z-30 bg-gradient-to-br from-black/40 to-purple-900/40 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-2xl"
+    >
+      <div className="flex items-center space-x-3 mb-3">
+        <div className="text-2xl">{config.emoji}</div>
+        <div>
+          <h3 className="text-white font-bold text-lg">{config.name}</h3>
+          <p className="text-gray-300 text-sm">{config.description}</p>
+        </div>
       </div>
-    </div>
+      
+      <div className="space-y-2">
+        <div className="flex justify-between items-center">
+          <span className="text-gray-300 text-sm">Health Energy:</span>
+          <span className="text-yellow-400 font-semibold">{healthEnergy}/100</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-gray-300 text-sm">Sun Brightness:</span>
+          <span className="text-orange-400 font-semibold">{Math.round(healthEnergy)}%</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-gray-300 text-sm">Galaxy Power:</span>
+          <span className="text-purple-400 font-semibold">{Math.round(healthEnergy * 0.8)}%</span>
+        </div>
+      </div>
+      
+      {/* Health Bar */}
+      <div className="mt-3">
+        <div className="w-full bg-gray-700 rounded-full h-2">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${healthEnergy}%` }}
+            transition={{ duration: 1, delay: 0.5 }}
+            className="bg-gradient-to-r from-yellow-400 to-orange-500 h-2 rounded-full"
+          />
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
+// Touch Controls Overlay
+function TouchControlsOverlay() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 1 }}
+      className="fixed bottom-4 left-4 right-4 z-30 bg-gradient-to-r from-black/40 to-purple-900/40 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-2xl"
+    >
+      <div className="text-center">
+        <h4 className="text-white font-semibold text-lg mb-2">🌌 Galaxy Controls</h4>
+        <div className="grid grid-cols-3 gap-4 text-center">
+          <div>
+            <div className="text-2xl mb-1">👆</div>
+            <div className="text-gray-300 text-xs">Touch to Rotate</div>
+          </div>
+          <div>
+            <div className="text-2xl mb-1">🤏</div>
+            <div className="text-gray-300 text-xs">Pinch to Zoom</div>
+          </div>
+          <div>
+            <div className="text-2xl mb-1">👋</div>
+            <div className="text-gray-300 text-xs">Drag to Pan</div>
+          </div>
+        </div>
+        <p className="text-gray-300 text-sm mt-3">
+          ☀️ Feed the sun with healthy choices to make it brighter!
+        </p>
+      </div>
+    </motion.div>
   )
 }
 
@@ -232,6 +388,7 @@ function GalaxySelector({
 export const GalaxySystem: React.FC = () => {
   const { currentAvatar } = useSelector((state: RootState) => state.avatar)
   const [selectedGalaxy, setSelectedGalaxy] = useState<GalaxyType>('bright')
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
   
   // Calculate health energy from avatar
   const healthEnergy = currentAvatar?.wellnessScore || 50
@@ -239,56 +396,74 @@ export const GalaxySystem: React.FC = () => {
   const config = GALAXY_TYPES[selectedGalaxy]
   
   return (
-    <div className="w-full h-screen bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900">
-      {/* Galaxy Selection UI */}
-      <GalaxySelector 
+    <div className="fixed inset-0 w-full h-full bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900 overflow-hidden">
+      {/* Modern Touch Menu */}
+      <ModernTouchMenu 
         selectedGalaxy={selectedGalaxy}
         onGalaxyChange={setSelectedGalaxy}
+        isOpen={isMenuOpen}
+        onToggle={() => setIsMenuOpen(!isMenuOpen)}
       />
       
-      {/* Galaxy Info */}
-      <div className="absolute top-4 right-4 z-10 bg-black/20 backdrop-blur-sm rounded-lg p-4">
-        <h3 className="text-white font-bold text-lg mb-2">{config.emoji} {config.name}</h3>
-        <p className="text-white text-sm mb-2">{config.description}</p>
-        <div className="text-white text-sm">
-          <div>Health Energy: {healthEnergy}/100</div>
-          <div>Sun Brightness: {Math.round(healthEnergy)}%</div>
-        </div>
-      </div>
+      {/* Galaxy Info Panel */}
+      <GalaxyInfoPanel config={config} healthEnergy={healthEnergy} />
       
+      {/* Full Screen 3D Canvas */}
       <Canvas
         camera={{ position: [0, 0, 20], fov: 60 }}
-        style={{ background: 'transparent' }}
+        style={{ 
+          background: 'transparent',
+          width: '100vw',
+          height: '100vh',
+          position: 'fixed',
+          top: 0,
+          left: 0
+        }}
       >
         <Suspense fallback={null}>
-          {/* Lighting */}
-          <ambientLight intensity={0.3} />
-          <directionalLight position={[10, 10, 5]} intensity={0.5} />
-          <pointLight position={[0, 0, 0]} intensity={healthEnergy / 50} color={config.color} />
+          {/* Enhanced Lighting */}
+          <ambientLight intensity={0.2} />
+          <directionalLight position={[10, 10, 5]} intensity={0.3} />
+          <pointLight position={[0, 0, 0]} intensity={healthEnergy / 30} color={config.color} />
+          <pointLight position={[5, 5, 5]} intensity={healthEnergy / 60} color={config.starColor} />
           
           {/* Galaxy Components */}
           <StarField galaxyType={selectedGalaxy} />
           <CentralSun galaxyType={selectedGalaxy} healthEnergy={healthEnergy} />
           <NebulaEffect galaxyType={selectedGalaxy} />
           
-          {/* Galaxy Title */}
+          {/* Enhanced Galaxy Title */}
           <Text
-            position={[0, 8, 0]}
-            fontSize={2}
+            position={[0, 10, 0]}
+            fontSize={3}
             color={config.starColor}
             anchorX="center"
             anchorY="middle"
+            font="/fonts/inter-bold.woff"
           >
             {config.name}
           </Text>
           
-          {/* Controls */}
+          {/* Subtitle */}
+          <Text
+            position={[0, 7, 0]}
+            fontSize={1}
+            color={config.nebulaColor}
+            anchorX="center"
+            anchorY="middle"
+          >
+            Health Energy: {healthEnergy}%
+          </Text>
+          
+          {/* Enhanced Controls */}
           <OrbitControls 
             enablePan={true}
             enableZoom={true}
             enableRotate={true}
-            minDistance={5}
-            maxDistance={50}
+            minDistance={3}
+            maxDistance={80}
+            autoRotate={false}
+            autoRotateSpeed={0.5}
             touches={{
               ONE: 2, // Single finger for rotation
               TWO: 1  // Two fingers for zoom
@@ -297,13 +472,8 @@ export const GalaxySystem: React.FC = () => {
         </Suspense>
       </Canvas>
       
-      {/* Instructions */}
-      <div className="absolute bottom-4 left-4 right-4 z-10 bg-black/20 backdrop-blur-sm rounded-lg p-4">
-        <p className="text-white text-center text-sm">
-          🌌 Touch to rotate, pinch to zoom, drag to explore your galaxy! 
-          Feed the sun with healthy choices to make it brighter! ☀️
-        </p>
-      </div>
+      {/* Touch Controls Overlay */}
+      <TouchControlsOverlay />
     </div>
   )
 }
