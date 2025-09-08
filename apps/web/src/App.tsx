@@ -6,6 +6,7 @@ import { AvatarPage } from './pages/AvatarPage'
 import { HealthPage } from './pages/HealthPage'
 import { SocialPage } from './pages/SocialPage'
 import { PopWorldPage } from './pages/PopWorldPage'
+import { GalaxyPage } from './pages/GalaxyPage'
 import { Navigation } from './components/Navigation'
 import { Footer } from './components/Footer'
 
@@ -72,6 +73,18 @@ function App() {
               transition={{ duration: 0.5 }}
             >
               <PopWorldPage />
+            </motion.div>
+          } 
+        />
+        <Route 
+          path="/galaxy" 
+          element={
+            <motion.div
+              initial={{ opacity: 0, rotateY: 180 }}
+              animate={{ opacity: 1, rotateY: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <GalaxyPage />
             </motion.div>
           } 
         />
