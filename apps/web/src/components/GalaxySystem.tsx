@@ -384,7 +384,7 @@ function TouchControlsOverlay({ isVisible, onHide }: { isVisible: boolean, onHid
           ☀️ Feed the sun with healthy choices to make it brighter!
         </p>
         <p className="text-gray-400 text-xs mt-2">
-          👆 Tap anywhere to hide controls
+          👆 Tap to hide • 👆👆 Double-click to show
         </p>
       </div>
     </motion.div>
@@ -426,8 +426,19 @@ export const GalaxySystem: React.FC = () => {
     setShowControls(false)
   }
   
+  const handleDoubleClick = () => {
+    setShowControls(true)
+    // Auto-hide after 2 seconds
+    setTimeout(() => {
+      setShowControls(false)
+    }, 2000)
+  }
+  
   return (
-    <div className="fixed inset-0 w-full h-full bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900 overflow-hidden">
+    <div 
+      className="fixed inset-0 w-full h-full bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900 overflow-hidden"
+      onDoubleClick={handleDoubleClick}
+    >
       {/* Modern Touch Menu */}
       <ModernTouchMenu 
         selectedGalaxy={selectedGalaxy}
