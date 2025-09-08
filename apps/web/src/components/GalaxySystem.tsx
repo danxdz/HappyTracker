@@ -439,7 +439,6 @@ export const GalaxySystem: React.FC = () => {
             color={config.starColor}
             anchorX="center"
             anchorY="middle"
-            font="/fonts/inter-bold.woff"
           >
             {config.name}
           </Text>
