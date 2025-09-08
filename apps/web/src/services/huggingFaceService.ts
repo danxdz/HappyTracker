@@ -74,6 +74,12 @@ export class HuggingFaceService {
   private static readonly HF_API_URL = 'https://api-inference.huggingface.co/models'
   private static readonly HF_TOKEN = import.meta.env.VITE_HUGGINGFACE_TOKEN || ''
   
+  // Debug token loading
+  static {
+    console.log('🔑 HF Token loaded:', this.HF_TOKEN ? '✅ Yes' : '❌ No')
+    console.log('🌍 Environment:', import.meta.env.MODE)
+  }
+  
   // To get a Hugging Face token:
   // 1. Go to https://huggingface.co/settings/tokens
   // 2. Create a new token with "Read" permissions
