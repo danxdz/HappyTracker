@@ -2,26 +2,15 @@ import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { PhotoToPop } from '../components/PhotoToPop'
 import { PopDisplay } from '../components/PopDisplay'
-import { GeneratedPop, PopGenerationService } from '../services/popGenerationService'
+import { PopGenerationResult } from '../services/huggingFaceService'
 
 export const PhotoToPopPage: React.FC = () => {
   const [showPhotoUpload, setShowPhotoUpload] = useState(false)
-  const [generatedPop, setGeneratedPop] = useState<GeneratedPop | null>(null)
+  const [generatedPop, setGeneratedPop] = useState<PopGenerationResult | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
 
-  const handlePhotoProcessed = async (photoData: string) => {
-    setIsProcessing(true)
-    setShowPhotoUpload(false)
-    
-    try {
-      const pop = await PopGenerationService.generatePopFromPhoto(photoData)
-      setGeneratedPop(pop)
-    } catch (error) {
-      console.error('Error generating pop:', error)
-      alert('Failed to generate pop. Please try again.')
-    } finally {
-      setIsProcessing(false)
-    }
+  const handlePhotoProcessed = async (result: PopGenerationResult) => {
+    setGeneratedPop(result)
   }
 
   const handleClosePop = () => {

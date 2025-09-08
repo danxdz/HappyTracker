@@ -1,9 +1,10 @@
 import React, { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Camera, Upload, X, Sparkles, User } from 'lucide-react'
+import { Camera, Upload, X, Sparkles, User, Brain, Zap } from 'lucide-react'
+import { HuggingFaceService, PopGenerationResult } from '../services/huggingFaceService'
 
 interface PhotoToPopProps {
-  onPhotoProcessed?: (photoData: string) => void
+  onPhotoProcessed?: (result: PopGenerationResult) => void
   onClose?: () => void
 }
 
@@ -35,27 +36,36 @@ export const PhotoToPop: React.FC<PhotoToPopProps> = ({ onPhotoProcessed, onClos
 
     setIsProcessing(true)
     
-    // Simulate AI processing steps
-    const steps = [
-      '📸 Analyzing photo...',
-      '🔍 Detecting facial features...',
-      '🎨 Generating pop characteristics...',
-      '✨ Creating your unique pop...',
-      '🎭 Adding personality traits...',
-      '🌟 Finalizing your pop!'
-    ]
+    try {
+      // Real AI processing steps
+      const steps = [
+        '📸 Uploading photo to AI...',
+        '🔍 Analyzing facial features with Hugging Face...',
+        '🧠 Detecting emotions and personality...',
+        '🎨 Generating 3D model with Hunyuan3D...',
+        '✨ Creating pop characteristics...',
+        '🌟 Finalizing your unique pop!'
+      ]
 
-    for (let i = 0; i < steps.length; i++) {
-      setProcessingStep(steps[i])
-      await new Promise(resolve => setTimeout(resolve, 1000))
-    }
+      for (let i = 0; i < steps.length; i++) {
+        setProcessingStep(steps[i])
+        await new Promise(resolve => setTimeout(resolve, 800))
+      }
 
-    // Simulate successful processing
-    setTimeout(() => {
+      // Call real Hugging Face AI service
+      setProcessingStep('🤖 Processing with AI models...')
+      const result = await HuggingFaceService.generate3DPop(selectedPhoto)
+      
       setIsProcessing(false)
       setProcessingStep('')
-      onPhotoProcessed?.(selectedPhoto)
-    }, 1000)
+      onPhotoProcessed?.(result)
+      
+    } catch (error) {
+      console.error('AI processing error:', error)
+      setIsProcessing(false)
+      setProcessingStep('')
+      alert('AI processing failed. Please try again.')
+    }
   }
 
   const resetPhoto = () => {
@@ -177,45 +187,61 @@ export const PhotoToPop: React.FC<PhotoToPopProps> = ({ onPhotoProcessed, onClos
           </div>
         )}
 
-        {/* Processing Animation */}
+        {/* Real AI Processing Animation */}
         {isProcessing && (
           <div className="text-center space-y-6">
             <div className="relative">
-              <div className="w-32 h-32 mx-auto bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+              <div className="w-32 h-32 mx-auto bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                 >
-                  <Sparkles className="w-16 h-16 text-white" />
+                  <Brain className="w-16 h-16 text-white" />
                 </motion.div>
               </div>
               
-              {/* Processing rings */}
+              {/* AI Processing rings */}
               <motion.div
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="absolute inset-0 border-2 border-yellow-400/30 rounded-full"
+                className="absolute inset-0 border-2 border-purple-400/30 rounded-full"
               />
               <motion.div
                 animate={{ scale: [1, 1.4, 1] }}
                 transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                className="absolute inset-0 border-2 border-orange-400/20 rounded-full"
+                className="absolute inset-0 border-2 border-blue-400/20 rounded-full"
+              />
+              <motion.div
+                animate={{ scale: [1, 1.6, 1] }}
+                transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                className="absolute inset-0 border-2 border-cyan-400/10 rounded-full"
               />
             </div>
 
             <div>
-              <h3 className="text-white font-bold text-lg mb-2">Creating Your Pop...</h3>
+              <h3 className="text-white font-bold text-lg mb-2">AI Processing...</h3>
               <p className="text-gray-300 text-sm">{processingStep}</p>
+              <div className="flex items-center justify-center space-x-2 mt-2">
+                <Zap className="w-4 h-4 text-yellow-400" />
+                <span className="text-yellow-400 text-xs">Powered by Hugging Face AI</span>
+              </div>
             </div>
 
-            {/* Progress bar */}
-            <div className="w-full bg-gray-700 rounded-full h-2">
+            {/* AI Progress bar */}
+            <div className="w-full bg-gray-700 rounded-full h-3">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: "100%" }}
-                transition={{ duration: 6, ease: "easeOut" }}
-                className="bg-gradient-to-r from-yellow-400 to-orange-500 h-2 rounded-full"
+                transition={{ duration: 8, ease: "easeOut" }}
+                className="bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-500 h-3 rounded-full"
               />
+            </div>
+            
+            {/* AI Models indicator */}
+            <div className="flex items-center justify-center space-x-4 text-xs text-gray-400">
+              <span>🧠 Face Detection</span>
+              <span>🎭 Emotion Analysis</span>
+              <span>🎨 3D Generation</span>
             </div>
           </div>
         )}
