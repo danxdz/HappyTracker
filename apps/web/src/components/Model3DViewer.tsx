@@ -48,9 +48,7 @@ function Model({ modelData }: { modelData: string }) {
     return URL.createObjectURL(blob)
   }, [blob])
 
-  const { scene } = useGLTF(objectUrl || '', undefined, (error) => {
-    console.error('GLB loading error:', error)
-  })
+  const { scene } = useGLTF(objectUrl || '')
 
   // Auto-rotate the model
   useFrame(() => {

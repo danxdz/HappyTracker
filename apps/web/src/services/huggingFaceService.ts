@@ -41,6 +41,9 @@ export interface FaceAnalysis {
 }
 
 export interface PopGenerationResult {
+  // Original input
+  originalImage: string
+  
   // 3D model data
   modelUrl?: string
   modelData?: any // GLB/GLTF data
@@ -74,6 +77,9 @@ export interface PopGenerationResult {
     frontThreeQuarter: string
     backThreeQuarter: string
   }
+  
+  // Final avatar
+  avatar?: string
   
   // Processing metadata
   processingTime: number
@@ -154,13 +160,15 @@ export class HuggingFaceService {
       const processingTime = Date.now() - startTime
       
       return {
+        originalImage: imageData,
         modelUrl: modelResult.modelUrl,
         modelData: modelResult.modelData,
         characteristics,
         popImageUrl,
         processingTime,
         modelUsed: 'Hunyuan3D-2 + TRELLIS + Stable Diffusion XL',
-        tPoseViews: characterImages // Include 6 character images for 3D modeling
+        tPoseViews: characterImages, // Include 6 character images for 3D modeling
+        avatar: popImageUrl // Use the pop image as avatar for now
       }
       
     } catch (error) {
@@ -321,7 +329,7 @@ export class HuggingFaceService {
     
     try {
       // Use the 6 character images to create a more accurate 3D model
-      const imageUrls = Object.values(characterImages).filter(Boolean)
+      const imageUrls = characterImages ? Object.values(characterImages).filter(Boolean) : []
       console.log(`📸 Using ${imageUrls.length} character images for 3D generation`)
       
       // For now, we'll use the first image as the primary reference
@@ -334,10 +342,10 @@ export class HuggingFaceService {
       
       // Call the existing 3D generation with the primary character image
       const result = await this.generate3DModel(primaryImage, {
-        faceShape: characteristics.faceShape,
+        faceShape: characteristics.faceShape as 'round' | 'oval' | 'square' | 'heart' | 'diamond',
         eyeColor: characteristics.eyeColor,
         hairColor: characteristics.hairColor,
-        hairStyle: characteristics.hairStyle,
+        hairStyle: characteristics.hairStyle as 'short' | 'medium' | 'long' | 'curly' | 'straight' | 'wavy',
         emotions: {
           happy: characteristics.personality.friendliness,
           sad: 100 - characteristics.personality.friendliness,
@@ -348,12 +356,21 @@ export class HuggingFaceService {
           neutral: 50
         },
         age: 25,
-        gender: 'neutral',
+        gender: 'other' as 'male' | 'female' | 'other',
         style: {
           casual: characteristics.style.includes('casual') ? 80 : 20,
           formal: characteristics.style.includes('formal') ? 80 : 20,
           artistic: characteristics.style.includes('artistic') ? 80 : 20,
           sporty: characteristics.style.includes('sporty') ? 80 : 20
+        },
+        landmarks: {
+          eyes: { 
+            left: [Math.random() * 100, Math.random() * 100], 
+            right: [Math.random() * 100, Math.random() * 100] 
+          },
+          nose: [Math.random() * 100, Math.random() * 100],
+          mouth: [Math.random() * 100, Math.random() * 100],
+          chin: [Math.random() * 100, Math.random() * 100]
         }
       })
       
@@ -364,10 +381,10 @@ export class HuggingFaceService {
       console.warn('⚠️ 3D generation from images failed, using fallback:', error)
       // Fallback to original method
       return this.generate3DModel('', {
-        faceShape: characteristics.faceShape,
+        faceShape: characteristics.faceShape as 'round' | 'oval' | 'square' | 'heart' | 'diamond',
         eyeColor: characteristics.eyeColor,
         hairColor: characteristics.hairColor,
-        hairStyle: characteristics.hairStyle,
+        hairStyle: characteristics.hairStyle as 'short' | 'medium' | 'long' | 'curly' | 'straight' | 'wavy',
         emotions: {
           happy: characteristics.personality.friendliness,
           sad: 100 - characteristics.personality.friendliness,
@@ -378,12 +395,21 @@ export class HuggingFaceService {
           neutral: 50
         },
         age: 25,
-        gender: 'neutral',
+        gender: 'other' as 'male' | 'female' | 'other',
         style: {
           casual: characteristics.style.includes('casual') ? 80 : 20,
           formal: characteristics.style.includes('formal') ? 80 : 20,
           artistic: characteristics.style.includes('artistic') ? 80 : 20,
           sporty: characteristics.style.includes('sporty') ? 80 : 20
+        },
+        landmarks: {
+          eyes: { 
+            left: [Math.random() * 100, Math.random() * 100], 
+            right: [Math.random() * 100, Math.random() * 100] 
+          },
+          nose: [Math.random() * 100, Math.random() * 100],
+          mouth: [Math.random() * 100, Math.random() * 100],
+          chin: [Math.random() * 100, Math.random() * 100]
         }
       })
     }
