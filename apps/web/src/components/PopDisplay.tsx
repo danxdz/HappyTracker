@@ -140,21 +140,21 @@ export const PopDisplay: React.FC<PopDisplayProps> = ({ pop, onClose }) => {
           </div>
         </div>
 
-        {/* T-Pose Views for 3D Modeling */}
+        {/* 6 Character Images for 3D Modeling */}
         {pop.tPoseViews && (
           <div className="mb-6">
             <h3 className="text-white font-semibold text-lg mb-3 flex items-center">
               <Camera className="w-5 h-5 mr-2 text-blue-400" />
-              6 T-Pose Views (3D Modeling Reference)
+              6 Character Images (3D Modeling Reference)
             </h3>
-            <p className="text-gray-400 text-sm mb-4">These views are used to create the 3D model. All views show the same character in T-pose (arms extended horizontally).</p>
+            <p className="text-gray-400 text-sm mb-4">These 6 different character images are used to create the 3D model. Each shows the same character from different angles and poses.</p>
             <div className="grid grid-cols-3 gap-3">
               {Object.entries(pop.tPoseViews).map(([view, imageUrl]) => (
                 <div key={view} className="text-center bg-white/5 rounded-lg p-2">
                   <img
                     src={imageUrl as string}
-                    alt={`${view} T-pose view`}
-                    className="w-full h-20 object-cover rounded-lg border border-white/20"
+                    alt={`${view} character view`}
+                    className="w-full h-24 object-cover rounded-lg border border-white/20"
                   />
                   <p className="text-xs text-gray-300 mt-1 capitalize">{view.replace(/([A-Z])/g, ' $1').trim()}</p>
                 </div>

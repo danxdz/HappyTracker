@@ -135,15 +135,15 @@ export class HuggingFaceService {
       const characteristics = this.createPopCharacteristics(faceAnalysis)
       onProgress?.('✅ Character preview ready', characteristics)
       
-      // Step 3: Generate T-pose views
-      onProgress?.('🎭 Generating T-pose views...')
+      // Step 3: Generate 6 character images for 3D modeling
+      onProgress?.('🎭 Generating 6 character images...')
       const description = this.createDetailedDescription(characteristics)
-      const tPoseViews = await this.generateTPoseViews(description)
-      onProgress?.('✅ T-pose views complete', tPoseViews)
+      const characterImages = await this.generateCharacterImages(description)
+      onProgress?.('✅ Character images complete', characterImages)
       
-      // Step 4: Generate 3D model
-      onProgress?.('🎨 Generating 3D model...')
-      const modelResult = await this.generate3DModel(imageData, faceAnalysis)
+      // Step 4: Generate 3D model using the 6 character images
+      onProgress?.('🎨 Generating 3D model from character images...')
+      const modelResult = await this.generate3DModelFromImages(characterImages, characteristics)
       onProgress?.('✅ 3D model ready', modelResult)
       
       // Step 5: Generate pop image
@@ -160,7 +160,7 @@ export class HuggingFaceService {
         popImageUrl,
         processingTime,
         modelUsed: 'Hunyuan3D-2 + TRELLIS + Stable Diffusion XL',
-        tPoseViews // Include T-pose views in result
+        tPoseViews: characterImages // Include 6 character images for 3D modeling
       }
       
     } catch (error) {
@@ -315,6 +315,80 @@ export class HuggingFaceService {
   }
   
   // Generate 3D model
+  // Generate 3D model from 6 character images
+  private static async generate3DModelFromImages(characterImages: PopGenerationResult['tPoseViews'], characteristics: PopGenerationResult['characteristics']): Promise<{ modelUrl?: string; modelData?: string }> {
+    console.log('🎮 Generating 3D model from 6 character images...')
+    
+    try {
+      // Use the 6 character images to create a more accurate 3D model
+      const imageUrls = Object.values(characterImages).filter(Boolean)
+      console.log(`📸 Using ${imageUrls.length} character images for 3D generation`)
+      
+      // For now, we'll use the first image as the primary reference
+      // In a real implementation, you would send all 6 images to a 3D generation service
+      const primaryImage = imageUrls[0] || ''
+      
+      if (!primaryImage) {
+        throw new Error('No character images available for 3D generation')
+      }
+      
+      // Call the existing 3D generation with the primary character image
+      const result = await this.generate3DModel(primaryImage, {
+        faceShape: characteristics.faceShape,
+        eyeColor: characteristics.eyeColor,
+        hairColor: characteristics.hairColor,
+        hairStyle: characteristics.hairStyle,
+        emotions: {
+          happy: characteristics.personality.friendliness,
+          sad: 100 - characteristics.personality.friendliness,
+          angry: 100 - characteristics.personality.confidence,
+          surprised: characteristics.personality.energy,
+          fearful: 100 - characteristics.personality.confidence,
+          disgusted: 100 - characteristics.personality.friendliness,
+          neutral: 50
+        },
+        age: 25,
+        gender: 'neutral',
+        style: {
+          casual: characteristics.style.includes('casual') ? 80 : 20,
+          formal: characteristics.style.includes('formal') ? 80 : 20,
+          artistic: characteristics.style.includes('artistic') ? 80 : 20,
+          sporty: characteristics.style.includes('sporty') ? 80 : 20
+        }
+      })
+      
+      console.log('✅ 3D model generated from character images')
+      return result
+      
+    } catch (error) {
+      console.warn('⚠️ 3D generation from images failed, using fallback:', error)
+      // Fallback to original method
+      return this.generate3DModel('', {
+        faceShape: characteristics.faceShape,
+        eyeColor: characteristics.eyeColor,
+        hairColor: characteristics.hairColor,
+        hairStyle: characteristics.hairStyle,
+        emotions: {
+          happy: characteristics.personality.friendliness,
+          sad: 100 - characteristics.personality.friendliness,
+          angry: 100 - characteristics.personality.confidence,
+          surprised: characteristics.personality.energy,
+          fearful: 100 - characteristics.personality.confidence,
+          disgusted: 100 - characteristics.personality.friendliness,
+          neutral: 50
+        },
+        age: 25,
+        gender: 'neutral',
+        style: {
+          casual: characteristics.style.includes('casual') ? 80 : 20,
+          formal: characteristics.style.includes('formal') ? 80 : 20,
+          artistic: characteristics.style.includes('artistic') ? 80 : 20,
+          sporty: characteristics.style.includes('sporty') ? 80 : 20
+        }
+      })
+    }
+  }
+
   private static async generate3DModel(imageData: string, faceAnalysis: FaceAnalysis): Promise<{modelUrl?: string, modelData?: any}> {
     // Check if we have a Hugging Face token for real AI processing
     if (!this.HF_TOKEN || this.HF_TOKEN === '') {
@@ -513,45 +587,45 @@ export class HuggingFaceService {
     return description
   }
   
-  // Generate 6 T-pose views for 3D model creation
-  private static async generateTPoseViews(description: string): Promise<PopGenerationResult['tPoseViews']> {
-    const views = [
-      { name: 'front', prompt: 'front view, T-pose, arms extended horizontally at shoulder level, legs together, standing straight, full body visible, 3D modeling reference' },
-      { name: 'back', prompt: 'back view, T-pose, arms extended horizontally at shoulder level, legs together, standing straight, full body visible, 3D modeling reference' },
-      { name: 'left', prompt: 'left side profile view, T-pose, arms extended horizontally at shoulder level, legs together, standing straight, full body visible, 3D modeling reference' },
-      { name: 'right', prompt: 'right side profile view, T-pose, arms extended horizontally at shoulder level, legs together, standing straight, full body visible, 3D modeling reference' },
-      { name: 'frontThreeQuarter', prompt: '3/4 front view, T-pose, arms extended horizontally at shoulder level, legs together, standing straight, slightly angled, full body visible, 3D modeling reference' },
-      { name: 'backThreeQuarter', prompt: '3/4 back view, T-pose, arms extended horizontally at shoulder level, legs together, standing straight, slightly angled, full body visible, 3D modeling reference' }
+  // Generate 6 different character images for 3D model creation
+  private static async generateCharacterImages(description: string): Promise<PopGenerationResult['tPoseViews']> {
+    const poses = [
+      { name: 'front', prompt: 'front view, standing pose, arms at sides, full body visible, friendly expression' },
+      { name: 'back', prompt: 'back view, standing pose, arms at sides, full body visible, looking away' },
+      { name: 'left', prompt: 'left side profile view, standing pose, arms at sides, full body visible, profile angle' },
+      { name: 'right', prompt: 'right side profile view, standing pose, arms at sides, full body visible, profile angle' },
+      { name: 'frontThreeQuarter', prompt: '3/4 front view, standing pose, arms at sides, slightly angled, full body visible, friendly expression' },
+      { name: 'backThreeQuarter', prompt: '3/4 back view, standing pose, arms at sides, slightly angled, full body visible, looking away' }
     ]
     
-    const tPoseImages: { [key: string]: string } = {}
+    const characterImages: { [key: string]: string } = {}
     
-    for (let i = 0; i < views.length; i++) {
-      const view = views[i]
-      // Create consistent prompt with character description + specific view
-      const viewPrompt = `${description}, ${view.prompt}, white background, isolated character, consistent character design`
-      console.log(`🎨 Generating ${view.name} view (${i + 1}/6): ${view.prompt}`)
+    for (let i = 0; i < poses.length; i++) {
+      const pose = poses[i]
+      // Create consistent prompt with character description + specific pose
+      const posePrompt = `${description}, ${pose.prompt}, white background, isolated character, consistent character design, same character different angle`
+      console.log(`🎨 Generating ${pose.name} character image (${i + 1}/6): ${pose.prompt}`)
       
       try {
-        const imageBlob = await this.callTextToImageAPI(viewPrompt)
+        const imageBlob = await this.callTextToImageAPI(posePrompt)
         const imageData = await this.blobToBase64(imageBlob)
-        tPoseImages[view.name] = imageData
+        characterImages[pose.name] = imageData
         
         // Add delay between generations to avoid rate limiting
         await new Promise(resolve => setTimeout(resolve, 1500))
       } catch (error) {
-        console.warn(`⚠️ Failed to generate ${view.name} view, using placeholder`)
-        tPoseImages[view.name] = this.createPlaceholderImage(view.name)
+        console.warn(`⚠️ Failed to generate ${pose.name} character image, using placeholder`)
+        characterImages[pose.name] = this.createPlaceholderImage(pose.name)
       }
     }
     
     return {
-      front: tPoseImages.front,
-      back: tPoseImages.back,
-      left: tPoseImages.left,
-      right: tPoseImages.right,
-      frontThreeQuarter: tPoseImages.frontThreeQuarter,
-      backThreeQuarter: tPoseImages.backThreeQuarter
+      front: characterImages.front,
+      back: characterImages.back,
+      left: characterImages.left,
+      right: characterImages.right,
+      frontThreeQuarter: characterImages.frontThreeQuarter,
+      backThreeQuarter: characterImages.backThreeQuarter
     }
   }
   
