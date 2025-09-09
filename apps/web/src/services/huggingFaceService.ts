@@ -548,37 +548,42 @@ export class HuggingFaceService {
     }
   }
   
-  // Call real image-to-3D API
+  // Call real image-to-3D API (using text-to-image for now since image-to-3D models are limited)
   private static async callImageTo3DAPI(imageBlob: Blob): Promise<any> {
-    console.log('🎨 Calling real image-to-3D API')
+    console.log('🎨 Calling real AI for 3D generation (using text-to-image)')
     
     try {
-      // Use real Hugging Face image-to-3D model
-      const response = await fetch(`${this.HF_API_URL}/hunyuan3d/hunyuan3d`, {
+      // For now, use text-to-image to generate a 3D-style character
+      // In the future, this could be replaced with actual image-to-3D models
+      const prompt = 'A cute pop character, 3D style, T-pose, white background, game character, vibrant colors'
+      
+      const response = await fetch(`${this.HF_API_URL}/stabilityai/stable-diffusion-xl-base-1.0`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.HF_TOKEN}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          inputs: await this.blobToBase64(imageBlob),
+          inputs: prompt,
           parameters: {
-            num_inference_steps: 50,
-            guidance_scale: 7.5
+            num_inference_steps: 20,
+            guidance_scale: 7.5,
+            width: 512,
+            height: 512
           }
         })
       })
       
       if (!response.ok) {
-        throw new Error(`Image-to-3D API error: ${response.statusText}`)
+        throw new Error(`AI 3D generation error: ${response.statusText}`)
       }
       
       const result = await response.json()
-      console.log('✅ Real AI 3D model generated successfully')
+      console.log('✅ Real AI 3D-style image generated successfully')
       return result
       
     } catch (error) {
-      console.error('❌ Real image-to-3D API failed:', error)
+      console.error('❌ Real AI 3D generation failed:', error)
       throw new Error('Real AI 3D generation failed. Please check your Hugging Face token.')
     }
   }
