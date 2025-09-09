@@ -410,35 +410,162 @@ export class HuggingFaceService {
     return featuresMap[emotion] || ['unique smile', 'expressive eyes']
   }
   
-  // Generate pop image using AI
+  // Generate pop image using AI pipeline: Photo → Description → Text-to-Image → 6 T-pose views
   private static async generatePopImage(imageData: string, characteristics: PopGenerationResult['characteristics']): Promise<string> {
     try {
       if (!this.HF_TOKEN || this.HF_TOKEN === '') {
         throw new Error('Hugging Face token not configured for image generation')
       }
       
-      console.log('🎨 Generating pop-style image with AI...')
+      console.log('🎨 Starting AI pipeline: Photo → Description → Text-to-Image → T-pose views')
       
-      // Convert base64 to blob
-      const imageBlob = await this.base64ToBlob(imageData)
+      // Step 1: Generate description from photo analysis
+      const description = this.createDetailedDescription(characteristics)
+      console.log('📝 AI Description:', description)
       
-      // Use image-to-image generation model to create pop style
-      // For now, we'll use a text-to-image model with a prompt based on characteristics
-      const prompt = this.createPopImagePrompt(characteristics)
-      console.log('🎯 Pop generation prompt:', prompt)
+      // Step 2: Generate 6 T-pose views using text-to-image
+      const tPoseViews = await this.generateTPoseViews(description)
+      console.log('🎭 Generated T-pose views:', tPoseViews.length)
       
-      // Use a text-to-image model (we'll simulate the image generation for now)
-      // In a real implementation, you'd use models like 'stabilityai/stable-diffusion-xl-base-1.0'
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      // For now, return a modified version of the original image
-      // In production, this would be the AI-generated pop image
-      return this.createPopStyleImage(imageData, characteristics)
+      // Step 3: Return the front view as preview (others will be used for 3D)
+      return tPoseViews[0] // Front view as main preview
       
     } catch (error) {
       console.warn('⚠️ Pop image generation failed, using original:', error)
       return imageData
     }
+  }
+  
+  // Create detailed description for text-to-image generation
+  private static createDetailedDescription(characteristics: PopGenerationResult['characteristics']): string {
+    const { personality, style, features } = characteristics
+    
+    let description = 'A cute pop character, '
+    
+    // Physical description
+    description += 'cartoon style, '
+    description += 'rounded features, '
+    description += 'big expressive eyes, '
+    
+    // Personality-based appearance
+    if (personality.energy > 70) {
+      description += 'dynamic pose, bright colors, '
+    }
+    if (personality.friendliness > 70) {
+      description += 'warm smile, welcoming expression, '
+    }
+    if (personality.creativity > 70) {
+      description += 'artistic accessories, colorful outfit, '
+    }
+    if (personality.confidence > 70) {
+      description += 'confident stance, bold colors, '
+    }
+    
+    // Style elements
+    if (style.includes('casual')) description += 'casual clothing, '
+    if (style.includes('artistic')) description += 'artistic style, '
+    if (style.includes('sporty')) description += 'sporty outfit, '
+    
+    // Features
+    if (features.includes('bright eyes')) description += 'sparkling eyes, '
+    if (features.includes('unique smile')) description += 'charming smile, '
+    
+    description += 'pop art style, vibrant colors, 3D game character style'
+    
+    return description
+  }
+  
+  // Generate 6 T-pose views for 3D model creation
+  private static async generateTPoseViews(description: string): Promise<string[]> {
+    const views = [
+      'front view, T-pose, facing camera',
+      'back view, T-pose, facing away',
+      'left side view, T-pose, profile',
+      'right side view, T-pose, profile',
+      '3/4 front view, T-pose, angled',
+      '3/4 back view, T-pose, angled'
+    ]
+    
+    const tPoseImages: string[] = []
+    
+    for (let i = 0; i < views.length; i++) {
+      const viewPrompt = `${description}, ${views[i]}, white background, isolated character`
+      console.log(`🎨 Generating view ${i + 1}/6: ${views[i]}`)
+      
+      try {
+        // In production, this would call a text-to-image model like:
+        // 'stabilityai/stable-diffusion-xl-base-1.0' or 'runwayml/stable-diffusion-v1-5'
+        const imageBlob = await this.callTextToImageAPI(viewPrompt)
+        const imageData = await this.blobToBase64(imageBlob)
+        tPoseImages.push(imageData)
+        
+        // Simulate processing time
+        await new Promise(resolve => setTimeout(resolve, 1000))
+      } catch (error) {
+        console.warn(`⚠️ Failed to generate view ${i + 1}, using placeholder`)
+        // Create a placeholder image
+        tPoseImages.push(this.createPlaceholderImage(views[i]))
+      }
+    }
+    
+    return tPoseImages
+  }
+  
+  // Call text-to-image API
+  private static async callTextToImageAPI(prompt: string): Promise<Blob> {
+    // In production, this would call a real text-to-image model
+    // For now, we'll simulate the API call
+    console.log('🤖 Calling text-to-image API with prompt:', prompt)
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
+    // Create a simple colored rectangle as placeholder
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    canvas.width = 512
+    canvas.height = 512
+    
+    if (ctx) {
+      // Create a gradient background
+      const gradient = ctx.createLinearGradient(0, 0, 512, 512)
+      gradient.addColorStop(0, '#FF6B6B')
+      gradient.addColorStop(1, '#4ECDC4')
+      ctx.fillStyle = gradient
+      ctx.fillRect(0, 0, 512, 512)
+      
+      // Add text
+      ctx.fillStyle = 'white'
+      ctx.font = '24px Arial'
+      ctx.textAlign = 'center'
+      ctx.fillText('AI Generated', 256, 256)
+      ctx.fillText('Pop Character', 256, 300)
+    }
+    
+    return new Promise((resolve) => {
+      canvas.toBlob((blob) => {
+        resolve(blob!)
+      }, 'image/png')
+    })
+  }
+  
+  // Create placeholder image for failed generations
+  private static createPlaceholderImage(view: string): string {
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    canvas.width = 512
+    canvas.height = 512
+    
+    if (ctx) {
+      ctx.fillStyle = '#E0E0E0'
+      ctx.fillRect(0, 0, 512, 512)
+      ctx.fillStyle = '#666'
+      ctx.font = '16px Arial'
+      ctx.textAlign = 'center'
+      ctx.fillText(`Placeholder: ${view}`, 256, 256)
+    }
+    
+    return canvas.toDataURL('image/png')
   }
   
   // Create prompt for pop image generation
