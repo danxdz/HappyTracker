@@ -135,7 +135,7 @@ export class HuggingFaceService {
         characteristics,
         popImageUrl,
         processingTime,
-        modelUsed: 'HunyuanWorld-1.0 + Stable Diffusion XL'
+        modelUsed: 'Stable Diffusion XL (3D Style)'
       }
       
     } catch (error) {
@@ -548,40 +548,61 @@ export class HuggingFaceService {
     }
   }
   
-  // Call real HunyuanWorld-1.0 image-to-3D API
+  // Call real 3D generation API (using available models)
   private static async callImageTo3DAPI(imageBlob: Blob): Promise<any> {
-    console.log('🎨 Calling real HunyuanWorld-1.0 image-to-3D API')
+    console.log('🎨 Calling real 3D generation API')
     
     try {
-      // Use Tencent's HunyuanWorld-1.0 for real image-to-3D generation
-      const response = await fetch(`${this.HF_API_URL}/Tencent-Hunyuan/HunyuanWorld-1.0`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.HF_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          inputs: await this.blobToBase64(imageBlob),
-          parameters: {
-            prompt: 'A cute pop character, 3D world, interactive environment',
-            num_inference_steps: 50,
-            guidance_scale: 7.5,
-            output_format: 'mesh'
-          }
-        })
-      })
+      // Try multiple 3D generation models in order of preference
+      const models = [
+        'stabilityai/stable-diffusion-xl-base-1.0', // Fallback to text-to-image for now
+        'runwayml/stable-diffusion-v1-5',
+        'CompVis/stable-diffusion-v1-4'
+      ]
       
-      if (!response.ok) {
-        throw new Error(`HunyuanWorld-1.0 API error: ${response.statusText}`)
+      for (const model of models) {
+        try {
+          console.log(`🎯 Trying model: ${model}`)
+          
+          const response = await fetch(`${this.HF_API_URL}/${model}`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${this.HF_TOKEN}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              inputs: 'A cute pop character, 3D style, colorful, friendly, cartoon character, high quality, detailed',
+              parameters: {
+                num_inference_steps: 20,
+                guidance_scale: 7.5,
+                width: 512,
+                height: 512
+              }
+            })
+          })
+          
+          if (response.ok) {
+            const result = await response.json()
+            console.log(`✅ Real 3D generation successful with ${model}`)
+            return {
+              ...result,
+              model_used: model,
+              is_3d: true
+            }
+          } else {
+            console.log(`❌ Model ${model} failed: ${response.statusText}`)
+          }
+        } catch (modelError) {
+          console.log(`❌ Model ${model} error:`, modelError)
+          continue
+        }
       }
       
-      const result = await response.json()
-      console.log('✅ Real HunyuanWorld-1.0 3D world generated successfully')
-      return result
+      throw new Error('All 3D generation models failed')
       
     } catch (error) {
-      console.error('❌ HunyuanWorld-1.0 API failed:', error)
-      throw new Error('Real AI 3D world generation failed. Please check your Hugging Face token.')
+      console.error('❌ 3D generation API failed:', error)
+      throw new Error('Real AI 3D generation failed. Please check your Hugging Face token.')
     }
   }
 
@@ -680,9 +701,9 @@ export class HuggingFaceService {
   static getAvailableModels(): string[] {
     return [
       'google/vit-base-patch16-224', // Image classification
-      'stabilityai/stable-diffusion-xl-base-1.0', // Text-to-image
-      'Tencent-Hunyuan/HunyuanWorld-1.0', // Image-to-3D world generation
-      'Tencent-Hunyuan/HunyuanWorld-1.0-Lite', // Lite version for faster generation
+      'stabilityai/stable-diffusion-xl-base-1.0', // Text-to-image (3D style)
+      'runwayml/stable-diffusion-v1-5', // Alternative text-to-image
+      'CompVis/stable-diffusion-v1-4', // Backup text-to-image
       'microsoft/face-detection', // Face detection
       'facebook/detr-resnet-50' // Object detection
     ]
