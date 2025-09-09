@@ -442,18 +442,25 @@ export class HuggingFaceService {
         throw new Error('Hugging Face token not configured for image generation')
       }
       
-      console.log('🎨 Starting AI pipeline: Photo → Description → Text-to-Image → T-pose views')
+      console.log('🎨 Starting AI pipeline: Photo → Description → Character Preview')
       
       // Step 1: Generate description from photo analysis
       const description = this.createDetailedDescription(characteristics)
       console.log('📝 AI Description:', description)
       
-      // Step 2: Generate 6 T-pose views using text-to-image
-      const tPoseViews = await this.generateTPoseViews(description)
-      console.log('🎭 Generated T-pose views:', tPoseViews ? Object.keys(tPoseViews).length : 0)
+      // Step 2: Generate character preview (not T-pose, but a nice character pose)
+      const previewPrompt = `${description}, character pose, friendly expression, standing pose, full body visible, white background, isolated character`
+      console.log('🎨 Generating character preview with prompt:', previewPrompt)
       
-      // Step 3: Return the front view as preview (others will be used for 3D)
-      return tPoseViews?.front || imageData // Front view as main preview, fallback to original
+      try {
+        const imageBlob = await this.callTextToImageAPI(previewPrompt)
+        const previewImageData = await this.blobToBase64(imageBlob)
+        console.log('✅ Character preview generated successfully')
+        return previewImageData
+      } catch (error) {
+        console.warn('⚠️ Character preview generation failed, using original:', error)
+        return imageData
+      }
       
     } catch (error) {
       console.warn('⚠️ Pop image generation failed, using original:', error)
@@ -461,13 +468,18 @@ export class HuggingFaceService {
     }
   }
   
-  // Create detailed description for text-to-image generation
+  // Create detailed description for text-to-image generation based on photo analysis
   private static createDetailedDescription(characteristics: PopGenerationResult['characteristics']): string {
-    const { personality, style, specialFeatures } = characteristics
+    const { faceShape, eyeColor, hairColor, hairStyle, personality, style, specialFeatures } = characteristics
     
     let description = 'A full-body cute pop character, '
     
-    // Physical description
+    // Use actual photo analysis results
+    description += `${faceShape} face shape, `
+    description += `${eyeColor} eyes, `
+    description += `${hairColor} ${hairStyle} hair, `
+    
+    // Physical description based on analysis
     description += 'cartoon style, '
     description += 'rounded features, '
     description += 'big expressive eyes, '
@@ -504,43 +516,42 @@ export class HuggingFaceService {
   // Generate 6 T-pose views for 3D model creation
   private static async generateTPoseViews(description: string): Promise<PopGenerationResult['tPoseViews']> {
     const views = [
-      'front view, T-pose, facing camera, full body visible',
-      'back view, T-pose, facing away, full body visible',
-      'left side view, T-pose, profile, full body visible',
-      'right side view, T-pose, profile, full body visible',
-      '3/4 front view, T-pose, angled, full body visible',
-      '3/4 back view, T-pose, angled, full body visible'
+      { name: 'front', prompt: 'front view, T-pose, arms extended horizontally, facing camera, full body visible' },
+      { name: 'back', prompt: 'back view, T-pose, arms extended horizontally, facing away, full body visible' },
+      { name: 'left', prompt: 'left side profile view, T-pose, arms extended horizontally, full body visible' },
+      { name: 'right', prompt: 'right side profile view, T-pose, arms extended horizontally, full body visible' },
+      { name: 'frontThreeQuarter', prompt: '3/4 front view, T-pose, arms extended horizontally, slightly angled, full body visible' },
+      { name: 'backThreeQuarter', prompt: '3/4 back view, T-pose, arms extended horizontally, slightly angled, full body visible' }
     ]
     
-    const tPoseImages: string[] = []
+    const tPoseImages: { [key: string]: string } = {}
     
     for (let i = 0; i < views.length; i++) {
-      const viewPrompt = `${description}, ${views[i]}, white background, isolated character`
-      console.log(`🎨 Generating view ${i + 1}/6: ${views[i]}`)
+      const view = views[i]
+      // Create consistent prompt with character description + specific view
+      const viewPrompt = `${description}, ${view.prompt}, white background, isolated character, consistent character design`
+      console.log(`🎨 Generating ${view.name} view (${i + 1}/6): ${view.prompt}`)
       
       try {
-        // In production, this would call a text-to-image model like:
-        // 'stabilityai/stable-diffusion-xl-base-1.0' or 'runwayml/stable-diffusion-v1-5'
         const imageBlob = await this.callTextToImageAPI(viewPrompt)
         const imageData = await this.blobToBase64(imageBlob)
-        tPoseImages.push(imageData)
+        tPoseImages[view.name] = imageData
         
-        // Simulate processing time
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        // Add delay between generations to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 1500))
       } catch (error) {
-        console.warn(`⚠️ Failed to generate view ${i + 1}, using placeholder`)
-        // Create a placeholder image
-        tPoseImages.push(this.createPlaceholderImage(views[i]))
+        console.warn(`⚠️ Failed to generate ${view.name} view, using placeholder`)
+        tPoseImages[view.name] = this.createPlaceholderImage(view.name)
       }
     }
     
     return {
-      front: tPoseImages[0],
-      back: tPoseImages[1],
-      left: tPoseImages[2],
-      right: tPoseImages[3],
-      frontThreeQuarter: tPoseImages[4],
-      backThreeQuarter: tPoseImages[5]
+      front: tPoseImages.front,
+      back: tPoseImages.back,
+      left: tPoseImages.left,
+      right: tPoseImages.right,
+      frontThreeQuarter: tPoseImages.frontThreeQuarter,
+      backThreeQuarter: tPoseImages.backThreeQuarter
     }
   }
   
