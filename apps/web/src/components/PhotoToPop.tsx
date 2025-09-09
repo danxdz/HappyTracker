@@ -87,7 +87,13 @@ export const PhotoToPop: React.FC<PhotoToPopProps> = ({ onPhotoProcessed, onClos
       console.error('AI processing error:', error)
       setIsProcessing(false)
       setProcessingStep('')
-      alert('AI processing failed. Please try again.')
+      
+      // Show specific error message based on the error
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'AI processing failed. Please check your Hugging Face token and try again.'
+      
+      alert(`❌ ${errorMessage}`)
     }
   }
 

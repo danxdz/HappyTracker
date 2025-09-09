@@ -90,32 +90,23 @@ export class HuggingFaceService {
     try {
       // Check if we have a Hugging Face token for real AI processing
       if (!this.HF_TOKEN || this.HF_TOKEN === '') {
-        console.log('🔍 Simulating face analysis (add HF token for real AI)')
-        await new Promise(resolve => setTimeout(resolve, 1500))
-        return this.simulateFaceAnalysis(imageData)
+        throw new Error('Hugging Face token not configured. Please add VITE_HUGGINGFACE_TOKEN to your environment variables.')
       }
       
       console.log('🔍 Using real AI face analysis with Hugging Face')
       // Convert base64 string to Blob
       const imageBlob = await this.base64ToBlob(imageData)
       
-      try {
-        // Try to use a general image classification model first
-        const result = await this.callHuggingFaceAPI('google/vit-base-patch16-224', imageBlob)
-        console.log('✅ Face analysis API call successful:', result)
-        
-        // Convert API result to our FaceAnalysis format
-        return this.convertAPIResultToFaceAnalysis(result, imageData)
-      } catch (apiError) {
-        console.warn('⚠️ Face analysis API failed, falling back to simulation:', apiError)
-        // Fall back to simulation if API fails
-        return this.simulateFaceAnalysis(imageData)
-      }
+      // Use real AI - no fallback to simulation
+      const result = await this.callHuggingFaceAPI('google/vit-base-patch16-224', imageBlob)
+      console.log('✅ Face analysis API call successful:', result)
+      
+      // Convert API result to our FaceAnalysis format
+      return this.convertAPIResultToFaceAnalysis(result, imageData)
       
     } catch (error) {
       console.error('Face analysis error:', error)
-      // Fallback to simulation if API fails
-      return this.simulateFaceAnalysis(imageData)
+      throw new Error('AI face analysis failed. Please check your Hugging Face token and try again.')
     }
   }
   
@@ -283,24 +274,18 @@ export class HuggingFaceService {
   private static async generate3DModel(imageData: string, faceAnalysis: FaceAnalysis): Promise<{modelUrl?: string, modelData?: any}> {
     // Check if we have a Hugging Face token for real AI processing
     if (!this.HF_TOKEN || this.HF_TOKEN === '') {
-      console.log('🎨 Simulating 3D model generation (add HF token for real 3D models)')
-      await new Promise(resolve => setTimeout(resolve, 2000))
-    } else {
-      console.log('🎨 Using real AI 3D generation with Hugging Face')
-      
-      try {
-        // Try to use a 3D generation model (this might not exist, so we'll fall back)
-        const imageBlob = await this.base64ToBlob(imageData)
-        const result = await this.callHuggingFaceAPI('google/vit-base-patch16-224', imageBlob)
-        console.log('✅ 3D generation API call successful:', result)
-        
-        // For now, we'll still generate a simulated 3D model but mark it as AI-processed
-        await new Promise(resolve => setTimeout(resolve, 3000))
-      } catch (apiError) {
-        console.warn('⚠️ 3D generation API failed, using simulation:', apiError)
-        await new Promise(resolve => setTimeout(resolve, 2000))
-      }
+      throw new Error('Hugging Face token not configured. Please add VITE_HUGGINGFACE_TOKEN to your environment variables.')
     }
+    
+    console.log('🎨 Using real AI 3D generation with Hugging Face')
+    
+    // Use real AI - no fallback to simulation
+    const imageBlob = await this.base64ToBlob(imageData)
+    const result = await this.callHuggingFaceAPI('google/vit-base-patch16-224', imageBlob)
+    console.log('✅ 3D generation API call successful:', result)
+    
+    // Real AI processing time
+    await new Promise(resolve => setTimeout(resolve, 3000))
     
     return {
       modelUrl: `https://example.com/3d-model-${Date.now()}.glb`,
