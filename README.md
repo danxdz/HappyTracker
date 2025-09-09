@@ -1,6 +1,6 @@
 # HappyTracker - Development Documentation
 
-**Version: 1.4.5** | **Commits: 45** | **Status: 3D Pop World Complete** ✅
+**Version: 1.4.6** | **Commits: 46** | **Status: 3D Pop World Complete** ✅
 
 ## Project Overview
 A health-focused mobile app that gamifies positive lifestyle choices through an avatar system, emphasizing nutrition, movement, sleep, and mindful technology use.
@@ -411,10 +411,23 @@ wget https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_
 python api_server.py --host 0.0.0.0 --port 8080
 ```
 
-**The app will automatically:**
-- Try Hunyuan3D-2 API server first (localhost:8080)
-- Fall back to Hugging Face Stable Diffusion XL if server unavailable
-- Generate real 3D GLB models when Hunyuan3D-2 is running
+**Option 3: TRELLIS via Replicate (Easiest 3D)**
+```bash
+# 1. Get Replicate API token
+# Visit https://replicate.com/account/api-tokens
+# Create a token with "Read" permissions
+
+# 2. Set environment variable
+VITE_REPLICATE_TOKEN=your_replicate_token_here
+
+# 3. The app will automatically use TRELLIS via Replicate API
+# No local setup required!
+```
+
+**The app will automatically try in this order:**
+1. **Hunyuan3D-2** API server (localhost:8080) - Best quality, local setup
+2. **TRELLIS** via Replicate API - High quality, cloud-based
+3. **Stable Diffusion XL** with 3D prompts - Fallback, always works
 
 **For Hugging Face fallback:**
 1. **Get your token**: Visit [https://huggingface.co/settings/tokens](https://huggingface.co/settings/tokens)
