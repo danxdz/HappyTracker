@@ -516,12 +516,12 @@ export class HuggingFaceService {
   // Generate 6 T-pose views for 3D model creation
   private static async generateTPoseViews(description: string): Promise<PopGenerationResult['tPoseViews']> {
     const views = [
-      { name: 'front', prompt: 'front view, T-pose, arms extended horizontally, facing camera, full body visible' },
-      { name: 'back', prompt: 'back view, T-pose, arms extended horizontally, facing away, full body visible' },
-      { name: 'left', prompt: 'left side profile view, T-pose, arms extended horizontally, full body visible' },
-      { name: 'right', prompt: 'right side profile view, T-pose, arms extended horizontally, full body visible' },
-      { name: 'frontThreeQuarter', prompt: '3/4 front view, T-pose, arms extended horizontally, slightly angled, full body visible' },
-      { name: 'backThreeQuarter', prompt: '3/4 back view, T-pose, arms extended horizontally, slightly angled, full body visible' }
+      { name: 'front', prompt: 'front view, T-pose, arms extended horizontally at shoulder level, legs together, standing straight, full body visible, 3D modeling reference' },
+      { name: 'back', prompt: 'back view, T-pose, arms extended horizontally at shoulder level, legs together, standing straight, full body visible, 3D modeling reference' },
+      { name: 'left', prompt: 'left side profile view, T-pose, arms extended horizontally at shoulder level, legs together, standing straight, full body visible, 3D modeling reference' },
+      { name: 'right', prompt: 'right side profile view, T-pose, arms extended horizontally at shoulder level, legs together, standing straight, full body visible, 3D modeling reference' },
+      { name: 'frontThreeQuarter', prompt: '3/4 front view, T-pose, arms extended horizontally at shoulder level, legs together, standing straight, slightly angled, full body visible, 3D modeling reference' },
+      { name: 'backThreeQuarter', prompt: '3/4 back view, T-pose, arms extended horizontally at shoulder level, legs together, standing straight, slightly angled, full body visible, 3D modeling reference' }
     ]
     
     const tPoseImages: { [key: string]: string } = {}

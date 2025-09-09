@@ -89,37 +89,74 @@ export const PopDisplay: React.FC<PopDisplayProps> = ({ pop, onClose }) => {
           <p className="text-gray-300 text-lg">✨ Created with Hugging Face AI ✨</p>
         </div>
 
-        {/* Character Preview */}
-        <div className="relative mb-6">
-          <img
-            src={pop.popImageUrl || '/placeholder-pop.jpg'}
-            alt="AI-generated pop character"
-            className="w-full h-64 object-cover rounded-2xl border border-white/20"
-          />
-          <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm rounded-full p-2">
-            <Camera className="w-5 h-5 text-purple-400" />
+        {/* Character Profile Header */}
+        <div className="bg-white/5 rounded-2xl p-6 mb-6">
+          <div className="flex items-center space-x-4 mb-4">
+            {/* Original Photo */}
+            <div className="relative">
+              <img
+                src={pop.originalImage}
+                alt="Original photo"
+                className="w-20 h-20 object-cover rounded-full border-2 border-white/20"
+              />
+              <div className="absolute -bottom-1 -right-1 bg-blue-500 rounded-full p-1">
+                <Camera className="w-3 h-3 text-white" />
+              </div>
+            </div>
+            
+            {/* Character Info */}
+            <div className="flex-1">
+              <h3 className="text-white font-bold text-xl mb-1">Character Profile</h3>
+              <div className="flex items-center space-x-4 text-sm">
+                <div className="flex items-center space-x-2">
+                  <div 
+                    className="w-4 h-4 rounded-full border border-white/20"
+                    style={{ backgroundColor: pop.characteristics.eyeColor }}
+                  />
+                  <span className="text-gray-300">Eyes</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div 
+                    className="w-4 h-4 rounded-full border border-white/20"
+                    style={{ backgroundColor: pop.characteristics.hairColor }}
+                  />
+                  <span className="text-gray-300">Hair</span>
+                </div>
+                <span className="text-gray-300 capitalize">{pop.characteristics.faceShape} face</span>
+              </div>
+            </div>
           </div>
-          <div className="absolute top-2 left-2 bg-black/50 backdrop-blur-sm rounded-full p-2">
-            <span className="text-xs text-white">2D Preview</span>
+          
+          {/* Character Preview */}
+          <div className="relative">
+            <img
+              src={pop.popImageUrl || '/placeholder-pop.jpg'}
+              alt="AI-generated pop character"
+              className="w-full h-48 object-cover rounded-xl border border-white/20"
+            />
+            <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1">
+              <span className="text-xs text-white">2D Character Preview</span>
+            </div>
           </div>
         </div>
 
-        {/* T-Pose Views */}
+        {/* T-Pose Views for 3D Modeling */}
         {pop.tPoseViews && (
           <div className="mb-6">
             <h3 className="text-white font-semibold text-lg mb-3 flex items-center">
               <Camera className="w-5 h-5 mr-2 text-blue-400" />
-              T-Pose Views (6 Angles)
+              6 T-Pose Views (3D Modeling Reference)
             </h3>
+            <p className="text-gray-400 text-sm mb-4">These views are used to create the 3D model. All views show the same character in T-pose (arms extended horizontally).</p>
             <div className="grid grid-cols-3 gap-3">
               {Object.entries(pop.tPoseViews).map(([view, imageUrl]) => (
-                <div key={view} className="text-center">
+                <div key={view} className="text-center bg-white/5 rounded-lg p-2">
                   <img
                     src={imageUrl as string}
                     alt={`${view} T-pose view`}
-                    className="w-full h-24 object-cover rounded-lg border border-white/20"
+                    className="w-full h-20 object-cover rounded-lg border border-white/20"
                   />
-                  <p className="text-xs text-gray-300 mt-1 capitalize">{view}</p>
+                  <p className="text-xs text-gray-300 mt-1 capitalize">{view.replace(/([A-Z])/g, ' $1').trim()}</p>
                 </div>
               ))}
             </div>
@@ -166,6 +203,29 @@ export const PopDisplay: React.FC<PopDisplayProps> = ({ pop, onClose }) => {
                   <span>View 3D Model</span>
                 </motion.button>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Final Game Avatar */}
+        {pop.avatar && (
+          <div className="mb-6">
+            <h3 className="text-white font-semibold text-lg mb-3 flex items-center">
+              <Star className="w-5 h-5 mr-2 text-yellow-400" />
+              Final Game Avatar
+            </h3>
+            <p className="text-gray-400 text-sm mb-4">Your character as it will appear in games - optimized icon style.</p>
+            <div className="flex justify-center">
+              <div className="relative">
+                <img
+                  src={pop.avatar}
+                  alt="Final game avatar"
+                  className="w-32 h-32 object-cover rounded-2xl border-2 border-yellow-400/50 shadow-lg"
+                />
+                <div className="absolute -top-2 -right-2 bg-yellow-400 rounded-full p-1">
+                  <Star className="w-4 h-4 text-black" />
+                </div>
+              </div>
             </div>
           </div>
         )}
