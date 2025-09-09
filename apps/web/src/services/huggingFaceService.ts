@@ -202,16 +202,16 @@ export class HuggingFaceService {
     let faceShape = faceShapes[Math.floor(Math.random() * faceShapes.length)]
     
     // Use photo analysis to influence characteristics
-    const hasPerson = labels.some(label => ['person', 'human', 'face', 'portrait', 'selfie'].includes(label.toLowerCase()))
-    const hasSmile = labels.some(label => ['smile', 'grin', 'happy', 'laughing'].includes(label.toLowerCase()))
-    const hasSerious = labels.some(label => ['serious', 'stern', 'frown', 'angry'].includes(label.toLowerCase()))
+    const hasPerson = labels.some((label: string) => ['person', 'human', 'face', 'portrait', 'selfie'].includes(label.toLowerCase()))
+    const hasSmile = labels.some((label: string) => ['smile', 'grin', 'happy', 'laughing'].includes(label.toLowerCase()))
+    const hasSerious = labels.some((label: string) => ['serious', 'stern', 'frown', 'angry'].includes(label.toLowerCase()))
     
     // Determine emotions based on photo analysis
     const emotions: FaceAnalysis['emotions'] = {
       happy: hasSmile ? 70 + Math.random() * 30 : Math.random() * 50,
       sad: hasSerious ? 30 + Math.random() * 40 : Math.random() * 20,
       angry: hasSerious ? 20 + Math.random() * 30 : Math.random() * 15,
-      surprised: labels.some(label => ['surprise', 'shock', 'amazed'].includes(label.toLowerCase())) ? 60 + Math.random() * 30 : Math.random() * 30,
+      surprised: labels.some((label: string) => ['surprise', 'shock', 'amazed'].includes(label.toLowerCase())) ? 60 + Math.random() * 30 : Math.random() * 30,
       fearful: Math.random() * 20,
       disgusted: Math.random() * 10,
       neutral: hasPerson ? 40 + Math.random() * 40 : Math.random() * 30
@@ -438,7 +438,7 @@ export class HuggingFaceService {
   
   // Create detailed description for text-to-image generation
   private static createDetailedDescription(characteristics: PopGenerationResult['characteristics']): string {
-    const { personality, style, features } = characteristics
+    const { personality, style, specialFeatures } = characteristics
     
     let description = 'A cute pop character, '
     
@@ -467,8 +467,8 @@ export class HuggingFaceService {
     if (style.includes('sporty')) description += 'sporty outfit, '
     
     // Features
-    if (features.includes('bright eyes')) description += 'sparkling eyes, '
-    if (features.includes('unique smile')) description += 'charming smile, '
+    if (specialFeatures.includes('bright eyes')) description += 'sparkling eyes, '
+    if (specialFeatures.includes('unique smile')) description += 'charming smile, '
     
     description += 'pop art style, vibrant colors, 3D game character style'
     
