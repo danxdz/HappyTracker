@@ -77,6 +77,61 @@ export const StepByStepProgress: React.FC<StepByStepProgressProps> = ({
               </div>
             )}
 
+            {/* T-Pose Views Grid */}
+            {step.id === 'tpose-generation' && step.data && typeof step.data === 'object' && (
+              <div className="mt-3">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">T-Pose Views:</h4>
+                <div className="grid grid-cols-3 gap-2">
+                  {Object.entries(step.data).map(([view, imageUrl]) => (
+                    <div key={view} className="text-center">
+                      <img
+                        src={imageUrl as string}
+                        alt={`${view} view`}
+                        className="w-20 h-20 object-cover rounded border"
+                      />
+                      <p className="text-xs text-gray-600 mt-1 capitalize">{view}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Character Preview */}
+            {step.id === 'character-preview' && step.data && (
+              <div className="mt-3">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Character Traits:</h4>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div><span className="font-medium">Face:</span> {step.data.faceShape}</div>
+                  <div><span className="font-medium">Eyes:</span> {step.data.eyeColor}</div>
+                  <div><span className="font-medium">Hair:</span> {step.data.hairColor}</div>
+                  <div><span className="font-medium">Style:</span> {step.data.style}</div>
+                  <div className="col-span-2">
+                    <span className="font-medium">Personality:</span> 
+                    <div className="mt-1 space-y-1">
+                      <div className="flex justify-between">
+                        <span>Energy:</span>
+                        <div className="w-16 bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-blue-500 h-2 rounded-full" 
+                            style={{ width: `${step.data.personality?.energy || 0}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Friendliness:</span>
+                        <div className="w-16 bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-green-500 h-2 rounded-full" 
+                            style={{ width: `${step.data.personality?.friendliness || 0}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Step Data Display */}
             {step.data && step.status === 'completed' && (
               <div className="mt-3 p-3 bg-white rounded-lg border">

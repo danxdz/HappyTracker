@@ -1,7 +1,8 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Heart, Zap, Brain, Shield, Sparkles, Star, Download, Eye } from 'lucide-react'
+import { Heart, Zap, Brain, Shield, Sparkles, Star, Download, Eye, Camera, Box } from 'lucide-react'
 import { PopGenerationResult } from '../services/huggingFaceService'
+import { Model3DViewer } from './Model3DViewer'
 
 interface PopDisplayProps {
   pop: PopGenerationResult
@@ -88,7 +89,7 @@ export const PopDisplay: React.FC<PopDisplayProps> = ({ pop, onClose }) => {
           <p className="text-gray-300 text-lg">✨ Created with Hugging Face AI ✨</p>
         </div>
 
-        {/* Pop Image */}
+        {/* Character Preview */}
         <div className="relative mb-6">
           <img
             src={pop.popImageUrl || '/placeholder-pop.jpg'}
@@ -96,12 +97,78 @@ export const PopDisplay: React.FC<PopDisplayProps> = ({ pop, onClose }) => {
             className="w-full h-64 object-cover rounded-2xl border border-white/20"
           />
           <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm rounded-full p-2">
-            <Brain className="w-5 h-5 text-purple-400" />
+            <Camera className="w-5 h-5 text-purple-400" />
           </div>
           <div className="absolute top-2 left-2 bg-black/50 backdrop-blur-sm rounded-full p-2">
-            <span className="text-xs text-white">AI Generated</span>
+            <span className="text-xs text-white">2D Preview</span>
           </div>
         </div>
+
+        {/* T-Pose Views */}
+        {pop.tPoseViews && (
+          <div className="mb-6">
+            <h3 className="text-white font-semibold text-lg mb-3 flex items-center">
+              <Camera className="w-5 h-5 mr-2 text-blue-400" />
+              T-Pose Views (6 Angles)
+            </h3>
+            <div className="grid grid-cols-3 gap-3">
+              {Object.entries(pop.tPoseViews).map(([view, imageUrl]) => (
+                <div key={view} className="text-center">
+                  <img
+                    src={imageUrl as string}
+                    alt={`${view} T-pose view`}
+                    className="w-full h-24 object-cover rounded-lg border border-white/20"
+                  />
+                  <p className="text-xs text-gray-300 mt-1 capitalize">{view}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 3D Model Viewer */}
+        {(pop.modelData || pop.modelUrl) && (
+          <div className="mb-6">
+            <h3 className="text-white font-semibold text-lg mb-3 flex items-center">
+              <Box className="w-5 h-5 mr-2 text-green-400" />
+              3D Full-Body Model
+            </h3>
+            <Model3DViewer 
+              modelUrl={pop.modelUrl}
+              modelData={pop.modelData}
+              className="w-full h-80"
+            />
+            <div className="mt-3 flex space-x-3">
+              {pop.modelData && (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    const link = document.createElement('a')
+                    link.href = pop.modelData!
+                    link.download = 'pop-character.glb'
+                    link.click()
+                  }}
+                  className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Download 3D Model</span>
+                </motion.button>
+              )}
+              {pop.modelUrl && (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => window.open(pop.modelUrl, '_blank')}
+                  className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                >
+                  <Eye className="w-4 h-4" />
+                  <span>View 3D Model</span>
+                </motion.button>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Pop Characteristics */}
         <div className="space-y-6">

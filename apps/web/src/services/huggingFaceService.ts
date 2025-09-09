@@ -465,12 +465,13 @@ export class HuggingFaceService {
   private static createDetailedDescription(characteristics: PopGenerationResult['characteristics']): string {
     const { personality, style, specialFeatures } = characteristics
     
-    let description = 'A cute pop character, '
+    let description = 'A full-body cute pop character, '
     
     // Physical description
     description += 'cartoon style, '
     description += 'rounded features, '
     description += 'big expressive eyes, '
+    description += 'full body visible, '
     
     // Personality-based appearance
     if (personality.energy > 70) {
@@ -495,7 +496,7 @@ export class HuggingFaceService {
     if (specialFeatures.includes('bright eyes')) description += 'sparkling eyes, '
     if (specialFeatures.includes('unique smile')) description += 'charming smile, '
     
-    description += 'pop art style, vibrant colors, 3D game character style'
+    description += 'pop art style, vibrant colors, 3D game character style, white background, isolated character'
     
     return description
   }
@@ -503,12 +504,12 @@ export class HuggingFaceService {
   // Generate 6 T-pose views for 3D model creation
   private static async generateTPoseViews(description: string): Promise<PopGenerationResult['tPoseViews']> {
     const views = [
-      'front view, T-pose, facing camera',
-      'back view, T-pose, facing away',
-      'left side view, T-pose, profile',
-      'right side view, T-pose, profile',
-      '3/4 front view, T-pose, angled',
-      '3/4 back view, T-pose, angled'
+      'front view, T-pose, facing camera, full body visible',
+      'back view, T-pose, facing away, full body visible',
+      'left side view, T-pose, profile, full body visible',
+      'right side view, T-pose, profile, full body visible',
+      '3/4 front view, T-pose, angled, full body visible',
+      '3/4 back view, T-pose, angled, full body visible'
     ]
     
     const tPoseImages: string[] = []
