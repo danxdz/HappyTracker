@@ -275,6 +275,19 @@ export const PopDisplay: React.FC<PopDisplayProps> = ({ pop, onClose }) => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  if (pop.modelUrl) {
+                    // Create a temporary link to download the 3D model
+                    const link = document.createElement('a')
+                    link.href = pop.modelUrl
+                    link.download = `pop-3d-model-${Date.now()}.glb`
+                    document.body.appendChild(link)
+                    link.click()
+                    document.body.removeChild(link)
+                  } else {
+                    alert('3D model not available yet. This feature is coming soon!')
+                  }
+                }}
                 className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-3 px-6 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-2"
               >
                 <Download className="w-4 h-4" />
@@ -284,6 +297,14 @@ export const PopDisplay: React.FC<PopDisplayProps> = ({ pop, onClose }) => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  if (pop.modelUrl) {
+                    // Open 3D model in a new tab (for now, just show the URL)
+                    window.open(pop.modelUrl, '_blank')
+                  } else {
+                    alert('3D model not available yet. This feature is coming soon!')
+                  }
+                }}
                 className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-semibold py-3 px-6 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-2"
               >
                 <Eye className="w-4 h-4" />
