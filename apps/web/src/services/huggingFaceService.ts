@@ -298,13 +298,13 @@ export class HuggingFaceService {
     
     console.log('🎨 Using real AI 3D generation with Hugging Face')
     
-    // Use real AI image analysis for 3D generation
+    // Use real AI image-to-3D generation
     const imageBlob = await this.base64ToBlob(imageData)
-    const result = await this.callHuggingFaceAPI('google/vit-base-patch16-224', imageBlob)
-    console.log('✅ 3D generation API call successful:', result)
+    const result = await this.callImageTo3DAPI(imageBlob)
+    console.log('✅ Real 3D generation API call successful:', result)
     
-    // Real AI processing time
-    await new Promise(resolve => setTimeout(resolve, 3000))
+    // Real AI processing time (3D generation takes longer)
+    await new Promise(resolve => setTimeout(resolve, 5000))
     
     return {
       modelUrl: `data:application/octet-stream;base64,${btoa(JSON.stringify({
@@ -511,44 +511,78 @@ export class HuggingFaceService {
     return tPoseImages
   }
   
-  // Call text-to-image API
+  // Call real text-to-image API
   private static async callTextToImageAPI(prompt: string): Promise<Blob> {
-    // In production, this would call a real text-to-image model
-    // For now, we'll simulate the API call
-    console.log('🤖 Calling text-to-image API with prompt:', prompt)
+    console.log('🤖 Calling real text-to-image API with prompt:', prompt)
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    // Create a simple colored rectangle as placeholder
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')
-    canvas.width = 512
-    canvas.height = 512
-    
-    if (ctx) {
-      // Create a gradient background
-      const gradient = ctx.createLinearGradient(0, 0, 512, 512)
-      gradient.addColorStop(0, '#FF6B6B')
-      gradient.addColorStop(1, '#4ECDC4')
-      ctx.fillStyle = gradient
-      ctx.fillRect(0, 0, 512, 512)
+    try {
+      // Use real Hugging Face text-to-image model
+      const response = await fetch(`${this.HF_API_URL}/stabilityai/stable-diffusion-xl-base-1.0`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.HF_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          inputs: prompt,
+          parameters: {
+            num_inference_steps: 20,
+            guidance_scale: 7.5,
+            width: 512,
+            height: 512
+          }
+        })
+      })
       
-      // Add text
-      ctx.fillStyle = 'white'
-      ctx.font = '24px Arial'
-      ctx.textAlign = 'center'
-      ctx.fillText('AI Generated', 256, 256)
-      ctx.fillText('Pop Character', 256, 300)
+      if (!response.ok) {
+        throw new Error(`Text-to-image API error: ${response.statusText}`)
+      }
+      
+      const imageBlob = await response.blob()
+      console.log('✅ Real AI image generated successfully')
+      return imageBlob
+      
+    } catch (error) {
+      console.error('❌ Real text-to-image API failed:', error)
+      throw new Error('Real AI image generation failed. Please check your Hugging Face token.')
     }
-    
-    return new Promise((resolve) => {
-      canvas.toBlob((blob) => {
-        resolve(blob!)
-      }, 'image/png')
-    })
   }
   
+  // Call real image-to-3D API
+  private static async callImageTo3DAPI(imageBlob: Blob): Promise<any> {
+    console.log('🎨 Calling real image-to-3D API')
+    
+    try {
+      // Use real Hugging Face image-to-3D model
+      const response = await fetch(`${this.HF_API_URL}/hunyuan3d/hunyuan3d`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.HF_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          inputs: await this.blobToBase64(imageBlob),
+          parameters: {
+            num_inference_steps: 50,
+            guidance_scale: 7.5
+          }
+        })
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Image-to-3D API error: ${response.statusText}`)
+      }
+      
+      const result = await response.json()
+      console.log('✅ Real AI 3D model generated successfully')
+      return result
+      
+    } catch (error) {
+      console.error('❌ Real image-to-3D API failed:', error)
+      throw new Error('Real AI 3D generation failed. Please check your Hugging Face token.')
+    }
+  }
+
   // Create placeholder image for failed generations
   private static createPlaceholderImage(view: string): string {
     const canvas = document.createElement('canvas')
