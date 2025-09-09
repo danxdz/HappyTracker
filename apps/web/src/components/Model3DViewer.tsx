@@ -16,7 +16,21 @@ function Model({ modelData }: { modelData: string }) {
   // Convert base64 to blob URL for GLB loading
   const blob = React.useMemo(() => {
     try {
-      const byteCharacters = atob(modelData.split(',')[1])
+      // Check if modelData is a string and has the expected format
+      if (!modelData || typeof modelData !== 'string') {
+        console.warn('Model3DViewer: Invalid modelData format')
+        return null
+      }
+      
+      // Handle different base64 formats
+      let base64Data = modelData
+      if (modelData.includes(',')) {
+        base64Data = modelData.split(',')[1]
+      } else if (modelData.startsWith('data:')) {
+        base64Data = modelData.split(',')[1]
+      }
+      
+      const byteCharacters = atob(base64Data)
       const byteNumbers = new Array(byteCharacters.length)
       for (let i = 0; i < byteCharacters.length; i++) {
         byteNumbers[i] = byteCharacters.charCodeAt(i)
@@ -34,7 +48,9 @@ function Model({ modelData }: { modelData: string }) {
     return URL.createObjectURL(blob)
   }, [blob])
 
-  const { scene } = useGLTF(objectUrl || '')
+  const { scene } = useGLTF(objectUrl || '', undefined, (error) => {
+    console.error('GLB loading error:', error)
+  })
 
   // Auto-rotate the model
   useFrame(() => {
@@ -50,6 +66,18 @@ function Model({ modelData }: { modelData: string }) {
       }
     }
   }, [objectUrl])
+
+  // Don't render if we don't have a valid object URL
+  if (!objectUrl) {
+    return (
+      <group ref={groupRef}>
+        <mesh>
+          <boxGeometry args={[1, 1, 1]} />
+          <meshStandardMaterial color="gray" />
+        </mesh>
+      </group>
+    )
+  }
 
   return (
     <group ref={groupRef}>
