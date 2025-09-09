@@ -135,7 +135,7 @@ export class HuggingFaceService {
         characteristics,
         popImageUrl,
         processingTime,
-        modelUsed: 'Hunyuan3D + Custom Pop Generator'
+        modelUsed: 'HunyuanWorld-1.0 + Stable Diffusion XL'
       }
       
     } catch (error) {
@@ -548,43 +548,40 @@ export class HuggingFaceService {
     }
   }
   
-  // Call real image-to-3D API (using text-to-image for now since image-to-3D models are limited)
+  // Call real HunyuanWorld-1.0 image-to-3D API
   private static async callImageTo3DAPI(imageBlob: Blob): Promise<any> {
-    console.log('🎨 Calling real AI for 3D generation (using text-to-image)')
+    console.log('🎨 Calling real HunyuanWorld-1.0 image-to-3D API')
     
     try {
-      // For now, use text-to-image to generate a 3D-style character
-      // In the future, this could be replaced with actual image-to-3D models
-      const prompt = 'A cute pop character, 3D style, T-pose, white background, game character, vibrant colors'
-      
-      const response = await fetch(`${this.HF_API_URL}/stabilityai/stable-diffusion-xl-base-1.0`, {
+      // Use Tencent's HunyuanWorld-1.0 for real image-to-3D generation
+      const response = await fetch(`${this.HF_API_URL}/Tencent-Hunyuan/HunyuanWorld-1.0`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.HF_TOKEN}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          inputs: prompt,
+          inputs: await this.blobToBase64(imageBlob),
           parameters: {
-            num_inference_steps: 20,
+            prompt: 'A cute pop character, 3D world, interactive environment',
+            num_inference_steps: 50,
             guidance_scale: 7.5,
-            width: 512,
-            height: 512
+            output_format: 'mesh'
           }
         })
       })
       
       if (!response.ok) {
-        throw new Error(`AI 3D generation error: ${response.statusText}`)
+        throw new Error(`HunyuanWorld-1.0 API error: ${response.statusText}`)
       }
       
       const result = await response.json()
-      console.log('✅ Real AI 3D-style image generated successfully')
+      console.log('✅ Real HunyuanWorld-1.0 3D world generated successfully')
       return result
       
     } catch (error) {
-      console.error('❌ Real AI 3D generation failed:', error)
-      throw new Error('Real AI 3D generation failed. Please check your Hugging Face token.')
+      console.error('❌ HunyuanWorld-1.0 API failed:', error)
+      throw new Error('Real AI 3D world generation failed. Please check your Hugging Face token.')
     }
   }
 
@@ -682,13 +679,12 @@ export class HuggingFaceService {
   // Get available models
   static getAvailableModels(): string[] {
     return [
-      'microsoft/DialoGPT-medium', // Placeholder
-      'Hunyuan3D', // 3D generation
-      'Stable Fast 3D', // Fast 3D generation
-      'SPAR3D', // Real-time 3D editing
-      'face-detection-model', // Face detection
-      'emotion-recognition-model', // Emotion analysis
-      'style-transfer-model' // Style transfer
+      'google/vit-base-patch16-224', // Image classification
+      'stabilityai/stable-diffusion-xl-base-1.0', // Text-to-image
+      'Tencent-Hunyuan/HunyuanWorld-1.0', // Image-to-3D world generation
+      'Tencent-Hunyuan/HunyuanWorld-1.0-Lite', // Lite version for faster generation
+      'microsoft/face-detection', // Face detection
+      'facebook/detr-resnet-50' // Object detection
     ]
   }
 }
