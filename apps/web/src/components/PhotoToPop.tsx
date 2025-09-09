@@ -14,7 +14,7 @@ export const PhotoToPop: React.FC<PhotoToPopProps> = ({ onPhotoProcessed, onClos
   const [isProcessing, setIsProcessing] = useState(false)
   const [processingStep, setProcessingStep] = useState<string>('')
   const [hasValidToken, setHasValidToken] = useState<boolean | null>(null)
-  const [currentSteps, setCurrentSteps] = useState(PHOTO_TO_POP_STEPS.map(step => ({ ...step, status: 'pending' as const })))
+  const [currentSteps, setCurrentSteps] = useState(PHOTO_TO_POP_STEPS.map(step => ({ ...step, status: 'pending' as 'pending' | 'active' | 'completed' })))
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Check HF token availability on component mount

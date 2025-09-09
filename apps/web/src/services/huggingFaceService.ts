@@ -137,7 +137,8 @@ export class HuggingFaceService {
       
       // Step 3: Generate T-pose views
       onProgress?.('🎭 Generating T-pose views...')
-      const tPoseViews = await this.generateTPoseViews(characteristics)
+      const description = this.createDetailedDescription(characteristics)
+      const tPoseViews = await this.generateTPoseViews(description)
       onProgress?.('✅ T-pose views complete', tPoseViews)
       
       // Step 4: Generate 3D model
@@ -449,10 +450,10 @@ export class HuggingFaceService {
       
       // Step 2: Generate 6 T-pose views using text-to-image
       const tPoseViews = await this.generateTPoseViews(description)
-      console.log('🎭 Generated T-pose views:', tPoseViews.length)
+      console.log('🎭 Generated T-pose views:', Object.keys(tPoseViews).length)
       
       // Step 3: Return the front view as preview (others will be used for 3D)
-      return tPoseViews[0] // Front view as main preview
+      return tPoseViews.front // Front view as main preview
       
     } catch (error) {
       console.warn('⚠️ Pop image generation failed, using original:', error)
@@ -500,7 +501,7 @@ export class HuggingFaceService {
   }
   
   // Generate 6 T-pose views for 3D model creation
-  private static async generateTPoseViews(description: string): Promise<string[]> {
+  private static async generateTPoseViews(description: string): Promise<PopGenerationResult['tPoseViews']> {
     const views = [
       'front view, T-pose, facing camera',
       'back view, T-pose, facing away',
@@ -532,7 +533,14 @@ export class HuggingFaceService {
       }
     }
     
-    return tPoseImages
+    return {
+      front: tPoseImages[0],
+      back: tPoseImages[1],
+      left: tPoseImages[2],
+      right: tPoseImages[3],
+      frontThreeQuarter: tPoseImages[4],
+      backThreeQuarter: tPoseImages[5]
+    }
   }
   
   // Call real text-to-image API
