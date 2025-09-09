@@ -604,7 +604,7 @@ export class HuggingFaceService {
   
   // Create prompt for pop image generation
   private static createPopImagePrompt(characteristics: PopGenerationResult['characteristics']): string {
-    const { personality, style, features } = characteristics
+    const { personality, style, specialFeatures } = characteristics
     
     let prompt = 'A cute pop character with '
     
@@ -620,8 +620,8 @@ export class HuggingFaceService {
     if (style.includes('sporty')) prompt += 'sporty outfit, '
     
     // Add physical features
-    if (features.includes('bright eyes')) prompt += 'bright sparkling eyes, '
-    if (features.includes('unique smile')) prompt += 'unique charming smile, '
+    if (specialFeatures.includes('bright eyes')) prompt += 'bright sparkling eyes, '
+    if (specialFeatures.includes('unique smile')) prompt += 'unique charming smile, '
     
     prompt += 'pop art style, cartoon character, vibrant colors, cute and friendly'
     
