@@ -12,7 +12,23 @@ export const PhotoToPop: React.FC<PhotoToPopProps> = ({ onPhotoProcessed, onClos
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [processingStep, setProcessingStep] = useState<string>('')
+  const [hasValidToken, setHasValidToken] = useState<boolean | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Check HF token availability on component mount
+  React.useEffect(() => {
+    const checkToken = async () => {
+      try {
+        // Try to access the token through the service
+        const token = (import.meta as any).env?.VITE_HUGGINGFACE_TOKEN
+        setHasValidToken(!!token && token.length > 0)
+      } catch (error) {
+        console.error('Token check error:', error)
+        setHasValidToken(false)
+      }
+    }
+    checkToken()
+  }, [])
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -37,13 +53,20 @@ export const PhotoToPop: React.FC<PhotoToPopProps> = ({ onPhotoProcessed, onClos
     setIsProcessing(true)
     
     try {
-      // AI processing steps (simulated until HF token is added)
-      const steps = [
-        '📸 Uploading photo to AI...',
-        '🔍 Analyzing facial features...',
-        '🧠 Detecting emotions and personality...',
-        '🎨 Generating 3D model...',
+      // AI processing steps (real or simulated based on token availability)
+      const steps = hasValidToken ? [
+        '📸 Uploading photo to Hugging Face...',
+        '🔍 Real AI face analysis...',
+        '🧠 Emotion detection with AI...',
+        '🎨 3D model generation...',
         '✨ Creating pop characteristics...',
+        '🌟 Finalizing your unique pop!'
+      ] : [
+        '📸 Processing photo...',
+        '🔍 Simulating face analysis...',
+        '🧠 Generating personality traits...',
+        '🎨 Creating 3D model...',
+        '✨ Building pop characteristics...',
         '🌟 Finalizing your unique pop!'
       ]
 
@@ -105,6 +128,47 @@ export const PhotoToPop: React.FC<PhotoToPopProps> = ({ onPhotoProcessed, onClos
             </button>
           )}
         </div>
+
+        {/* Token Verification Warning */}
+        {hasValidToken === false && (
+          <div className="mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-xl">
+            <div className="flex items-start space-x-3">
+              <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <X className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <h3 className="text-red-300 font-semibold text-sm mb-1">
+                  AI Processing Disabled
+                </h3>
+                <p className="text-red-200 text-xs mb-2">
+                  Hugging Face token not configured. Photo-to-Pop will use simulation mode.
+                </p>
+                <p className="text-red-200 text-xs">
+                  To enable real AI: Add VITE_HUGGINGFACE_TOKEN to your environment variables.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Token Success Message */}
+        {hasValidToken === true && (
+          <div className="mb-6 p-4 bg-green-500/20 border border-green-500/30 rounded-xl">
+            <div className="flex items-center space-x-3">
+              <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <h3 className="text-green-300 font-semibold text-sm">
+                  Real AI Processing Enabled
+                </h3>
+                <p className="text-green-200 text-xs">
+                  Your photos will be processed with Hugging Face AI models
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Photo Upload Area */}
         {!selectedPhoto && !isProcessing && (
@@ -244,16 +308,26 @@ export const PhotoToPop: React.FC<PhotoToPopProps> = ({ onPhotoProcessed, onClos
               <span>🎨 3D Generation</span>
             </div>
             
-            {/* Hugging Face Token Notice */}
-            <div className="mt-4 p-3 bg-yellow-400/10 border border-yellow-400/20 rounded-lg">
-              <p className="text-yellow-300 text-xs text-center">
-                💡 Add your Hugging Face token for real AI processing!
-                <br />
-                <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener noreferrer" className="underline">
-                  Get your token here
-                </a>
-              </p>
-            </div>
+            {/* AI Processing Status Notice */}
+            {hasValidToken === true ? (
+              <div className="mt-4 p-3 bg-green-400/10 border border-green-400/20 rounded-lg">
+                <p className="text-green-300 text-xs text-center">
+                  🤖 Real AI processing enabled! Using Hugging Face models
+                </p>
+              </div>
+            ) : hasValidToken === false ? (
+              <div className="mt-4 p-3 bg-red-400/10 border border-red-400/20 rounded-lg">
+                <p className="text-red-300 text-xs text-center">
+                  ⚠️ Simulation mode - Add VITE_HUGGINGFACE_TOKEN for real AI
+                </p>
+              </div>
+            ) : (
+              <div className="mt-4 p-3 bg-yellow-400/10 border border-yellow-400/20 rounded-lg">
+                <p className="text-yellow-300 text-xs text-center">
+                  🔄 Checking AI configuration...
+                </p>
+              </div>
+            )}
           </div>
         )}
 
