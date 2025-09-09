@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Camera, Upload, X, Sparkles, User, Brain, Zap } from 'lucide-react'
 import { HuggingFaceService, PopGenerationResult } from '../services/huggingFaceService'
+import { StepByStepProgress, PHOTO_TO_POP_STEPS } from './StepByStepProgress'
 
 interface PhotoToPopProps {
   onPhotoProcessed?: (result: PopGenerationResult) => void
@@ -13,6 +14,7 @@ export const PhotoToPop: React.FC<PhotoToPopProps> = ({ onPhotoProcessed, onClos
   const [isProcessing, setIsProcessing] = useState(false)
   const [processingStep, setProcessingStep] = useState<string>('')
   const [hasValidToken, setHasValidToken] = useState<boolean | null>(null)
+  const [currentSteps, setCurrentSteps] = useState(PHOTO_TO_POP_STEPS.map(step => ({ ...step, status: 'pending' as const })))
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Check HF token availability on component mount
@@ -47,37 +49,52 @@ export const PhotoToPop: React.FC<PhotoToPopProps> = ({ onPhotoProcessed, onClos
     alert('Camera integration coming soon! For now, please upload a photo.')
   }
 
+  const updateStepStatus = (stepId: string, status: 'pending' | 'active' | 'completed', data?: any) => {
+    setCurrentSteps(prev => prev.map(step => 
+      step.id === stepId 
+        ? { ...step, status, data }
+        : step
+    ))
+  }
+
   const processPhoto = async () => {
     if (!selectedPhoto) return
 
     setIsProcessing(true)
+    setCurrentSteps(PHOTO_TO_POP_STEPS.map(step => ({ ...step, status: 'pending' as const })))
     
     try {
-      // AI processing steps (real or simulated based on token availability)
-      const steps = hasValidToken ? [
-        '📸 Uploading photo to Hugging Face...',
-        '🔍 Real AI face analysis...',
-        '🧠 Emotion detection with AI...',
-        '🎨 3D model generation...',
-        '✨ Creating pop characteristics...',
-        '🌟 Finalizing your unique pop!'
-      ] : [
-        '📸 Processing photo...',
-        '🔍 Simulating face analysis...',
-        '🧠 Generating personality traits...',
-        '🎨 Creating 3D model...',
-        '✨ Building pop characteristics...',
-        '🌟 Finalizing your unique pop!'
-      ]
-
-      for (let i = 0; i < steps.length; i++) {
-        setProcessingStep(steps[i])
-        await new Promise(resolve => setTimeout(resolve, 800))
-      }
-
-      // Call AI service (simulated until HF token is added)
-      setProcessingStep('🤖 Processing with AI models...')
-      const result = await HuggingFaceService.generate3DPop(selectedPhoto)
+      // Call AI service with step-by-step processing
+      const result = await HuggingFaceService.generate3DPop(selectedPhoto, (step, data) => {
+        setProcessingStep(step)
+        
+        // Map service steps to our step IDs
+        if (step.includes('Analyzing face')) {
+          updateStepStatus('face-analysis', 'active')
+        } else if (step.includes('Face analysis complete')) {
+          updateStepStatus('face-analysis', 'completed', data)
+        } else if (step.includes('Creating character preview')) {
+          updateStepStatus('character-preview', 'active')
+        } else if (step.includes('Character preview ready')) {
+          updateStepStatus('character-preview', 'completed', data)
+        } else if (step.includes('Generating T-pose views')) {
+          updateStepStatus('tpose-generation', 'active')
+        } else if (step.includes('T-pose views complete')) {
+          updateStepStatus('tpose-generation', 'completed', data)
+        } else if (step.includes('Generating 3D model')) {
+          updateStepStatus('3d-model', 'active')
+        } else if (step.includes('3D model ready')) {
+          updateStepStatus('3d-model', 'completed', data)
+        } else if (step.includes('Creating final pop image')) {
+          updateStepStatus('final-pop', 'active')
+        } else if (step.includes('Final pop complete')) {
+          updateStepStatus('final-pop', 'completed', data)
+        }
+        
+        if (data) {
+          console.log('Step data:', data)
+        }
+      })
       
       setIsProcessing(false)
       setProcessingStep('')
@@ -91,7 +108,7 @@ export const PhotoToPop: React.FC<PhotoToPopProps> = ({ onPhotoProcessed, onClos
       // Log error without showing alert
       const errorMessage = error instanceof Error 
         ? error.message 
-        : 'AI processing failed. Please check your Hugging Face token and try again.'
+        : 'AI processing failed. Please check your API tokens and try again.'
       
       console.error(`❌ ${errorMessage}`)
     }
@@ -257,63 +274,40 @@ export const PhotoToPop: React.FC<PhotoToPopProps> = ({ onPhotoProcessed, onClos
           </div>
         )}
 
-        {/* Real AI Processing Animation */}
+        {/* Step-by-Step Processing */}
         {isProcessing && (
-          <div className="text-center space-y-6">
-            <div className="relative">
-              <div className="w-32 h-32 mx-auto bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                >
-                  <Brain className="w-16 h-16 text-white" />
-                </motion.div>
+          <div className="space-y-6">
+            <div className="text-center">
+              <div className="relative w-24 h-24 mx-auto mb-4">
+                <div className="w-24 h-24 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                  >
+                    <Brain className="w-12 h-12 text-white" />
+                  </motion.div>
+                </div>
               </div>
               
-              {/* AI Processing rings */}
-              <motion.div
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="absolute inset-0 border-2 border-purple-400/30 rounded-full"
-              />
-              <motion.div
-                animate={{ scale: [1, 1.4, 1] }}
-                transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                className="absolute inset-0 border-2 border-blue-400/20 rounded-full"
-              />
-              <motion.div
-                animate={{ scale: [1, 1.6, 1] }}
-                transition={{ duration: 2, repeat: Infinity, delay: 1 }}
-                className="absolute inset-0 border-2 border-cyan-400/10 rounded-full"
-              />
-            </div>
-
-            <div>
-              <h3 className="text-white font-bold text-lg mb-2">AI Processing...</h3>
+              <h3 className="text-white font-bold text-lg mb-2">Creating Your Pop Character</h3>
               <p className="text-gray-300 text-sm">{processingStep}</p>
               <div className="flex items-center justify-center space-x-2 mt-2">
                 <Zap className="w-4 h-4 text-yellow-400" />
-                <span className="text-yellow-400 text-xs">Powered by Hugging Face AI</span>
+                <span className="text-yellow-400 text-xs">Powered by AI</span>
               </div>
             </div>
 
-            {/* AI Progress bar */}
-            <div className="w-full bg-gray-700 rounded-full h-3">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: "100%" }}
-                transition={{ duration: 8, ease: "easeOut" }}
-                className="bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-500 h-3 rounded-full"
+            {/* Step-by-Step Progress */}
+            <div className="max-h-96 overflow-y-auto">
+              <StepByStepProgress 
+                steps={currentSteps}
+                currentStep={processingStep}
+                onStepComplete={(stepId, data) => {
+                  console.log(`Step ${stepId} completed:`, data)
+                }}
               />
             </div>
-            
-            {/* AI Models indicator */}
-            <div className="flex items-center justify-center space-x-4 text-xs text-gray-400">
-              <span>🧠 Face Detection</span>
-              <span>🎭 Emotion Analysis</span>
-              <span>🎨 3D Generation</span>
-            </div>
-            
+
             {/* AI Processing Status Notice */}
             {hasValidToken === true ? (
               <div className="mt-4 p-3 bg-green-400/10 border border-green-400/20 rounded-lg">

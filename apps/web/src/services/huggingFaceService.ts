@@ -65,6 +65,16 @@ export interface PopGenerationResult {
   // Generated pop image
   popImageUrl?: string
   
+  // T-pose views for 3D generation
+  tPoseViews?: {
+    front: string
+    back: string
+    left: string
+    right: string
+    frontThreeQuarter: string
+    backThreeQuarter: string
+  }
+  
   // Processing metadata
   processingTime: number
   modelUsed: string
@@ -111,21 +121,34 @@ export class HuggingFaceService {
   }
   
   // Generate 3D pop from photo
-  static async generate3DPop(imageData: string): Promise<PopGenerationResult> {
+  static async generate3DPop(imageData: string, onProgress?: (step: string, data?: any) => void): Promise<PopGenerationResult> {
     try {
       const startTime = Date.now()
       
       // Step 1: Analyze the face
+      onProgress?.('🔍 Analyzing face with AI...')
       const faceAnalysis = await this.analyzeFace(imageData)
+      onProgress?.('✅ Face analysis complete', faceAnalysis)
       
-      // Step 2: Generate 3D model (simulated for now)
-      const modelResult = await this.generate3DModel(imageData, faceAnalysis)
-      
-      // Step 3: Create pop characteristics
+      // Step 2: Create pop characteristics
+      onProgress?.('👤 Creating character preview...')
       const characteristics = this.createPopCharacteristics(faceAnalysis)
+      onProgress?.('✅ Character preview ready', characteristics)
       
-      // Step 4: Generate pop image
+      // Step 3: Generate T-pose views
+      onProgress?.('🎭 Generating T-pose views...')
+      const tPoseViews = await this.generateTPoseViews(characteristics)
+      onProgress?.('✅ T-pose views complete', tPoseViews)
+      
+      // Step 4: Generate 3D model
+      onProgress?.('🎨 Generating 3D model...')
+      const modelResult = await this.generate3DModel(imageData, faceAnalysis)
+      onProgress?.('✅ 3D model ready', modelResult)
+      
+      // Step 5: Generate pop image
+      onProgress?.('✨ Creating final pop image...')
       const popImageUrl = await this.generatePopImage(imageData, characteristics)
+      onProgress?.('✅ Final pop complete', popImageUrl)
       
       const processingTime = Date.now() - startTime
       
@@ -135,7 +158,8 @@ export class HuggingFaceService {
         characteristics,
         popImageUrl,
         processingTime,
-        modelUsed: 'Hunyuan3D-2 + TRELLIS + Stable Diffusion XL'
+        modelUsed: 'Hunyuan3D-2 + TRELLIS + Stable Diffusion XL',
+        tPoseViews // Include T-pose views in result
       }
       
     } catch (error) {
@@ -659,12 +683,27 @@ export class HuggingFaceService {
         throw new Error(`Stable Diffusion API error: ${response.statusText}`)
       }
       
-      const result = await response.json()
-      console.log('✅ Fallback 3D-style generation successful')
-      return {
-        ...result,
-        model_used: 'Stable Diffusion XL (3D Style)',
-        is_3d: false // This is 2D with 3D style
+      // Check if response is binary (GLB) or JSON
+      const contentType = response.headers.get('content-type')
+      if (contentType && contentType.includes('application/json')) {
+        const result = await response.json()
+        console.log('✅ Fallback 3D-style generation successful')
+        return {
+          ...result,
+          model_used: 'Stable Diffusion XL (3D Style)',
+          is_3d: false // This is 2D with 3D style
+        }
+      } else {
+        // Handle binary response (GLB file)
+        const blob = await response.blob()
+        const dataUrl = await this.blobToBase64(blob)
+        console.log('✅ Fallback 3D generation successful (GLB)')
+        return {
+          model_used: 'Stable Diffusion XL (3D Style)',
+          is_3d: true,
+          glb_data: dataUrl,
+          format: 'glb'
+        }
       }
       
     } catch (error) {
