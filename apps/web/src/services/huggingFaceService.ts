@@ -135,7 +135,7 @@ export class HuggingFaceService {
         characteristics,
         popImageUrl,
         processingTime,
-        modelUsed: 'Stable Diffusion XL (3D Style)'
+        modelUsed: 'Hunyuan3D-2 + Stable Diffusion XL'
       }
       
     } catch (error) {
@@ -548,61 +548,84 @@ export class HuggingFaceService {
     }
   }
   
-  // Call real 3D generation API (using available models)
+  // Call Hunyuan3D-2 API server for real 3D generation
   private static async callImageTo3DAPI(imageBlob: Blob): Promise<any> {
-    console.log('🎨 Calling real 3D generation API')
+    console.log('🎨 Calling Hunyuan3D-2 API server for real 3D generation')
     
     try {
-      // Try multiple 3D generation models in order of preference
-      const models = [
-        'stabilityai/stable-diffusion-xl-base-1.0', // Fallback to text-to-image for now
-        'runwayml/stable-diffusion-v1-5',
-        'CompVis/stable-diffusion-v1-4'
-      ]
+      // Convert image to base64 for Hunyuan3D-2 API
+      const imageBase64 = await this.blobToBase64(imageBlob)
       
-      for (const model of models) {
-        try {
-          console.log(`🎯 Trying model: ${model}`)
-          
-          const response = await fetch(`${this.HF_API_URL}/${model}`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${this.HF_TOKEN}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              inputs: 'A cute pop character, 3D style, colorful, friendly, cartoon character, high quality, detailed',
-              parameters: {
-                num_inference_steps: 20,
-                guidance_scale: 7.5,
-                width: 512,
-                height: 512
-              }
-            })
+      // Try Hunyuan3D-2 API server (if available)
+      const hunyuanApiUrl = 'http://localhost:8080/generate' // Local Hunyuan3D-2 server
+      
+      try {
+        console.log('🎯 Trying Hunyuan3D-2 API server...')
+        
+        const response = await fetch(hunyuanApiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            image: imageBase64
           })
+        })
+        
+        if (response.ok) {
+          // Hunyuan3D-2 returns GLB file directly
+          const glbBlob = await response.blob()
+          const glbDataUrl = await this.blobToBase64(glbBlob)
           
-          if (response.ok) {
-            const result = await response.json()
-            console.log(`✅ Real 3D generation successful with ${model}`)
-            return {
-              ...result,
-              model_used: model,
-              is_3d: true
-            }
-          } else {
-            console.log(`❌ Model ${model} failed: ${response.statusText}`)
+          console.log('✅ Hunyuan3D-2 3D generation successful')
+          return {
+            model_used: 'Hunyuan3D-2',
+            is_3d: true,
+            glb_data: glbDataUrl,
+            format: 'glb'
           }
-        } catch (modelError) {
-          console.log(`❌ Model ${model} error:`, modelError)
-          continue
+        } else {
+          console.log(`❌ Hunyuan3D-2 API failed: ${response.statusText}`)
         }
+      } catch (hunyuanError) {
+        console.log('❌ Hunyuan3D-2 API not available:', hunyuanError)
       }
       
-      throw new Error('All 3D generation models failed')
+      // Fallback to Hugging Face Stable Diffusion with 3D prompts
+      console.log('🎯 Falling back to Stable Diffusion XL with 3D prompts...')
+      
+      const response = await fetch(`${this.HF_API_URL}/stabilityai/stable-diffusion-xl-base-1.0`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.HF_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          inputs: 'A cute pop character, 3D style, colorful, friendly, cartoon character, high quality, detailed, rendered in 3D',
+          parameters: {
+            num_inference_steps: 20,
+            guidance_scale: 7.5,
+            width: 512,
+            height: 512
+          }
+        })
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Stable Diffusion API error: ${response.statusText}`)
+      }
+      
+      const result = await response.json()
+      console.log('✅ Fallback 3D-style generation successful')
+      return {
+        ...result,
+        model_used: 'Stable Diffusion XL (3D Style)',
+        is_3d: false // This is 2D with 3D style
+      }
       
     } catch (error) {
       console.error('❌ 3D generation API failed:', error)
-      throw new Error('Real AI 3D generation failed. Please check your Hugging Face token.')
+      throw new Error('Real AI 3D generation failed. Please check your Hugging Face token or Hunyuan3D-2 server.')
     }
   }
 
@@ -701,7 +724,8 @@ export class HuggingFaceService {
   static getAvailableModels(): string[] {
     return [
       'google/vit-base-patch16-224', // Image classification
-      'stabilityai/stable-diffusion-xl-base-1.0', // Text-to-image (3D style)
+      'Hunyuan3D-2 API Server', // Real 3D model generation (localhost:8080)
+      'stabilityai/stable-diffusion-xl-base-1.0', // Text-to-image (3D style fallback)
       'runwayml/stable-diffusion-v1-5', // Alternative text-to-image
       'CompVis/stable-diffusion-v1-4', // Backup text-to-image
       'microsoft/face-detection', // Face detection

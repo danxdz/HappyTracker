@@ -1,6 +1,6 @@
 # HappyTracker - Development Documentation
 
-**Version: 1.4.3** | **Commits: 43** | **Status: 3D Pop World Complete** ✅
+**Version: 1.4.4** | **Commits: 44** | **Status: 3D Pop World Complete** ✅
 
 ## Project Overview
 A health-focused mobile app that gamifies positive lifestyle choices through an avatar system, emphasizing nutrition, movement, sleep, and mindful technology use.
@@ -373,11 +373,50 @@ npm run dev
 - ✅ Personalized 3D pop characters
 - ✅ Unique pop traits based on user photos
 - ✅ Real AI processing with face detection and emotion analysis
-- ✅ 3D model generation pipeline
+- ✅ **Hunyuan3D-2 integration** for real 3D model generation
+- ✅ Fallback to Stable Diffusion XL with 3D-style prompts
 
 #### **🔧 Environment Setup for AI Features:**
-To enable real AI processing, add your Hugging Face token:
 
+**Option 1: Hugging Face Only (Easiest)**
+```bash
+# Set your Hugging Face token in Netlify environment variables
+VITE_HUGGINGFACE_TOKEN=your_token_here
+```
+
+**Option 2: Hunyuan3D-2 API Server (Best Quality)**
+```bash
+# 1. Clone Hunyuan3D-2 repository
+git clone https://github.com/Tencent-Hunyuan/Hunyuan3D-2.git
+cd Hunyuan3D-2
+
+# 2. Install requirements
+pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu124
+pip install -r requirements.txt
+
+# 3. Setup custom rasterizer
+cd hy3dpaint/custom_rasterizer
+pip install -e .
+cd ../..
+
+# 4. Compile mesh painter
+cd hy3dpaint/DifferentiableRenderer
+bash compile_mesh_painter.sh
+cd ../..
+
+# 5. Download Real-ESRGAN model
+wget https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth -P hy3dpaint/ckpt
+
+# 6. Start API server
+python api_server.py --host 0.0.0.0 --port 8080
+```
+
+**The app will automatically:**
+- Try Hunyuan3D-2 API server first (localhost:8080)
+- Fall back to Hugging Face Stable Diffusion XL if server unavailable
+- Generate real 3D GLB models when Hunyuan3D-2 is running
+
+**For Hugging Face fallback:**
 1. **Get your token**: Visit [https://huggingface.co/settings/tokens](https://huggingface.co/settings/tokens)
 2. **Create a token** with "Read" permissions
 3. **Set environment variable**:
