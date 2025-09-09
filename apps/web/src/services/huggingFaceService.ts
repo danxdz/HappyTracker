@@ -450,10 +450,10 @@ export class HuggingFaceService {
       
       // Step 2: Generate 6 T-pose views using text-to-image
       const tPoseViews = await this.generateTPoseViews(description)
-      console.log('🎭 Generated T-pose views:', Object.keys(tPoseViews).length)
+      console.log('🎭 Generated T-pose views:', tPoseViews ? Object.keys(tPoseViews).length : 0)
       
       // Step 3: Return the front view as preview (others will be used for 3D)
-      return tPoseViews.front // Front view as main preview
+      return tPoseViews?.front || imageData // Front view as main preview, fallback to original
       
     } catch (error) {
       console.warn('⚠️ Pop image generation failed, using original:', error)
