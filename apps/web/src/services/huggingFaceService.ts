@@ -205,6 +205,8 @@ export class HuggingFaceService {
       sad: Math.random() * 100,
       angry: Math.random() * 100,
       surprised: Math.random() * 100,
+      fearful: Math.random() * 100,
+      disgusted: Math.random() * 100,
       neutral: Math.random() * 100
     }
     
@@ -214,17 +216,27 @@ export class HuggingFaceService {
     
     return {
       faceShape,
+      eyeColor: ['#4A90E2', '#7ED321', '#F5A623', '#D0021B', '#9013FE'][Math.floor(Math.random() * 5)],
+      hairColor: ['#8B4513', '#000000', '#FFD700', '#FF69B4', '#C0C0C0'][Math.floor(Math.random() * 5)],
+      hairStyle: ['short', 'medium', 'long', 'curly', 'straight', 'wavy'][Math.floor(Math.random() * 6)] as FaceAnalysis['hairStyle'],
       emotions,
       age,
       gender,
-      confidence: scores[0] || 0.8,
-      features: {
-        eyes: Math.random() > 0.5 ? 'bright' : 'deep',
-        smile: Math.random() > 0.5 ? 'warm' : 'subtle',
-        skin: Math.random() > 0.5 ? 'smooth' : 'textured'
+      landmarks: {
+        eyes: { 
+          left: [Math.random() * 100, Math.random() * 100], 
+          right: [Math.random() * 100, Math.random() * 100] 
+        },
+        nose: [Math.random() * 100, Math.random() * 100],
+        mouth: [Math.random() * 100, Math.random() * 100],
+        chin: [Math.random() * 100, Math.random() * 100]
       },
-      aiProcessed: true,
-      modelUsed: 'google/vit-base-patch16-224'
+      style: {
+        casual: Math.random() * 100,
+        formal: Math.random() * 100,
+        artistic: Math.random() * 100,
+        sporty: Math.random() * 100
+      }
     }
   }
 
