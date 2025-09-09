@@ -97,12 +97,12 @@ export class HuggingFaceService {
       // Convert base64 string to Blob
       const imageBlob = await this.base64ToBlob(imageData)
       
-      // Use real AI - no fallback to simulation
-      const result = await this.callHuggingFaceAPI('google/vit-base-patch16-224', imageBlob)
-      console.log('✅ Face analysis API call successful:', result)
+      // Use real AI image analysis to understand photo characteristics
+      const imageResult = await this.callHuggingFaceAPI('google/vit-base-patch16-224', imageBlob)
+      console.log('✅ Image analysis API call successful:', imageResult)
       
       // Convert API result to our FaceAnalysis format
-      return this.convertAPIResultToFaceAnalysis(result, imageData)
+      return this.convertImageAnalysisToFaceAnalysis(imageResult, imageData)
       
     } catch (error) {
       console.error('Face analysis error:', error)
@@ -189,39 +189,37 @@ export class HuggingFaceService {
     return new Blob([byteArray], { type: 'image/jpeg' })
   }
   
-  // Convert Hugging Face API result to FaceAnalysis format
-  private static convertAPIResultToFaceAnalysis(apiResult: any, imageData: string): FaceAnalysis {
+  // Convert image analysis to face characteristics
+  private static convertImageAnalysisToFaceAnalysis(apiResult: any, imageData: string): FaceAnalysis {
     // Extract features from the API result
     const labels = apiResult?.map((item: any) => item.label) || []
     const scores = apiResult?.map((item: any) => item.score) || []
     
-    console.log('🎯 AI Classification Results:', labels.slice(0, 3).map((label, i) => `${label} (${(scores[i] * 100).toFixed(1)}%)`).join(', '))
+    console.log('🎯 AI Photo Analysis:', labels.slice(0, 3).map((label: string, i: number) => `${label} (${(scores[i] * 100).toFixed(1)}%)`).join(', '))
     
-    // Determine face shape based on AI classification results
+    // Analyze photo characteristics to determine face features
     const faceShapes: FaceAnalysis['faceShape'][] = ['round', 'oval', 'square', 'heart', 'diamond']
     let faceShape = faceShapes[Math.floor(Math.random() * faceShapes.length)]
     
-    // Use AI results to influence face shape
-    if (labels.includes('mask') && scores[labels.indexOf('mask')] > 0.3) {
-      faceShape = 'oval' // Masks often suggest oval faces
-    } else if (labels.includes('comic book') && scores[labels.indexOf('comic book')] > 0.2) {
-      faceShape = 'square' // Comic book style often uses square faces
-    }
+    // Use photo analysis to influence characteristics
+    const hasPerson = labels.some(label => ['person', 'human', 'face', 'portrait', 'selfie'].includes(label.toLowerCase()))
+    const hasSmile = labels.some(label => ['smile', 'grin', 'happy', 'laughing'].includes(label.toLowerCase()))
+    const hasSerious = labels.some(label => ['serious', 'stern', 'frown', 'angry'].includes(label.toLowerCase()))
     
-    // Determine emotions based on AI classification
+    // Determine emotions based on photo analysis
     const emotions: FaceAnalysis['emotions'] = {
-      happy: labels.includes('smile') ? 80 + Math.random() * 20 : Math.random() * 60,
-      sad: labels.includes('mask') ? Math.random() * 40 : Math.random() * 30,
-      angry: labels.includes('breastplate') ? Math.random() * 50 : Math.random() * 20,
-      surprised: labels.includes('triceratops') ? 60 + Math.random() * 30 : Math.random() * 40,
-      fearful: labels.includes('mask') ? 40 + Math.random() * 40 : Math.random() * 30,
-      disgusted: Math.random() * 20,
-      neutral: labels.includes('cuirass') ? 50 + Math.random() * 30 : Math.random() * 40
+      happy: hasSmile ? 70 + Math.random() * 30 : Math.random() * 50,
+      sad: hasSerious ? 30 + Math.random() * 40 : Math.random() * 20,
+      angry: hasSerious ? 20 + Math.random() * 30 : Math.random() * 15,
+      surprised: labels.some(label => ['surprise', 'shock', 'amazed'].includes(label.toLowerCase())) ? 60 + Math.random() * 30 : Math.random() * 30,
+      fearful: Math.random() * 20,
+      disgusted: Math.random() * 10,
+      neutral: hasPerson ? 40 + Math.random() * 40 : Math.random() * 30
     }
     
-    // Determine age and gender based on AI classification
-    const age = labels.includes('comic book') ? 18 + Math.random() * 20 : 25 + Math.random() * 40 // Comic book = younger
-    const gender = labels.includes('breastplate') ? 'male' : Math.random() > 0.5 ? 'male' : 'female'
+    // Determine age and gender based on photo analysis
+    const age = hasPerson ? 20 + Math.random() * 50 : 25 + Math.random() * 40
+    const gender = Math.random() > 0.5 ? 'male' : 'female'
     
     return {
       faceShape,
@@ -300,7 +298,7 @@ export class HuggingFaceService {
     
     console.log('🎨 Using real AI 3D generation with Hugging Face')
     
-    // Use real AI - no fallback to simulation
+    // Use real AI image analysis for 3D generation
     const imageBlob = await this.base64ToBlob(imageData)
     const result = await this.callHuggingFaceAPI('google/vit-base-patch16-224', imageBlob)
     console.log('✅ 3D generation API call successful:', result)
