@@ -49,17 +49,27 @@ export const DynamicCharacterPage: React.FC = () => {
   }, [currentStep])
 
   const updateCharacterData = (field: keyof CharacterData, value: any) => {
-    setCharacterData(prev => ({
-      ...prev,
-      [field]: value
-    }))
+    console.log(`📝 Updating ${field}:`, value)
+    setCharacterData(prev => {
+      const newData = {
+        ...prev,
+        [field]: value
+      }
+      console.log('📊 New character data:', newData)
+      return newData
+    })
   }
 
   const nextStep = () => {
     const steps: FlowStep[] = ['loading', 'photo', 'name', 'age', 'measures', 'card', 'complete']
     const currentIndex = steps.indexOf(currentStep)
+    console.log(`🔄 Current step: ${currentStep} (index: ${currentIndex})`)
     if (currentIndex < steps.length - 1) {
-      setCurrentStep(steps[currentIndex + 1])
+      const nextStepName = steps[currentIndex + 1]
+      console.log(`➡️ Moving to next step: ${nextStepName}`)
+      setCurrentStep(nextStepName)
+    } else {
+      console.log('🏁 Already at final step')
     }
   }
 
@@ -67,11 +77,16 @@ export const DynamicCharacterPage: React.FC = () => {
   const analyzePhoto = async (photo: File): Promise<{age: number, height: number, weight: number}> => {
     console.log('🤖 Analyzing photo for age and measures...')
     
+    // Simulate AI processing time
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
     // For now, return intelligent guesses based on common patterns
     // Later we can integrate real AI analysis
     const randomAge = Math.floor(Math.random() * 40) + 18 // 18-58
     const randomHeight = Math.floor(Math.random() * 40) + 150 // 150-190
     const randomWeight = Math.floor(Math.random() * 40) + 50 // 50-90
+    
+    console.log('🎯 Generated AI guesses:', { age: randomAge, height: randomHeight, weight: randomWeight })
     
     return {
       age: randomAge,
@@ -81,16 +96,31 @@ export const DynamicCharacterPage: React.FC = () => {
   }
 
   const handlePhotoUpload = async (photo: File) => {
-    updateCharacterData('photo', photo)
-    
-    // Analyze photo for AI guesses
-    const aiGuesses = await analyzePhoto(photo)
-    updateCharacterData('aiGuesses', aiGuesses)
-    updateCharacterData('age', aiGuesses.age)
-    updateCharacterData('height', aiGuesses.height)
-    updateCharacterData('weight', aiGuesses.weight)
-    
-    setTimeout(nextStep, 1000) // Give time to show AI analysis
+    try {
+      updateCharacterData('photo', photo)
+      
+      // Analyze photo for AI guesses
+      console.log('📸 Starting photo analysis...')
+      const aiGuesses = await analyzePhoto(photo)
+      console.log('🎯 AI Analysis complete:', aiGuesses)
+      
+      updateCharacterData('aiGuesses', aiGuesses)
+      updateCharacterData('age', aiGuesses.age)
+      updateCharacterData('height', aiGuesses.height)
+      updateCharacterData('weight', aiGuesses.weight)
+      
+      console.log('✅ Character data updated, moving to next step...')
+      setTimeout(nextStep, 1000) // Give time to show AI analysis
+    } catch (error) {
+      console.error('❌ Error in photo upload:', error)
+      // Fallback to default values
+      const fallbackGuesses = { age: 25, height: 170, weight: 70 }
+      updateCharacterData('aiGuesses', fallbackGuesses)
+      updateCharacterData('age', fallbackGuesses.age)
+      updateCharacterData('height', fallbackGuesses.height)
+      updateCharacterData('weight', fallbackGuesses.weight)
+      setTimeout(nextStep, 1000)
+    }
   }
 
   const handleNameSubmit = () => {
