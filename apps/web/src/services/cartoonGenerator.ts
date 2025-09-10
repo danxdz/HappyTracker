@@ -25,7 +25,13 @@ export interface PhotoAnalysis {
 
 export class CartoonGenerator {
   private static readonly HF_API_URL = 'https://api-inference.huggingface.co/models'
-  private static readonly HF_TOKEN = (import.meta as any).env?.VITE_HF_TOKEN || ''
+  private static readonly HF_TOKEN = (import.meta as any).env?.VITE_HUGGINGFACE_TOKEN || ''
+  
+  // Debug token loading
+  static {
+    console.log('🔑 HF Token loaded:', this.HF_TOKEN ? '✅ Yes' : '❌ No')
+    console.log('🌍 Environment:', (import.meta as any).env?.MODE || 'unknown')
+  }
 
   /**
    * 🎯 ONE-SHOT CARTOON GENERATION
