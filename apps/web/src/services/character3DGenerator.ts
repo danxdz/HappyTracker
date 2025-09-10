@@ -49,12 +49,23 @@ export class Character3DGenerator {
   
   // 🎛️ HF Toggle System - Easy to turn on/off
   private static readonly USE_HF_API = false // Set to true when ready for HF
+  private static dynamicHfApiEnabled = false // Dynamic toggle from UI
   
   // Debug token loading
   static {
     console.log('🔑 HF Token loaded:', this.HF_TOKEN ? '✅ Yes' : '❌ No')
     console.log('🌍 Environment:', (import.meta as any).env?.MODE || 'unknown')
     console.log('🎛️ HF API Mode:', this.USE_HF_API ? '🟢 ENABLED' : '🔴 DISABLED (Canvas Only)')
+  }
+
+  // 🎛️ Dynamic HF API Toggle
+  static setHfApiEnabled(enabled: boolean) {
+    this.dynamicHfApiEnabled = enabled
+    console.log('🎛️ Dynamic HF API Mode:', enabled ? '🟢 ENABLED' : '🔴 DISABLED')
+  }
+
+  static getHfApiEnabled(): boolean {
+    return this.dynamicHfApiEnabled
   }
 
   /**
@@ -68,17 +79,17 @@ export class Character3DGenerator {
     const startTime = Date.now()
     
     try {
-      console.log(`🎯 Starting 3D character generation (${this.USE_HF_API ? 'HF API' : 'Canvas Only'})...`)
+      console.log(`🎯 Starting 3D character generation (${this.dynamicHfApiEnabled ? 'HF API' : 'Canvas Only'})...`)
       console.log('📋 Identity:', identity)
       
       // Step 1: Analyze photo for head features
-      const headFeatures = this.USE_HF_API 
+      const headFeatures = this.dynamicHfApiEnabled 
         ? await this.analyzeHeadFeaturesHF(identity.photo)
         : this.analyzeHeadFeaturesSimple(identity.photo)
       console.log('👤 Head features:', headFeatures)
       
       // Step 2: Generate 6 T-pose views
-      const views = this.USE_HF_API
+      const views = this.dynamicHfApiEnabled
         ? await this.generateTPoseViewsHF(identity, headFeatures)
         : this.generateTPoseViewsCanvas(identity, headFeatures)
       console.log('📸 T-pose views generated:', Object.keys(views))
@@ -663,11 +674,11 @@ export class Character3DGenerator {
    * Just change USE_HF_API to true when ready
    */
   static getCurrentMode(): 'canvas' | 'hf' {
-    return this.USE_HF_API ? 'hf' : 'canvas'
+    return this.dynamicHfApiEnabled ? 'hf' : 'canvas'
   }
 
   static isHFEnabled(): boolean {
-    return this.USE_HF_API
+    return this.dynamicHfApiEnabled
   }
 
   // Random feature generators

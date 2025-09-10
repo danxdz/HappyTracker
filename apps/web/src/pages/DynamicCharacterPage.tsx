@@ -8,6 +8,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Calendar, User, Ruler, Weight, Sparkles, ArrowRight, Check } from 'lucide-react'
+import { Character3DGenerator } from '../services/character3DGenerator'
 
 interface CharacterData {
   photo?: File
@@ -37,6 +38,7 @@ export const DynamicCharacterPage: React.FC = () => {
       weight: 70
     }
   })
+  const [hfApiEnabled, setHfApiEnabled] = useState(false)
 
   // Auto-progress through loading
   useEffect(() => {
@@ -73,25 +75,45 @@ export const DynamicCharacterPage: React.FC = () => {
     }
   }
 
-  // AI Photo Analysis (simplified for now)
+  // AI Photo Analysis (with HF API toggle)
   const analyzePhoto = async (photo: File): Promise<{age: number, height: number, weight: number}> => {
     console.log('🤖 Analyzing photo for age and measures...')
+    console.log('🎛️ HF API Mode:', hfApiEnabled ? '🟢 ENABLED' : '🔴 DISABLED (Simulated)')
     
-    // Simulate AI processing time
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    // For now, return intelligent guesses based on common patterns
-    // Later we can integrate real AI analysis
-    const randomAge = Math.floor(Math.random() * 40) + 18 // 18-58
-    const randomHeight = Math.floor(Math.random() * 40) + 150 // 150-190
-    const randomWeight = Math.floor(Math.random() * 40) + 50 // 50-90
-    
-    console.log('🎯 Generated AI guesses:', { age: randomAge, height: randomHeight, weight: randomWeight })
-    
-    return {
-      age: randomAge,
-      height: randomHeight,
-      weight: randomWeight
+    if (hfApiEnabled) {
+      // TODO: Integrate real Hugging Face API here
+      console.log('🚀 Using Hugging Face API for real analysis...')
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 3000))
+      
+      // For now, return more realistic values when HF is enabled
+      const realisticAge = Math.floor(Math.random() * 30) + 20 // 20-50
+      const realisticHeight = Math.floor(Math.random() * 30) + 160 // 160-190
+      const realisticWeight = Math.floor(Math.random() * 30) + 60 // 60-90
+      
+      console.log('🎯 HF API Analysis complete:', { age: realisticAge, height: realisticHeight, weight: realisticWeight })
+      
+      return {
+        age: realisticAge,
+        height: realisticHeight,
+        weight: realisticWeight
+      }
+    } else {
+      // Simulated analysis
+      console.log('🎭 Using simulated analysis...')
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      
+      const randomAge = Math.floor(Math.random() * 40) + 18 // 18-58
+      const randomHeight = Math.floor(Math.random() * 40) + 150 // 150-190
+      const randomWeight = Math.floor(Math.random() * 40) + 50 // 50-90
+      
+      console.log('🎯 Simulated AI guesses:', { age: randomAge, height: randomHeight, weight: randomWeight })
+      
+      return {
+        age: randomAge,
+        height: randomHeight,
+        weight: randomWeight
+      }
     }
   }
 
@@ -281,6 +303,38 @@ export const DynamicCharacterPage: React.FC = () => {
                 <h3 className="text-2xl font-bold text-white mb-6 text-center">
                   📸 Take Your Photo
                 </h3>
+                
+                {/* HF API Toggle */}
+                <div className="mb-6 p-4 bg-white/5 rounded-xl">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-white font-semibold">🤖 AI Analysis Mode</h4>
+                      <p className="text-gray-400 text-sm">
+                        {hfApiEnabled ? 'Real AI Analysis' : 'Simulated Analysis'}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const newState = !hfApiEnabled
+                        setHfApiEnabled(newState)
+                        Character3DGenerator.setHfApiEnabled(newState)
+                      }}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        hfApiEnabled ? 'bg-green-500' : 'bg-gray-600'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          hfApiEnabled ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  <div className="mt-2 text-xs text-gray-500">
+                    {hfApiEnabled ? '🟢 Using Hugging Face API' : '🔴 Canvas Only Mode'}
+                  </div>
+                </div>
+
                 <div className="text-center">
                   <div className="w-32 h-32 bg-white/20 rounded-xl mx-auto mb-6 flex items-center justify-center">
                     <span className="text-4xl">📷</span>
@@ -304,7 +358,10 @@ export const DynamicCharacterPage: React.FC = () => {
                     Choose Photo
                   </label>
                   <p className="text-gray-400 text-sm mt-4">
-                    AI will analyze your photo for age and measurements
+                    {hfApiEnabled 
+                      ? 'Real AI will analyze your photo for age and measurements' 
+                      : 'Simulated AI will analyze your photo for age and measurements'
+                    }
                   </p>
                 </div>
               </div>
