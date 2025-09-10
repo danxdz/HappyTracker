@@ -10,6 +10,7 @@ import { GalaxyPage } from './pages/GalaxyPage'
 import { PhotoToPopPage } from './pages/PhotoToPopPage'
 import { CartoonPage } from './pages/CartoonPage'
 import { Character3DPage } from './pages/Character3DPage'
+import { DynamicCharacterPage } from './pages/DynamicCharacterPage'
 import { Navigation } from './components/Navigation'
 import { Footer } from './components/Footer'
 
@@ -117,11 +118,16 @@ function App() {
             </motion.div>
           } 
         />
+        <Route 
+          path="/dynamic-character" 
+          element={<DynamicCharacterPage />}
+        />
       </Routes>
       
-      {/* Conditional Navigation and Footer - not shown on galaxy page */}
+      {/* Conditional Navigation and Footer - not shown on galaxy and dynamic pages */}
       <Routes>
         <Route path="/galaxy" element={null} />
+        <Route path="/dynamic-character" element={null} />
         <Route path="*" element={
           <>
             <Navigation />
