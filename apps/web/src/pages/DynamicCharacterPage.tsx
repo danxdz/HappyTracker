@@ -22,7 +22,7 @@ interface CharacterData {
   }
 }
 
-type FlowStep = 'loading' | 'photo' | 'name' | 'age' | 'measures' | 'complete'
+type FlowStep = 'loading' | 'photo' | 'name' | 'age' | 'measures' | 'card' | 'complete'
 
 export const DynamicCharacterPage: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<FlowStep>('loading')
@@ -56,7 +56,7 @@ export const DynamicCharacterPage: React.FC = () => {
   }
 
   const nextStep = () => {
-    const steps: FlowStep[] = ['loading', 'photo', 'name', 'age', 'measures', 'complete']
+    const steps: FlowStep[] = ['loading', 'photo', 'name', 'age', 'measures', 'card', 'complete']
     const currentIndex = steps.indexOf(currentStep)
     if (currentIndex < steps.length - 1) {
       setCurrentStep(steps[currentIndex + 1])
@@ -104,7 +104,11 @@ export const DynamicCharacterPage: React.FC = () => {
   }
 
   const handleMeasuresComplete = () => {
-    setTimeout(nextStep, 500)
+    setTimeout(() => setCurrentStep('card'), 500)
+  }
+
+  const handleCardComplete = () => {
+    setTimeout(() => setCurrentStep('complete'), 1000)
   }
 
   return (
@@ -200,6 +204,19 @@ export const DynamicCharacterPage: React.FC = () => {
                       (AI guessed: {characterData.aiGuesses.weight})
                     </span>
                   </p>
+                </motion.div>
+              )}
+              {currentStep === 'card' && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.3, type: "spring" }}
+                  className="mt-6"
+                >
+                  <div className="w-16 h-16 bg-blue-500 rounded-full mx-auto flex items-center justify-center mb-4">
+                    <Sparkles className="w-8 h-8 text-white" />
+                  </div>
+                  <p className="text-blue-400 font-semibold">Character Card Ready!</p>
                 </motion.div>
               )}
               {currentStep === 'complete' && (
@@ -456,6 +473,85 @@ export const DynamicCharacterPage: React.FC = () => {
             </motion.div>
           )}
 
+          {/* Character Card Display */}
+          {currentStep === 'card' && (
+            <motion.div
+              key="card-popup"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-40"
+            >
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 max-w-2xl w-full mx-4">
+                <h3 className="text-2xl font-bold text-white mb-6 text-center">
+                  🎨 Your Character Card
+                </h3>
+                
+                <div className="grid md:grid-cols-2 gap-8">
+                  {/* Character Info */}
+                  <div className="space-y-4">
+                    <div className="bg-white/5 rounded-xl p-6">
+                      <h4 className="text-xl font-bold text-white mb-4">Character Details</h4>
+                      <div className="space-y-3">
+                        <div className="flex items-center">
+                          <User className="w-5 h-5 text-blue-400 mr-3" />
+                          <span className="text-white font-medium">Name:</span>
+                          <span className="text-gray-300 ml-2">{characterData.name}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <Calendar className="w-5 h-5 text-blue-400 mr-3" />
+                          <span className="text-white font-medium">Age:</span>
+                          <span className="text-gray-300 ml-2">{characterData.age} years old</span>
+                        </div>
+                        <div className="flex items-center">
+                          <Ruler className="w-5 h-5 text-blue-400 mr-3" />
+                          <span className="text-white font-medium">Height:</span>
+                          <span className="text-gray-300 ml-2">{characterData.height} cm</span>
+                        </div>
+                        <div className="flex items-center">
+                          <Weight className="w-5 h-5 text-blue-400 mr-3" />
+                          <span className="text-white font-medium">Weight:</span>
+                          <span className="text-gray-300 ml-2">{characterData.weight} kg</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* AI Analysis Summary */}
+                    <div className="bg-blue-500/20 rounded-xl p-4">
+                      <h5 className="text-white font-semibold mb-2">🤖 AI Analysis Summary</h5>
+                      <div className="text-sm text-gray-300 space-y-1">
+                        <div>Original guesses: {characterData.aiGuesses.age}y, {characterData.aiGuesses.height}cm, {characterData.aiGuesses.weight}kg</div>
+                        <div>Final values: {characterData.age}y, {characterData.height}cm, {characterData.weight}kg</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Cartoon Preview */}
+                  <div className="text-center">
+                    <div className="bg-white/5 rounded-xl p-6">
+                      <h4 className="text-xl font-bold text-white mb-4">Cartoon Preview</h4>
+                      <div className="w-48 h-48 bg-gradient-to-br from-blue-400 to-purple-500 rounded-xl mx-auto flex items-center justify-center mb-4">
+                        <div className="text-6xl">🎨</div>
+                      </div>
+                      <p className="text-gray-300 text-sm">
+                        Your cartoon character will be generated based on this information
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleCardComplete}
+                  className="w-full mt-6 py-3 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-xl font-semibold hover:from-green-600 hover:to-blue-600 transition-all"
+                >
+                  Generate Cartoon Character
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+
         {/* Progress Indicator */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -464,15 +560,16 @@ export const DynamicCharacterPage: React.FC = () => {
           className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
         >
           <div className="flex space-x-2">
-            {['photo', 'name', 'age', 'measures', 'complete'].map((step, index) => (
+            {['photo', 'name', 'age', 'measures', 'card', 'complete'].map((step, index) => (
               <div
                 key={step}
                 className={`w-3 h-3 rounded-full transition-all ${
                   currentStep === step || 
                   (step === 'photo' && currentStep === 'photo') ||
-                  (step === 'name' && ['name', 'age', 'measures', 'complete'].includes(currentStep)) ||
-                  (step === 'age' && ['age', 'measures', 'complete'].includes(currentStep)) ||
-                  (step === 'measures' && ['measures', 'complete'].includes(currentStep)) ||
+                  (step === 'name' && ['name', 'age', 'measures', 'card', 'complete'].includes(currentStep)) ||
+                  (step === 'age' && ['age', 'measures', 'card', 'complete'].includes(currentStep)) ||
+                  (step === 'measures' && ['measures', 'card', 'complete'].includes(currentStep)) ||
+                  (step === 'card' && ['card', 'complete'].includes(currentStep)) ||
                   (step === 'complete' && currentStep === 'complete')
                     ? 'bg-blue-500'
                     : 'bg-white/30'
