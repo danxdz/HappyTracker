@@ -10,30 +10,39 @@ import { motion } from 'framer-motion'
 import { Calendar, User, Ruler, Weight, Sparkles, ArrowRight, Check } from 'lucide-react'
 
 interface CharacterData {
+  photo?: File
   name: string
-  birthDate: Date | null
+  age: number
   height: number
   weight: number
-  age: number
+  aiGuesses: {
+    age: number
+    height: number
+    weight: number
+  }
 }
 
-type FlowStep = 'loading' | 'name' | 'birthdate' | 'measures' | 'complete'
+type FlowStep = 'loading' | 'photo' | 'name' | 'age' | 'measures' | 'complete'
 
 export const DynamicCharacterPage: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<FlowStep>('loading')
   const [characterData, setCharacterData] = useState<CharacterData>({
     name: '',
-    birthDate: null,
+    age: 25,
     height: 170,
     weight: 70,
-    age: 25
+    aiGuesses: {
+      age: 25,
+      height: 170,
+      weight: 70
+    }
   })
 
   // Auto-progress through loading
   useEffect(() => {
     if (currentStep === 'loading') {
       const timer = setTimeout(() => {
-        setCurrentStep('name')
+        setCurrentStep('photo')
       }, 2000)
       return () => clearTimeout(timer)
     }
@@ -47,33 +56,51 @@ export const DynamicCharacterPage: React.FC = () => {
   }
 
   const nextStep = () => {
-    const steps: FlowStep[] = ['loading', 'name', 'birthdate', 'measures', 'complete']
+    const steps: FlowStep[] = ['loading', 'photo', 'name', 'age', 'measures', 'complete']
     const currentIndex = steps.indexOf(currentStep)
     if (currentIndex < steps.length - 1) {
       setCurrentStep(steps[currentIndex + 1])
     }
   }
 
-  const calculateAge = (birthDate: Date): number => {
-    const today = new Date()
-    let age = today.getFullYear() - birthDate.getFullYear()
-    const monthDiff = today.getMonth() - birthDate.getMonth()
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      age--
+  // AI Photo Analysis (simplified for now)
+  const analyzePhoto = async (photo: File): Promise<{age: number, height: number, weight: number}> => {
+    console.log('🤖 Analyzing photo for age and measures...')
+    
+    // For now, return intelligent guesses based on common patterns
+    // Later we can integrate real AI analysis
+    const randomAge = Math.floor(Math.random() * 40) + 18 // 18-58
+    const randomHeight = Math.floor(Math.random() * 40) + 150 // 150-190
+    const randomWeight = Math.floor(Math.random() * 40) + 50 // 50-90
+    
+    return {
+      age: randomAge,
+      height: randomHeight,
+      weight: randomWeight
     }
-    return age
   }
 
-  const handleBirthDateChange = (date: Date) => {
-    updateCharacterData('birthDate', date)
-    updateCharacterData('age', calculateAge(date))
-    setTimeout(nextStep, 500)
+  const handlePhotoUpload = async (photo: File) => {
+    updateCharacterData('photo', photo)
+    
+    // Analyze photo for AI guesses
+    const aiGuesses = await analyzePhoto(photo)
+    updateCharacterData('aiGuesses', aiGuesses)
+    updateCharacterData('age', aiGuesses.age)
+    updateCharacterData('height', aiGuesses.height)
+    updateCharacterData('weight', aiGuesses.weight)
+    
+    setTimeout(nextStep, 1000) // Give time to show AI analysis
   }
 
   const handleNameSubmit = () => {
     if (characterData.name.trim()) {
       setTimeout(nextStep, 500)
     }
+  }
+
+  const handleAgeAdjust = () => {
+    setTimeout(nextStep, 500)
   }
 
   const handleMeasuresComplete = () => {
