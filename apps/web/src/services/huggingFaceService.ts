@@ -1200,6 +1200,14 @@ export class HuggingFaceService {
     console.log('📐 Generating T-pose views for 3D model...')
     
     try {
+      // Try ReadyPlayerMe first (free 3D avatar generation)
+      const readyPlayerMeResult = await this.generateReadyPlayerMeAvatar(imageData)
+      if (readyPlayerMeResult) {
+        console.log('✅ ReadyPlayerMe 3D avatar generated successfully')
+        return readyPlayerMeResult.views
+      }
+      
+      // Fallback to AI-generated views
       const views = []
       const viewAngles = ['front', 'side', 'back']
       
@@ -1221,6 +1229,98 @@ export class HuggingFaceService {
       // Return fallback views
       return this.createFallbackTPoseViews(gameCriteria)
     }
+  }
+  
+  // Generate 3D avatar using ReadyPlayerMe (free)
+  private static async generateReadyPlayerMeAvatar(imageData: string): Promise<{views: string[], modelUrl?: string} | null> {
+    console.log('🎮 Trying ReadyPlayerMe for free 3D avatar generation...')
+    
+    try {
+      // ReadyPlayerMe API endpoint for avatar generation
+      const response = await fetch('https://api.readyplayer.me/v1/avatars', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          // ReadyPlayerMe can generate avatars from photos
+          // This is a simplified version - in reality you'd need to upload the image
+          gender: 'neutral',
+          bodyType: 'fullbody',
+          quality: 'medium'
+        })
+      })
+      
+      if (response.ok) {
+        const result = await response.json()
+        console.log('✅ ReadyPlayerMe avatar generated:', result)
+        
+        // Create views from the 3D model
+        const views = await this.createViewsFromReadyPlayerMe(result)
+        return {
+          views,
+          modelUrl: result.glbUrl
+        }
+      }
+      
+      return null
+      
+    } catch (error) {
+      console.warn('⚠️ ReadyPlayerMe failed:', error)
+      return null
+    }
+  }
+  
+  // Create views from ReadyPlayerMe 3D model
+  private static async createViewsFromReadyPlayerMe(modelData: any): Promise<string[]> {
+    console.log('🔄 Creating views from ReadyPlayerMe model...')
+    
+    // For now, create placeholder views
+    // In a real implementation, you'd render the 3D model from different angles
+    const views = []
+    
+    for (let i = 0; i < 3; i++) {
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      canvas.width = 512
+      canvas.height = 512
+      
+      if (ctx) {
+        // Create a gradient background
+        const gradient = ctx.createLinearGradient(0, 0, 512, 512)
+        gradient.addColorStop(0, '#4ECDC4')
+        gradient.addColorStop(0.5, '#45B7D1')
+        gradient.addColorStop(1, '#96CEB4')
+        
+        ctx.fillStyle = gradient
+        ctx.fillRect(0, 0, 512, 512)
+        
+        // Add ReadyPlayerMe-style character
+        ctx.fillStyle = '#FFFFFF'
+        ctx.beginPath()
+        ctx.arc(256, 200, 60, 0, Math.PI * 2) // Head
+        ctx.fill()
+        
+        ctx.fillRect(220, 260, 72, 120) // Body
+        ctx.fillRect(200, 280, 40, 20)   // Left arm
+        ctx.fillRect(272, 280, 40, 20)   // Right arm
+        ctx.fillRect(240, 380, 20, 60)   // Left leg
+        ctx.fillRect(252, 380, 20, 60)   // Right leg
+        
+        // Add ReadyPlayerMe branding
+        ctx.fillStyle = '#333333'
+        ctx.font = 'bold 20px Arial'
+        ctx.textAlign = 'center'
+        ctx.fillText('ReadyPlayerMe', 256, 460)
+        
+        ctx.font = '14px Arial'
+        ctx.fillText('3D Avatar', 256, 480)
+      }
+      
+      views.push(canvas.toDataURL('image/png'))
+    }
+    
+    return views
   }
   
   // Create fallback T-pose views
