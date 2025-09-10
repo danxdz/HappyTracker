@@ -943,11 +943,11 @@ export class HuggingFaceService {
       // Convert image to base64 for APIs
       const imageBase64 = await this.blobToBase64(imageBlob)
       
-      // 1. Try Hunyuan3D-2 API server (if available locally)
+      // 1. Try Hunyuan3D-2 API server (FREE! if available locally)
       const hunyuanApiUrl = 'http://localhost:8080/generate'
       
       try {
-        console.log('🎯 Trying Hunyuan3D-2 API server...')
+        console.log('🎯 Trying Hunyuan3D-2 API server (FREE 3D generation!)...')
         
         const response = await fetch(hunyuanApiUrl, {
           method: 'POST',
@@ -955,7 +955,10 @@ export class HuggingFaceService {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            image: imageBase64
+            image: imageBase64,
+            style: 'animal_crossing', // Animal Crossing style
+            quality: 'high',
+            format: 'glb'
           })
         })
         
@@ -963,9 +966,9 @@ export class HuggingFaceService {
           const glbBlob = await response.blob()
           const glbDataUrl = await this.blobToBase64(glbBlob)
           
-          console.log('✅ Hunyuan3D-2 3D generation successful')
+          console.log('✅ Hunyuan3D-2 3D generation successful (FREE!)')
           return {
-            model_used: 'Hunyuan3D-2',
+            model_used: 'Hunyuan3D-2 (FREE!)',
             is_3d: true,
             glb_data: glbDataUrl,
             format: 'glb'
