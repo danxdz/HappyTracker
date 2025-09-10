@@ -158,7 +158,23 @@ export const Model3DViewer: React.FC<Model3DViewerProps> = ({
     <div className={`${className} bg-gray-900 rounded-lg border-2 border-gray-700 overflow-hidden`}>
       <Canvas
         camera={{ position: [0, 0, 5], fov: 50 }}
-        gl={{ antialias: true, alpha: true }}
+        gl={{ 
+          antialias: true, 
+          alpha: true,
+          preserveDrawingBuffer: true,
+          powerPreference: "high-performance"
+        }}
+        onCreated={({ gl }) => {
+          // Handle WebGL context lost
+          gl.domElement.addEventListener('webglcontextlost', (event) => {
+            console.warn('WebGL context lost, preventing default')
+            event.preventDefault()
+          })
+          
+          gl.domElement.addEventListener('webglcontextrestored', () => {
+            console.log('WebGL context restored')
+          })
+        }}
       >
         <Suspense fallback={null}>
           {/* Lighting */}

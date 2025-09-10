@@ -810,39 +810,122 @@ export class HuggingFaceService {
     
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')
-    canvas.width = 512
-    canvas.height = 512
+    canvas.width = 1024  // Larger canvas for better quality
+    canvas.height = 1024
     
     if (ctx) {
-      // Create a gradient background
-      const gradient = ctx.createLinearGradient(0, 0, 512, 512)
-      gradient.addColorStop(0, '#FF6B6B')
-      gradient.addColorStop(0.5, '#4ECDC4')
-      gradient.addColorStop(1, '#45B7D1')
+      // Create Animal Crossing style gradient background
+      const gradient = ctx.createLinearGradient(0, 0, 1024, 1024)
+      gradient.addColorStop(0, '#FFE4E1') // Misty rose
+      gradient.addColorStop(0.3, '#E0FFFF') // Light cyan
+      gradient.addColorStop(0.7, '#F0FFF0') // Honeydew
+      gradient.addColorStop(1, '#FFF8DC') // Cornsilk
       
       ctx.fillStyle = gradient
-      ctx.fillRect(0, 0, 512, 512)
+      ctx.fillRect(0, 0, 1024, 1024)
       
-      // Add a simple character silhouette
-      ctx.fillStyle = '#FFFFFF'
+      // Draw full Animal Crossing style character (centered and larger)
+      const centerX = 512
+      const centerY = 400
+      
+      // Hair (soft and fluffy)
+      ctx.fillStyle = '#8B4513' // Brown
       ctx.beginPath()
-      ctx.arc(256, 200, 60, 0, Math.PI * 2) // Head
+      ctx.arc(centerX, centerY - 80, 80, 0, Math.PI * 2)
       ctx.fill()
       
-      ctx.fillRect(220, 260, 72, 120) // Body
-      ctx.fillRect(200, 280, 40, 20)   // Left arm
-      ctx.fillRect(272, 280, 40, 20)   // Right arm
-      ctx.fillRect(240, 380, 20, 60)   // Left leg
-      ctx.fillRect(252, 380, 20, 60)   // Right leg
+      // Head (big and round like Animal Crossing)
+      ctx.fillStyle = '#FFDBB5' // Peach skin
+      ctx.beginPath()
+      ctx.arc(centerX, centerY - 40, 80, 0, Math.PI * 2)
+      ctx.fill()
+      
+      // Eyes (big and cute)
+      ctx.fillStyle = '#4169E1' // Royal blue
+      ctx.beginPath()
+      ctx.arc(centerX - 25, centerY - 50, 15, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.beginPath()
+      ctx.arc(centerX + 25, centerY - 50, 15, 0, Math.PI * 2)
+      ctx.fill()
+      
+      // Eye highlights
+      ctx.fillStyle = '#FFFFFF'
+      ctx.beginPath()
+      ctx.arc(centerX - 20, centerY - 55, 5, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.beginPath()
+      ctx.arc(centerX + 30, centerY - 55, 5, 0, Math.PI * 2)
+      ctx.fill()
+      
+      // Smile (happy)
+      ctx.strokeStyle = '#8B4513'
+      ctx.lineWidth = 4
+      ctx.beginPath()
+      ctx.arc(centerX, centerY - 20, 25, 0, Math.PI)
+      ctx.stroke()
+      
+      // Body (soft and rounded)
+      ctx.fillStyle = '#FFB6C1' // Light pink
+      ctx.beginPath()
+      ctx.roundRect(centerX - 60, centerY + 40, 120, 160, 20)
+      ctx.fill()
+      
+      // Arms (soft)
+      ctx.fillStyle = '#FFDBB5'
+      ctx.beginPath()
+      ctx.roundRect(centerX - 120, centerY + 60, 40, 100, 15)
+      ctx.fill()
+      ctx.beginPath()
+      ctx.roundRect(centerX + 80, centerY + 60, 40, 100, 15)
+      ctx.fill()
+      
+      // Legs (soft)
+      ctx.fillStyle = '#DDA0DD' // Plum
+      ctx.beginPath()
+      ctx.roundRect(centerX - 40, centerY + 200, 30, 120, 12)
+      ctx.fill()
+      ctx.beginPath()
+      ctx.roundRect(centerX + 10, centerY + 200, 30, 120, 12)
+      ctx.fill()
+      
+      // Shoes (cute)
+      ctx.fillStyle = '#F0E68C' // Khaki
+      ctx.beginPath()
+      ctx.roundRect(centerX - 50, centerY + 320, 50, 20, 8)
+      ctx.fill()
+      ctx.beginPath()
+      ctx.roundRect(centerX, centerY + 320, 50, 20, 8)
+      ctx.fill()
+      
+      // Blush (Animal Crossing style)
+      ctx.fillStyle = '#FFB6C1'
+      ctx.beginPath()
+      ctx.arc(centerX - 60, centerY - 10, 15, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.beginPath()
+      ctx.arc(centerX + 60, centerY - 10, 15, 0, Math.PI * 2)
+      ctx.fill()
+      
+      // Add cute flower accessory
+      ctx.fillStyle = '#FF69B4' // Hot pink
+      ctx.beginPath()
+      ctx.arc(centerX, centerY - 120, 20, 0, Math.PI * 2)
+      ctx.fill()
       
       // Add text
-      ctx.fillStyle = '#333333'
-      ctx.font = 'bold 24px Arial'
+      ctx.fillStyle = '#FF1493' // Deep pink
+      ctx.font = 'bold 32px Arial'
       ctx.textAlign = 'center'
-      ctx.fillText('AI Generated', 256, 480)
+      ctx.strokeStyle = '#FFFFFF'
+      ctx.lineWidth = 4
+      ctx.strokeText('Animal Crossing Style', centerX, 600)
+      ctx.fillText('Animal Crossing Style', centerX, 600)
       
-      ctx.font = '16px Arial'
-      ctx.fillText('Fallback Mode', 256, 500)
+      ctx.fillStyle = '#32CD32' // Lime green
+      ctx.font = 'bold 24px Arial'
+      ctx.strokeText('Fallback Character', centerX, 640)
+      ctx.fillText('Fallback Character', centerX, 640)
     }
     
     return new Promise((resolve) => {
