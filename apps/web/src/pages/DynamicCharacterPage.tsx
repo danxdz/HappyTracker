@@ -166,7 +166,7 @@ export const DynamicCharacterPage: React.FC = () => {
                   <h2 className="text-2xl font-bold text-white">{characterData.name}</h2>
                 </motion.div>
               )}
-              {characterData.birthDate && (
+              {characterData.age && currentStep !== 'photo' && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -174,6 +174,11 @@ export const DynamicCharacterPage: React.FC = () => {
                 >
                   <p className="text-gray-300 text-lg">
                     {characterData.age} years old
+                    {currentStep === 'age' && (
+                      <span className="text-blue-400 text-sm ml-2">
+                        (AI guessed: {characterData.aiGuesses.age})
+                      </span>
+                    )}
                   </p>
                 </motion.div>
               )}
@@ -185,9 +190,15 @@ export const DynamicCharacterPage: React.FC = () => {
                 >
                   <p className="text-gray-300">
                     {characterData.height} cm tall
+                    <span className="text-blue-400 text-sm ml-2">
+                      (AI guessed: {characterData.aiGuesses.height})
+                    </span>
                   </p>
                   <p className="text-gray-300">
                     {characterData.weight} kg
+                    <span className="text-blue-400 text-sm ml-2">
+                      (AI guessed: {characterData.aiGuesses.weight})
+                    </span>
                   </p>
                 </motion.div>
               )}
@@ -210,6 +221,49 @@ export const DynamicCharacterPage: React.FC = () => {
 
         {/* Popup Overlays */}
           
+          {/* Photo Upload Popup */}
+          {currentStep === 'photo' && (
+            <motion.div
+              key="photo-popup"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-40"
+            >
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 max-w-md w-full mx-4">
+                <h3 className="text-2xl font-bold text-white mb-6 text-center">
+                  📸 Take Your Photo
+                </h3>
+                <div className="text-center">
+                  <div className="w-32 h-32 bg-white/20 rounded-xl mx-auto mb-6 flex items-center justify-center">
+                    <span className="text-4xl">📷</span>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        handlePhotoUpload(file)
+                      }
+                    }}
+                    className="hidden"
+                    id="photo-upload"
+                  />
+                  <label
+                    htmlFor="photo-upload"
+                    className="block w-full py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition-all cursor-pointer"
+                  >
+                    Choose Photo
+                  </label>
+                  <p className="text-gray-400 text-sm mt-4">
+                    AI will analyze your photo for age and measurements
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           {/* Name Input Popup */}
           {currentStep === 'name' && (
             <motion.div
@@ -249,10 +303,10 @@ export const DynamicCharacterPage: React.FC = () => {
             </motion.div>
           )}
 
-          {/* Birth Date Popup */}
-          {currentStep === 'birthdate' && (
+          {/* Age Adjustment Popup */}
+          {currentStep === 'age' && (
             <motion.div
-              key="birthdate-popup"
+              key="age-popup"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
@@ -260,17 +314,41 @@ export const DynamicCharacterPage: React.FC = () => {
             >
               <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 max-w-md w-full mx-4">
                 <h3 className="text-2xl font-bold text-white mb-6 text-center">
-                  When were you born?
+                  Adjust Your Age
                 </h3>
-                <div className="text-center">
-                  <Calendar className="w-16 h-16 text-blue-400 mx-auto mb-4" />
-                  <input
-                    type="date"
-                    onChange={(e) => handleBirthDateChange(new Date(e.target.value))}
-                    className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-xl text-white focus:outline-none focus:border-blue-400 text-center text-lg"
-                    max={new Date().toISOString().split('T')[0]}
-                  />
+                <div className="text-center mb-6">
+                  <div className="text-4xl mb-4">🎂</div>
+                  <p className="text-gray-300 mb-4">
+                    AI guessed: <span className="text-blue-400 font-semibold">{characterData.aiGuesses.age}</span> years old
+                  </p>
                 </div>
+                
+                <div className="mb-6">
+                  <label className="block text-white font-medium mb-3">
+                    Your Age: {characterData.age} years old
+                  </label>
+                  <input
+                    type="range"
+                    min="18"
+                    max="80"
+                    value={characterData.age}
+                    onChange={(e) => updateCharacterData('age', parseInt(e.target.value))}
+                    className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer"
+                  />
+                  <div className="flex justify-between text-sm text-gray-400 mt-1">
+                    <span>18</span>
+                    <span>80</span>
+                  </div>
+                </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleAgeAdjust}
+                  className="w-full py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-semibold hover:from-blue-600 hover:to-purple-600 transition-all"
+                >
+                  Continue
+                </motion.button>
               </div>
             </motion.div>
           )}
@@ -286,8 +364,27 @@ export const DynamicCharacterPage: React.FC = () => {
             >
               <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 max-w-lg w-full mx-4">
                 <h3 className="text-2xl font-bold text-white mb-6 text-center">
-                  Configure Your Character
+                  Adjust Your Measurements
                 </h3>
+                
+                {/* AI Guesses Display */}
+                <div className="bg-blue-500/20 rounded-xl p-4 mb-6">
+                  <h4 className="text-white font-semibold mb-2 text-center">🤖 AI Guesses from Photo:</h4>
+                  <div className="grid grid-cols-3 gap-4 text-center text-sm">
+                    <div>
+                      <div className="text-blue-400 font-semibold">{characterData.aiGuesses.age}</div>
+                      <div className="text-gray-400">years old</div>
+                    </div>
+                    <div>
+                      <div className="text-blue-400 font-semibold">{characterData.aiGuesses.height}</div>
+                      <div className="text-gray-400">cm tall</div>
+                    </div>
+                    <div>
+                      <div className="text-blue-400 font-semibold">{characterData.aiGuesses.weight}</div>
+                      <div className="text-gray-400">kg</div>
+                    </div>
+                  </div>
+                </div>
                 
                 {/* Little Man Character */}
                 <div className="text-center mb-8">
@@ -367,13 +464,14 @@ export const DynamicCharacterPage: React.FC = () => {
           className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
         >
           <div className="flex space-x-2">
-            {['name', 'birthdate', 'measures', 'complete'].map((step, index) => (
+            {['photo', 'name', 'age', 'measures', 'complete'].map((step, index) => (
               <div
                 key={step}
                 className={`w-3 h-3 rounded-full transition-all ${
                   currentStep === step || 
-                  (step === 'name' && currentStep === 'name') ||
-                  (step === 'birthdate' && ['birthdate', 'measures', 'complete'].includes(currentStep)) ||
+                  (step === 'photo' && currentStep === 'photo') ||
+                  (step === 'name' && ['name', 'age', 'measures', 'complete'].includes(currentStep)) ||
+                  (step === 'age' && ['age', 'measures', 'complete'].includes(currentStep)) ||
                   (step === 'measures' && ['measures', 'complete'].includes(currentStep)) ||
                   (step === 'complete' && currentStep === 'complete')
                     ? 'bg-blue-500'
