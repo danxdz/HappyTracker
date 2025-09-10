@@ -980,7 +980,13 @@ export class HuggingFaceService {
         console.log('❌ Hunyuan3D-2 API not available:', hunyuanError)
       }
       
-      // 2. Try TRELLIS via Replicate API (if token available)
+      // 2. TRELLIS via Replicate API DISABLED (too expensive - $0.033 per request!)
+      console.log('🚫 TRELLIS via Replicate API DISABLED - too expensive!')
+      console.log('💰 Each request costs ~$0.033 (ate all $0.10 credits in 3 requests)')
+      console.log('💡 Use Hunyuan3D-2 (FREE) instead!')
+      
+      // DISABLED CODE - Uncomment only if you want to pay $0.033 per request
+      /*
       const replicateToken = (import.meta as any).env?.VITE_REPLICATE_TOKEN
       if (replicateToken) {
         try {
@@ -1006,8 +1012,6 @@ export class HuggingFaceService {
             const result = await response.json()
             console.log('✅ TRELLIS 3D generation initiated successfully')
             
-            // TRELLIS is async, so we'll return a placeholder for now
-            // In a real implementation, you'd poll the prediction status
             return {
               model_used: 'TRELLIS (Replicate)',
               is_3d: true,
@@ -1024,6 +1028,7 @@ export class HuggingFaceService {
       } else {
         console.log('❌ TRELLIS API token not configured')
       }
+      */
       
       // 3. Fallback to Hugging Face Stable Diffusion with 3D prompts
       console.log('🎯 Falling back to Stable Diffusion XL with 3D prompts...')
@@ -1951,7 +1956,7 @@ export class HuggingFaceService {
     return [
       'google/vit-base-patch16-224', // Image classification
       'Hunyuan3D-2 API Server', // Real 3D model generation (localhost:8080)
-      'TRELLIS (Replicate)', // Microsoft's 3D generation via Replicate API
+      'TRELLIS (Replicate) - DISABLED', // Too expensive! $0.033 per request
       'stabilityai/stable-diffusion-xl-base-1.0', // Text-to-image (3D style fallback)
       'runwayml/stable-diffusion-v1-5', // Alternative text-to-image
       'CompVis/stable-diffusion-v1-4', // Backup text-to-image
