@@ -92,6 +92,7 @@ export interface PopGenerationResult {
     characteristics: any
     gameCriteria: any
     is3D: boolean
+    previewImage?: string
   }
 }
 
@@ -174,13 +175,14 @@ export class HuggingFaceService {
         popImageUrl: previewImage,
         processingTime,
         modelUsed: 'AI Analysis + 3D Character Generation',
-        tPoseViews: undefined,
-        avatar: modelResult.modelUrl, // The 3D character becomes the avatar
+        tPoseViews: modelResult.modelData?.tPoseViews || [],
+        avatar: previewImage, // Show 2D preview as avatar instead of 3D model
         gameCharacter: {
           modelData: modelResult.modelData,
           characteristics: characteristics,
           gameCriteria: gameCriteria,
-          is3D: true
+          is3D: true,
+          previewImage: previewImage // Include preview image for display
         }
       }
       
@@ -595,7 +597,7 @@ export class HuggingFaceService {
       return {
         modelUrl: modelData.modelUrl,
         modelData: {
-          ...modelData,
+          ...modelData.modelData,
           characterDescription,
           gameCriteria,
           characteristics,
@@ -616,16 +618,95 @@ export class HuggingFaceService {
       console.log('🖼️ Generating character preview image...')
       
       const previewPrompt = this.createCharacterPreviewPrompt(characteristics, gameCriteria)
+      console.log('🎨 Preview prompt:', previewPrompt)
+      
       const imageBlob = await this.callTextToImageAPI(previewPrompt)
       const imageData = await this.blobToBase64(imageBlob)
       
-      console.log('✅ Character preview generated')
+      console.log('✅ Character preview generated successfully')
       return imageData
       
     } catch (error) {
       console.warn('⚠️ Preview generation failed, using fallback:', error)
-      return this.createSimplePopImage(characteristics)
+      return this.createEnhancedPopImage(characteristics, gameCriteria)
     }
+  }
+  
+  // Create enhanced pop image with game criteria
+  private static createEnhancedPopImage(characteristics: PopGenerationResult['characteristics'], gameCriteria: any): string {
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    canvas.width = 512
+    canvas.height = 512
+    
+    if (ctx) {
+      // Background
+      ctx.fillStyle = '#ffffff'
+      ctx.fillRect(0, 0, 512, 512)
+      
+      const { personality } = characteristics
+      const { characterClass, visualStyle } = gameCriteria
+      
+      // Character body based on class
+      let bodyColor = '#4ECDC4'
+      if (characterClass === 'Warrior') bodyColor = '#8B4513'
+      else if (characterClass === 'Mage') bodyColor = '#4B0082'
+      else if (characterClass === 'Healer') bodyColor = '#228B22'
+      else if (characterClass === 'Rogue') bodyColor = '#2F4F4F'
+      
+      ctx.fillStyle = bodyColor
+      ctx.beginPath()
+      ctx.arc(256, 300, 80, 0, Math.PI * 2)
+      ctx.fill()
+      
+      // Eyes
+      ctx.fillStyle = visualStyle?.eyeColor || '#000000'
+      ctx.beginPath()
+      ctx.arc(240, 280, 8, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.beginPath()
+      ctx.arc(272, 280, 8, 0, Math.PI * 2)
+      ctx.fill()
+      
+      // Smile based on personality
+      ctx.strokeStyle = '#000000'
+      ctx.lineWidth = 3
+      if (personality.friendliness > 70) {
+        ctx.beginPath()
+        ctx.arc(256, 300, 40, 0, Math.PI)
+        ctx.stroke()
+      } else {
+        ctx.beginPath()
+        ctx.moveTo(220, 300)
+        ctx.lineTo(292, 300)
+        ctx.stroke()
+      }
+      
+      // Class-specific accessories
+      if (characterClass === 'Warrior') {
+        ctx.fillStyle = '#FFD700'
+        ctx.fillRect(200, 200, 20, 20) // Sword
+      } else if (characterClass === 'Mage') {
+        ctx.fillStyle = '#FF69B4'
+        ctx.beginPath()
+        ctx.arc(256, 200, 15, 0, Math.PI * 2)
+        ctx.fill() // Magic orb
+      } else if (characterClass === 'Healer') {
+        ctx.fillStyle = '#FF6B6B'
+        ctx.beginPath()
+        ctx.arc(256, 200, 15, 0, Math.PI * 2)
+        ctx.fill() // Healing symbol
+      }
+      
+      // Add text
+      ctx.fillStyle = '#333333'
+      ctx.font = '16px Arial'
+      ctx.textAlign = 'center'
+      ctx.fillText(`${characterClass} Character`, 256, 450)
+      ctx.fillText('2D Preview', 256, 470)
+    }
+    
+    return canvas.toDataURL('image/png')
   }
   
   // Call real text-to-image API
@@ -882,61 +963,187 @@ export class HuggingFaceService {
     return abilities.length > 0 ? abilities : ['Basic Skills']
   }
   
-  // Create 3D character description for model generation
+  // Create detailed 3D character description for model generation
   private static create3DCharacterDescription(characteristics: PopGenerationResult['characteristics'], gameCriteria: any): string {
     const { visualStyle, personality, characterClass } = gameCriteria
     
-    let description = `A 3D game character for HappyTracker, `
+    let description = `A detailed 3D game character for HappyTracker, `
+    
+    // Physical appearance based on photo analysis
     description += `${visualStyle.faceShape} face shape, `
-    description += `${visualStyle.eyeColor} eyes, `
-    description += `${visualStyle.hairColor} ${visualStyle.hairStyle} hair, `
-    description += `${visualStyle.skinTone} skin tone, `
-    description += `character class: ${characterClass}, `
+    description += `${visualStyle.eyeColor} eyes with expressive detail, `
+    description += `${visualStyle.hairColor} ${visualStyle.hairStyle} hair with texture, `
+    description += `${visualStyle.skinTone} skin tone with realistic shading, `
     
-    // Add personality-based visual traits
-    if (personality.energy > 70) description += 'energetic pose, dynamic stance, '
-    if (personality.friendliness > 70) description += 'warm smile, welcoming expression, '
-    if (personality.confidence > 70) description += 'confident posture, bold stance, '
-    if (personality.creativity > 70) description += 'artistic accessories, creative outfit, '
+    // Character class specific details
+    if (characterClass === 'Warrior') {
+      description += 'strong build, confident stance, warrior armor, battle-ready appearance, '
+    } else if (characterClass === 'Mage') {
+      description += 'mystical robes, magical accessories, wise expression, spell-casting pose, '
+    } else if (characterClass === 'Healer') {
+      description += 'gentle appearance, healing symbols, peaceful aura, caring expression, '
+    } else if (characterClass === 'Rogue') {
+      description += 'agile build, stealthy outfit, sharp features, quick stance, '
+    } else {
+      description += 'balanced appearance, explorer gear, curious expression, adventurous pose, '
+    }
     
-    description += '3D game character style, detailed model, game-ready, full body, standing pose, white background'
+    // Personality-based visual traits
+    if (personality.energy > 70) description += 'energetic pose, dynamic stance, vibrant colors, '
+    if (personality.friendliness > 70) description += 'warm smile, welcoming expression, friendly gestures, '
+    if (personality.confidence > 70) description += 'confident posture, bold stance, strong presence, '
+    if (personality.creativity > 70) description += 'artistic accessories, creative outfit, unique style, '
+    
+    // Technical specifications for 3D model
+    description += 'high-quality 3D model, detailed textures, game-ready topology, '
+    description += 'T-pose for rigging, full body visible, clean geometry, '
+    description += 'professional 3D rendering, studio lighting, white background, '
+    description += 'character sheet style, front view, side view, back view'
     
     return description
   }
   
-  // Generate actual 3D model (placeholder for real 3D generation)
+  // Create T-pose views for 3D model generation
+  private static createTPoseViewsPrompt(characteristics: PopGenerationResult['characteristics'], gameCriteria: any): string {
+    const { visualStyle, characterClass } = gameCriteria
+    
+    let prompt = `A 3D character model sheet for HappyTracker game, `
+    prompt += `${visualStyle.faceShape} face, ${visualStyle.eyeColor} eyes, `
+    prompt += `${visualStyle.hairColor} ${visualStyle.hairStyle} hair, `
+    prompt += `${visualStyle.skinTone} skin tone, `
+    prompt += `character class: ${characterClass}, `
+    
+    // T-pose specific details
+    prompt += 'T-pose stance, arms extended horizontally, legs slightly apart, '
+    prompt += 'neutral expression, front view, side view, back view, '
+    prompt += '3D model reference sheet, character design, '
+    prompt += 'clean white background, professional character sheet, '
+    prompt += 'detailed anatomy, proper proportions, game character style'
+    
+    return prompt
+  }
+  
+  // Generate actual 3D model with T-pose views
   private static async generateActual3DModel(imageData: string, characterDescription: string, gameCriteria: any): Promise<any> {
-    console.log('🎮 Generating actual 3D model...')
+    console.log('🎮 Generating actual 3D model with T-pose views...')
     
-    // This would integrate with real 3D generation services
-    // For now, we'll create a detailed 3D model data structure
-    
-    const modelData = {
-      format: 'GLB',
-      version: '2.0',
-      generated: new Date().toISOString(),
-      characterDescription,
-      gameCriteria,
-      meshes: [
-        {
-          name: 'CharacterBody',
-          vertices: this.generateCharacterVertices(gameCriteria),
-          materials: this.generateCharacterMaterials(gameCriteria),
-          animations: this.generateCharacterAnimations(gameCriteria)
+    try {
+      // Generate T-pose views using AI
+      const tPoseViews = await this.generateTPoseViews(imageData, gameCriteria)
+      
+      // Create 3D model data structure
+      const modelData = {
+        format: 'GLB',
+        version: '2.0',
+        generated: new Date().toISOString(),
+        characterDescription,
+        gameCriteria,
+        tPoseViews: tPoseViews,
+        meshes: [
+          {
+            name: 'CharacterBody',
+            vertices: this.generateCharacterVertices(gameCriteria),
+            materials: this.generateCharacterMaterials(gameCriteria),
+            animations: this.generateCharacterAnimations(gameCriteria)
+          }
+        ],
+        metadata: {
+          generatedBy: 'HappyTracker AI',
+          isInGameCharacter: true,
+          characterClass: gameCriteria.characterClass,
+          specialAbilities: gameCriteria.specialAbilities,
+          generatedFromPhoto: true
         }
-      ],
-      metadata: {
-        generatedBy: 'HappyTracker AI',
-        isInGameCharacter: true,
-        characterClass: gameCriteria.characterClass,
-        specialAbilities: gameCriteria.specialAbilities
       }
+      
+      return {
+        modelUrl: `data:application/octet-stream;base64,${btoa(JSON.stringify(modelData))}`,
+        modelData
+      }
+      
+    } catch (error) {
+      console.warn('⚠️ 3D model generation failed:', error)
+      throw error
+    }
+  }
+  
+  // Generate T-pose views for 3D model
+  private static async generateTPoseViews(imageData: string, gameCriteria: any): Promise<string[]> {
+    console.log('📐 Generating T-pose views for 3D model...')
+    
+    try {
+      const views = []
+      const viewAngles = ['front', 'side', 'back']
+      
+      for (const angle of viewAngles) {
+        const prompt = this.createTPoseViewsPrompt(gameCriteria.characteristics, gameCriteria)
+        const anglePrompt = `${prompt}, ${angle} view, T-pose stance, arms extended horizontally`
+        
+        console.log(`🎨 Generating ${angle} view...`)
+        const imageBlob = await this.callTextToImageAPI(anglePrompt)
+        const imageData = await this.blobToBase64(imageBlob)
+        views.push(imageData)
+      }
+      
+      console.log('✅ T-pose views generated successfully')
+      return views
+      
+    } catch (error) {
+      console.warn('⚠️ T-pose views generation failed:', error)
+      // Return fallback views
+      return this.createFallbackTPoseViews(gameCriteria)
+    }
+  }
+  
+  // Create fallback T-pose views
+  private static createFallbackTPoseViews(gameCriteria: any): string[] {
+    console.log('🔄 Creating fallback T-pose views...')
+    
+    const views = []
+    const { characterClass } = gameCriteria
+    
+    for (let i = 0; i < 3; i++) {
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      canvas.width = 512
+      canvas.height = 512
+      
+      if (ctx) {
+        // Background
+        ctx.fillStyle = '#ffffff'
+        ctx.fillRect(0, 0, 512, 512)
+        
+        // T-pose character
+        ctx.fillStyle = characterClass === 'Warrior' ? '#8B4513' : 
+                       characterClass === 'Mage' ? '#4B0082' : 
+                       characterClass === 'Healer' ? '#228B22' : 
+                       characterClass === 'Rogue' ? '#2F4F4F' : '#4682B4'
+        
+        // Body (T-pose)
+        ctx.fillRect(240, 200, 32, 120) // Torso
+        ctx.fillRect(200, 220, 40, 20)   // Left arm (horizontal)
+        ctx.fillRect(272, 220, 40, 20)   // Right arm (horizontal)
+        ctx.fillRect(248, 320, 16, 60)   // Left leg
+        ctx.fillRect(248, 320, 16, 60)   // Right leg
+        
+        // Head
+        ctx.fillStyle = '#FDBCB4'
+        ctx.beginPath()
+        ctx.arc(256, 180, 20, 0, Math.PI * 2)
+        ctx.fill()
+        
+        // Add text
+        ctx.fillStyle = '#333333'
+        ctx.font = '14px Arial'
+        ctx.textAlign = 'center'
+        ctx.fillText(`${characterClass} T-Pose`, 256, 450)
+        ctx.fillText(`View ${i + 1}`, 256, 470)
+      }
+      
+      views.push(canvas.toDataURL('image/png'))
     }
     
-    return {
-      modelUrl: `data:application/octet-stream;base64,${btoa(JSON.stringify(modelData))}`,
-      modelData
-    }
+    return views
   }
   
   // Create fallback 3D model

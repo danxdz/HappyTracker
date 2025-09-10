@@ -104,6 +104,25 @@ export const StepByStepProgress: React.FC<StepByStepProgressProps> = ({
             {step.id === '3d-character' && step.data && (
               <div className="mt-3">
                 <h4 className="text-sm font-medium text-gray-700 mb-2">3D In-Game Character:</h4>
+                
+                {/* T-pose Views */}
+                {step.data.tPoseViews && step.data.tPoseViews.length > 0 && (
+                  <div className="mb-3">
+                    <h5 className="text-xs font-medium text-gray-600 mb-2">T-Pose Views:</h5>
+                    <div className="grid grid-cols-3 gap-2">
+                      {step.data.tPoseViews.map((view: string, index: number) => (
+                        <img
+                          key={index}
+                          src={view}
+                          alt={`T-pose view ${index + 1}`}
+                          className="w-20 h-20 object-cover rounded border"
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* 3D Model Info */}
                 <div className="text-center">
                   <div className="w-32 h-32 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg border-2 border-gray-200 mx-auto flex items-center justify-center">
                     <div className="text-center">
