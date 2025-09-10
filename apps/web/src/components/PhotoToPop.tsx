@@ -73,18 +73,18 @@ export const PhotoToPop: React.FC<PhotoToPopProps> = ({ onPhotoProcessed, onClos
           updateStepStatus('face-analysis', 'active')
         } else if (step.includes('Face analysis complete')) {
           updateStepStatus('face-analysis', 'completed', data)
+        } else if (step.includes('Creating character criteria')) {
+          updateStepStatus('character-criteria', 'active')
+        } else if (step.includes('Character criteria ready')) {
+          updateStepStatus('character-criteria', 'completed', data)
+        } else if (step.includes('Creating 3D in-game character')) {
+          updateStepStatus('3d-character', 'active')
+        } else if (step.includes('3D character model ready')) {
+          updateStepStatus('3d-character', 'completed', data)
         } else if (step.includes('Creating character preview')) {
           updateStepStatus('character-preview', 'active')
         } else if (step.includes('Character preview ready')) {
           updateStepStatus('character-preview', 'completed', data)
-        } else if (step.includes('Creating your unique pop character')) {
-          updateStepStatus('pop-generation', 'active')
-        } else if (step.includes('Your pop character is ready')) {
-          updateStepStatus('pop-generation', 'completed', data)
-        } else if (step.includes('Preparing 3D model')) {
-          updateStepStatus('3d-model', 'active')
-        } else if (step.includes('3D model ready')) {
-          updateStepStatus('3d-model', 'completed', data)
         }
         
         if (data) {

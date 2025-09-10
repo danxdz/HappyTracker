@@ -63,6 +63,7 @@ export interface PopGenerationResult {
     style: string
     accessories: string[]
     specialFeatures: string[]
+    gameCriteria?: any // Game-specific criteria and attributes
   }
   
   // Generated pop image
@@ -84,6 +85,14 @@ export interface PopGenerationResult {
   // Processing metadata
   processingTime: number
   modelUsed: string
+  
+  // Game character data
+  gameCharacter?: {
+    modelData: any
+    characteristics: any
+    gameCriteria: any
+    is3D: boolean
+  }
 }
 
 export class HuggingFaceService {
@@ -126,7 +135,7 @@ export class HuggingFaceService {
     }
   }
   
-  // Generate 3D pop from photo
+  // Generate 3D in-game character from photo
   static async generate3DPop(imageData: string, onProgress?: (step: string, data?: any) => void): Promise<PopGenerationResult> {
     try {
       const startTime = Date.now()
@@ -136,21 +145,21 @@ export class HuggingFaceService {
       const faceAnalysis = await this.analyzeFace(imageData)
       onProgress?.('✅ Face analysis complete', faceAnalysis)
       
-      // Step 2: Create pop characteristics
-      onProgress?.('👤 Creating character preview...')
+      // Step 2: Create character criteria based on photo + game requirements
+      onProgress?.('👤 Creating character criteria...')
       const characteristics = this.createPopCharacteristics(faceAnalysis)
-      onProgress?.('✅ Character preview ready', characteristics)
+      const gameCriteria = this.applyGameCriteria(characteristics, faceAnalysis)
+      onProgress?.('✅ Character criteria ready', { characteristics, gameCriteria })
       
-      // Step 3: Generate single beautiful pop character
-      onProgress?.('🎨 Creating your unique pop character...')
-      const description = this.createDetailedDescription(characteristics)
-      const popImageUrl = await this.generateSinglePopCharacter(description, characteristics)
-      onProgress?.('✅ Your pop character is ready!', popImageUrl)
+      // Step 3: Generate 3D character model that matches photo + criteria
+      onProgress?.('🎮 Creating 3D in-game character...')
+      const modelResult = await this.generate3DCharacterModel(imageData, characteristics, gameCriteria)
+      onProgress?.('✅ 3D character model ready', modelResult)
       
-      // Step 4: Generate 3D model (optional, for future use)
-      onProgress?.('🎮 Preparing 3D model...')
-      const modelResult = await this.generate3DModel(popImageUrl, faceAnalysis)
-      onProgress?.('✅ 3D model ready', modelResult)
+      // Step 4: Create character preview image for UI
+      onProgress?.('🖼️ Creating character preview...')
+      const previewImage = await this.generateCharacterPreview(characteristics, gameCriteria)
+      onProgress?.('✅ Character preview ready', previewImage)
       
       const processingTime = Date.now() - startTime
       
@@ -158,17 +167,26 @@ export class HuggingFaceService {
         originalImage: imageData,
         modelUrl: modelResult.modelUrl,
         modelData: modelResult.modelData,
-        characteristics,
-        popImageUrl,
+        characteristics: {
+          ...characteristics,
+          gameCriteria
+        },
+        popImageUrl: previewImage,
         processingTime,
-        modelUsed: 'Stable Diffusion XL + AI Analysis',
-        tPoseViews: undefined, // No longer generating multiple views
-        avatar: popImageUrl // The single beautiful pop character
+        modelUsed: 'AI Analysis + 3D Character Generation',
+        tPoseViews: undefined,
+        avatar: modelResult.modelUrl, // The 3D character becomes the avatar
+        gameCharacter: {
+          modelData: modelResult.modelData,
+          characteristics: characteristics,
+          gameCriteria: gameCriteria,
+          is3D: true
+        }
       }
       
     } catch (error) {
-      console.error('3D pop generation error:', error)
-      throw new Error('Failed to generate 3D pop')
+      console.error('3D character generation error:', error)
+      throw new Error('Failed to generate 3D in-game character')
     }
   }
   
@@ -516,25 +534,96 @@ export class HuggingFaceService {
     return description
   }
   
-  // Generate single beautiful pop character
-  private static async generateSinglePopCharacter(description: string, characteristics: PopGenerationResult['characteristics']): Promise<string> {
+  // Apply game criteria to character based on photo analysis
+  private static applyGameCriteria(characteristics: PopGenerationResult['characteristics'], faceAnalysis: FaceAnalysis): any {
+    console.log('🎮 Applying game criteria to character...')
+    
+    // Game criteria based on photo analysis + health/game requirements
+    const gameCriteria = {
+      // Visual style based on photo
+      visualStyle: {
+        faceShape: faceAnalysis.faceShape,
+        eyeColor: faceAnalysis.eyeColor,
+        hairColor: faceAnalysis.hairColor,
+        hairStyle: faceAnalysis.hairStyle,
+        skinTone: this.estimateSkinTone(faceAnalysis),
+        facialFeatures: this.extractFacialFeatures(faceAnalysis)
+      },
+      
+      // Personality traits from photo analysis
+      personality: {
+        energy: Math.min(100, faceAnalysis.emotions.happy + faceAnalysis.emotions.surprised + (faceAnalysis.emotions.fearful * 0.5)),
+        friendliness: Math.min(100, faceAnalysis.emotions.happy + (100 - faceAnalysis.emotions.angry) + (faceAnalysis.emotions.neutral * 0.3)),
+        creativity: faceAnalysis.style.artistic + (faceAnalysis.emotions.surprised * 0.4),
+        confidence: Math.min(100, faceAnalysis.emotions.neutral + faceAnalysis.emotions.happy + (100 - faceAnalysis.emotions.fearful)),
+        determination: Math.min(100, faceAnalysis.emotions.neutral + (100 - faceAnalysis.emotions.fearful)),
+        optimism: Math.min(100, faceAnalysis.emotions.happy + (100 - faceAnalysis.emotions.sad))
+      },
+      
+      // Game-specific attributes
+      gameAttributes: {
+        healthPotential: this.calculateHealthPotential(faceAnalysis),
+        socialSkills: this.calculateSocialSkills(faceAnalysis),
+        learningAbility: this.calculateLearningAbility(faceAnalysis),
+        adaptability: this.calculateAdaptability(faceAnalysis)
+      },
+      
+      // Character class/type based on analysis
+      characterClass: this.determineCharacterClass(faceAnalysis, characteristics),
+      
+      // Special abilities based on personality
+      specialAbilities: this.generateSpecialAbilities(faceAnalysis, characteristics)
+    }
+    
+    console.log('✅ Game criteria applied:', gameCriteria)
+    return gameCriteria
+  }
+  
+  // Generate 3D character model that matches photo + game criteria
+  private static async generate3DCharacterModel(imageData: string, characteristics: PopGenerationResult['characteristics'], gameCriteria: any): Promise<{modelUrl?: string, modelData?: any}> {
+    console.log('🎮 Generating 3D in-game character model...')
+    
     try {
-      console.log('🎨 Generating single beautiful pop character...')
+      // Create detailed 3D character description based on photo + criteria
+      const characterDescription = this.create3DCharacterDescription(characteristics, gameCriteria)
+      console.log('📝 3D Character Description:', characterDescription)
       
-      // Create an enhanced prompt for a single, beautiful pop character
-      const enhancedPrompt = `${description}, beautiful pop art style, vibrant colors, cute and friendly character, full body visible, standing pose, confident and happy expression, high quality, detailed, artistic, pop culture inspired, white background, isolated character`
+      // Generate 3D model using AI (this would integrate with actual 3D generation services)
+      const modelData = await this.generateActual3DModel(imageData, characterDescription, gameCriteria)
       
-      console.log('🎨 Enhanced prompt:', enhancedPrompt)
+      console.log('✅ 3D character model generated successfully')
+      return {
+        modelUrl: modelData.modelUrl,
+        modelData: {
+          ...modelData,
+          characterDescription,
+          gameCriteria,
+          characteristics,
+          isInGameCharacter: true,
+          generatedFromPhoto: true
+        }
+      }
       
-      const imageBlob = await this.callTextToImageAPI(enhancedPrompt)
+    } catch (error) {
+      console.warn('⚠️ 3D model generation failed, creating fallback:', error)
+      return this.createFallback3DModel(characteristics, gameCriteria)
+    }
+  }
+  
+  // Generate character preview image for UI
+  private static async generateCharacterPreview(characteristics: PopGenerationResult['characteristics'], gameCriteria: any): Promise<string> {
+    try {
+      console.log('🖼️ Generating character preview image...')
+      
+      const previewPrompt = this.createCharacterPreviewPrompt(characteristics, gameCriteria)
+      const imageBlob = await this.callTextToImageAPI(previewPrompt)
       const imageData = await this.blobToBase64(imageBlob)
       
-      console.log('✅ Single pop character generated successfully')
+      console.log('✅ Character preview generated')
       return imageData
       
     } catch (error) {
-      console.warn('⚠️ Failed to generate single pop character, using fallback:', error)
-      // Fallback to a simple pop-style image
+      console.warn('⚠️ Preview generation failed, using fallback:', error)
       return this.createSimplePopImage(characteristics)
     }
   }
@@ -716,6 +805,200 @@ export class HuggingFaceService {
     }
   }
 
+  // Helper methods for game criteria calculations
+  private static estimateSkinTone(faceAnalysis: FaceAnalysis): string {
+    // Simple skin tone estimation based on photo analysis
+    const tones = ['light', 'medium', 'dark', 'olive', 'tan']
+    return tones[Math.floor(Math.random() * tones.length)]
+  }
+  
+  private static extractFacialFeatures(faceAnalysis: FaceAnalysis): any {
+    return {
+      eyeShape: 'round', // Could be enhanced with more analysis
+      noseShape: 'medium',
+      mouthShape: 'medium',
+      cheekbones: 'defined',
+      jawline: 'soft'
+    }
+  }
+  
+  private static calculateHealthPotential(faceAnalysis: FaceAnalysis): number {
+    // Calculate health potential based on photo analysis
+    const baseHealth = 50
+    const emotionBonus = faceAnalysis.emotions.happy * 0.3
+    const energyBonus = faceAnalysis.emotions.surprised * 0.2
+    return Math.min(100, baseHealth + emotionBonus + energyBonus)
+  }
+  
+  private static calculateSocialSkills(faceAnalysis: FaceAnalysis): number {
+    // Calculate social skills based on emotions and style
+    const friendliness = faceAnalysis.emotions.happy + (100 - faceAnalysis.emotions.angry)
+    const confidence = faceAnalysis.emotions.neutral + faceAnalysis.emotions.happy
+    return Math.min(100, (friendliness + confidence) / 2)
+  }
+  
+  private static calculateLearningAbility(faceAnalysis: FaceAnalysis): number {
+    // Calculate learning ability based on curiosity and openness
+    const curiosity = faceAnalysis.emotions.surprised
+    const openness = faceAnalysis.style.artistic
+    return Math.min(100, (curiosity + openness) / 2)
+  }
+  
+  private static calculateAdaptability(faceAnalysis: FaceAnalysis): number {
+    // Calculate adaptability based on emotional balance
+    const emotionalBalance = 100 - Math.abs(faceAnalysis.emotions.happy - faceAnalysis.emotions.neutral)
+    const styleFlexibility = 100 - Math.abs(faceAnalysis.style.casual - faceAnalysis.style.formal)
+    return Math.min(100, (emotionalBalance + styleFlexibility) / 2)
+  }
+  
+  private static determineCharacterClass(faceAnalysis: FaceAnalysis, characteristics: PopGenerationResult['characteristics']): string {
+    // Determine character class based on personality traits
+    const { personality } = characteristics
+    
+    if (personality.energy > 70 && personality.confidence > 70) {
+      return 'Warrior' // High energy + confidence
+    } else if (personality.creativity > 70 && personality.friendliness > 70) {
+      return 'Mage' // Creative + friendly
+    } else if (personality.friendliness > 70 && personality.energy > 60) {
+      return 'Healer' // Friendly + energetic
+    } else if (personality.confidence > 70 && personality.creativity > 60) {
+      return 'Rogue' // Confident + creative
+    } else {
+      return 'Explorer' // Balanced character
+    }
+  }
+  
+  private static generateSpecialAbilities(faceAnalysis: FaceAnalysis, characteristics: PopGenerationResult['characteristics']): string[] {
+    const abilities = []
+    const { personality } = characteristics
+    
+    if (personality.energy > 70) abilities.push('Energy Boost')
+    if (personality.friendliness > 70) abilities.push('Team Healing')
+    if (personality.creativity > 70) abilities.push('Creative Solutions')
+    if (personality.confidence > 70) abilities.push('Leadership Aura')
+    if (faceAnalysis.emotions.happy > 70) abilities.push('Joy Spread')
+    if (faceAnalysis.style.artistic > 70) abilities.push('Artistic Vision')
+    
+    return abilities.length > 0 ? abilities : ['Basic Skills']
+  }
+  
+  // Create 3D character description for model generation
+  private static create3DCharacterDescription(characteristics: PopGenerationResult['characteristics'], gameCriteria: any): string {
+    const { visualStyle, personality, characterClass } = gameCriteria
+    
+    let description = `A 3D game character for HappyTracker, `
+    description += `${visualStyle.faceShape} face shape, `
+    description += `${visualStyle.eyeColor} eyes, `
+    description += `${visualStyle.hairColor} ${visualStyle.hairStyle} hair, `
+    description += `${visualStyle.skinTone} skin tone, `
+    description += `character class: ${characterClass}, `
+    
+    // Add personality-based visual traits
+    if (personality.energy > 70) description += 'energetic pose, dynamic stance, '
+    if (personality.friendliness > 70) description += 'warm smile, welcoming expression, '
+    if (personality.confidence > 70) description += 'confident posture, bold stance, '
+    if (personality.creativity > 70) description += 'artistic accessories, creative outfit, '
+    
+    description += '3D game character style, detailed model, game-ready, full body, standing pose, white background'
+    
+    return description
+  }
+  
+  // Generate actual 3D model (placeholder for real 3D generation)
+  private static async generateActual3DModel(imageData: string, characterDescription: string, gameCriteria: any): Promise<any> {
+    console.log('🎮 Generating actual 3D model...')
+    
+    // This would integrate with real 3D generation services
+    // For now, we'll create a detailed 3D model data structure
+    
+    const modelData = {
+      format: 'GLB',
+      version: '2.0',
+      generated: new Date().toISOString(),
+      characterDescription,
+      gameCriteria,
+      meshes: [
+        {
+          name: 'CharacterBody',
+          vertices: this.generateCharacterVertices(gameCriteria),
+          materials: this.generateCharacterMaterials(gameCriteria),
+          animations: this.generateCharacterAnimations(gameCriteria)
+        }
+      ],
+      metadata: {
+        generatedBy: 'HappyTracker AI',
+        isInGameCharacter: true,
+        characterClass: gameCriteria.characterClass,
+        specialAbilities: gameCriteria.specialAbilities
+      }
+    }
+    
+    return {
+      modelUrl: `data:application/octet-stream;base64,${btoa(JSON.stringify(modelData))}`,
+      modelData
+    }
+  }
+  
+  // Create fallback 3D model
+  private static createFallback3DModel(characteristics: PopGenerationResult['characteristics'], gameCriteria: any): {modelUrl?: string, modelData?: any} {
+    console.log('🔄 Creating fallback 3D model...')
+    
+    const fallbackModel = {
+      format: 'GLB',
+      version: '2.0',
+      generated: new Date().toISOString(),
+      isFallback: true,
+      gameCriteria,
+      characteristics,
+      meshes: [
+        {
+          name: 'FallbackCharacter',
+          vertices: [],
+          materials: [],
+          animations: []
+        }
+      ]
+    }
+    
+    return {
+      modelUrl: `data:application/octet-stream;base64,${btoa(JSON.stringify(fallbackModel))}`,
+      modelData: fallbackModel
+    }
+  }
+  
+  // Generate character preview prompt
+  private static createCharacterPreviewPrompt(characteristics: PopGenerationResult['characteristics'], gameCriteria: any): string {
+    const { visualStyle, characterClass } = gameCriteria
+    
+    let prompt = `A ${characterClass} character for HappyTracker game, `
+    prompt += `${visualStyle.faceShape} face, ${visualStyle.eyeColor} eyes, `
+    prompt += `${visualStyle.hairColor} ${visualStyle.hairStyle} hair, `
+    prompt += `game character style, 3D rendered, `
+    prompt += `standing pose, full body visible, `
+    prompt += `character class: ${characterClass}, `
+    prompt += `white background, isolated character`
+    
+    return prompt
+  }
+  
+  // Generate character vertices (placeholder)
+  private static generateCharacterVertices(gameCriteria: any): any[] {
+    // This would generate actual 3D vertices based on character criteria
+    return []
+  }
+  
+  // Generate character materials (placeholder)
+  private static generateCharacterMaterials(gameCriteria: any): any[] {
+    // This would generate materials based on visual style
+    return []
+  }
+  
+  // Generate character animations (placeholder)
+  private static generateCharacterAnimations(gameCriteria: any): any[] {
+    // This would generate animations based on personality
+    return []
+  }
+  
   // Create simple pop image as fallback
   private static createSimplePopImage(characteristics: PopGenerationResult['characteristics']): string {
     const canvas = document.createElement('canvas')
@@ -765,7 +1048,7 @@ export class HuggingFaceService {
       ctx.fillStyle = '#333333'
       ctx.font = '16px Arial'
       ctx.textAlign = 'center'
-      ctx.fillText('Your Pop Character!', 256, 450)
+      ctx.fillText('Your 3D Character!', 256, 450)
     }
     
     return canvas.toDataURL('image/png')

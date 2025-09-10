@@ -77,17 +77,57 @@ export const StepByStepProgress: React.FC<StepByStepProgressProps> = ({
               </div>
             )}
 
-            {/* Pop Character Preview */}
-            {step.id === 'pop-generation' && step.data && (
+            {/* Character Criteria Display */}
+            {step.id === 'character-criteria' && step.data && (
               <div className="mt-3">
-                <h4 className="text-sm font-medium text-gray-700 mb-2">Your Pop Character:</h4>
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Character Criteria:</h4>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div><span className="font-medium">Class:</span> {step.data.gameCriteria?.characterClass}</div>
+                  <div><span className="font-medium">Health Potential:</span> {step.data.gameCriteria?.gameAttributes?.healthPotential}/100</div>
+                  <div><span className="font-medium">Social Skills:</span> {step.data.gameCriteria?.gameAttributes?.socialSkills}/100</div>
+                  <div><span className="font-medium">Learning Ability:</span> {step.data.gameCriteria?.gameAttributes?.learningAbility}/100</div>
+                  <div className="col-span-2">
+                    <span className="font-medium">Special Abilities:</span>
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {step.data.gameCriteria?.specialAbilities?.map((ability: string, i: number) => (
+                        <span key={i} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
+                          {ability}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 3D Character Model Display */}
+            {step.id === '3d-character' && step.data && (
+              <div className="mt-3">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">3D In-Game Character:</h4>
+                <div className="text-center">
+                  <div className="w-32 h-32 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg border-2 border-gray-200 mx-auto flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="text-2xl mb-1">🎮</div>
+                      <div className="text-xs text-gray-600">3D Model</div>
+                      <div className="text-xs text-gray-500">{step.data.characterClass}</div>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-600 mt-2">✨ Your 3D character is ready for the game!</p>
+                </div>
+              </div>
+            )}
+
+            {/* Character Preview Display */}
+            {step.id === 'character-preview' && step.data && (
+              <div className="mt-3">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Character Preview:</h4>
                 <div className="text-center">
                   <img
                     src={step.data}
-                    alt="Your pop character"
+                    alt="Your 3D character preview"
                     className="w-32 h-32 object-cover rounded-lg border-2 border-gray-200 mx-auto"
                   />
-                  <p className="text-xs text-gray-600 mt-2">✨ Your unique pop character is ready!</p>
+                  <p className="text-xs text-gray-600 mt-2">✨ Your character preview is ready!</p>
                 </div>
               </div>
             )}
@@ -160,18 +200,18 @@ export const PHOTO_TO_POP_STEPS: Omit<Step, 'status'>[] = [
     description: 'Using AI to analyze your photo and detect facial features, emotions, and characteristics'
   },
   {
+    id: 'character-criteria',
+    title: '👤 Character Criteria',
+    description: 'Creating personality traits, game attributes, and character class based on your photo analysis'
+  },
+  {
+    id: '3d-character',
+    title: '🎮 Creating 3D In-Game Character',
+    description: 'Generating your unique 3D character model that will become your avatar in the game'
+  },
+  {
     id: 'character-preview',
-    title: '👤 Character Preview',
-    description: 'Creating personality traits and visual characteristics based on your photo analysis'
-  },
-  {
-    id: 'pop-generation',
-    title: '🎨 Creating Your Pop Character',
-    description: 'Generating your unique pop character with AI-powered image generation'
-  },
-  {
-    id: '3d-model',
-    title: '🎮 Preparing 3D Model',
-    description: 'Creating a 3D model for future interactive features'
+    title: '🖼️ Character Preview',
+    description: 'Creating a preview image of your new 3D character for the UI'
   }
 ]
