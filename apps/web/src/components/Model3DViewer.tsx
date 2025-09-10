@@ -91,26 +91,102 @@ function Model({ modelData }: { modelData: string }) {
   if (isFallbackData || !objectUrl) {
     return (
       <group ref={groupRef}>
-        {/* Animal Crossing style placeholder character */}
+        {/* Animal Crossing style placeholder character - much more detailed! */}
+        
+        {/* Body (main torso) */}
         <mesh position={[0, 0, 0]}>
-          <boxGeometry args={[0.8, 1.6, 0.4]} />
+          <boxGeometry args={[0.6, 1.2, 0.3]} />
           <meshStandardMaterial color="#FFB6C1" />
         </mesh>
-        <mesh position={[0, 1.2, 0]}>
-          <sphereGeometry args={[0.6]} />
+        
+        {/* Head */}
+        <mesh position={[0, 1.0, 0]}>
+          <sphereGeometry args={[0.5]} />
           <meshStandardMaterial color="#FFDBB5" />
         </mesh>
-        <mesh position={[-0.3, 1.2, 0]}>
-          <sphereGeometry args={[0.1]} />
-          <meshStandardMaterial color="#4169E1" />
-        </mesh>
-        <mesh position={[0.3, 1.2, 0]}>
-          <sphereGeometry args={[0.1]} />
-          <meshStandardMaterial color="#4169E1" />
-        </mesh>
-        <mesh position={[0, 0.8, 0]}>
-          <sphereGeometry args={[0.2]} />
+        
+        {/* Hair */}
+        <mesh position={[0, 1.2, 0]}>
+          <sphereGeometry args={[0.45]} />
           <meshStandardMaterial color="#8B4513" />
+        </mesh>
+        
+        {/* Eyes */}
+        <mesh position={[-0.15, 1.05, 0.4]}>
+          <sphereGeometry args={[0.08]} />
+          <meshStandardMaterial color="#4169E1" />
+        </mesh>
+        <mesh position={[0.15, 1.05, 0.4]}>
+          <sphereGeometry args={[0.08]} />
+          <meshStandardMaterial color="#4169E1" />
+        </mesh>
+        
+        {/* Eye highlights */}
+        <mesh position={[-0.12, 1.08, 0.45]}>
+          <sphereGeometry args={[0.03]} />
+          <meshStandardMaterial color="#FFFFFF" />
+        </mesh>
+        <mesh position={[0.18, 1.08, 0.45]}>
+          <sphereGeometry args={[0.03]} />
+          <meshStandardMaterial color="#FFFFFF" />
+        </mesh>
+        
+        {/* Nose */}
+        <mesh position={[0, 0.95, 0.4]}>
+          <sphereGeometry args={[0.05]} />
+          <meshStandardMaterial color="#FFDBB5" />
+        </mesh>
+        
+        {/* Mouth */}
+        <mesh position={[0, 0.85, 0.4]}>
+          <sphereGeometry args={[0.08, 0.04]} />
+          <meshStandardMaterial color="#FF69B4" />
+        </mesh>
+        
+        {/* Arms */}
+        <mesh position={[-0.5, 0.2, 0]}>
+          <boxGeometry args={[0.2, 0.8, 0.2]} />
+          <meshStandardMaterial color="#FFDBB5" />
+        </mesh>
+        <mesh position={[0.5, 0.2, 0]}>
+          <boxGeometry args={[0.2, 0.8, 0.2]} />
+          <meshStandardMaterial color="#FFDBB5" />
+        </mesh>
+        
+        {/* Legs */}
+        <mesh position={[-0.2, -0.8, 0]}>
+          <boxGeometry args={[0.2, 0.8, 0.2]} />
+          <meshStandardMaterial color="#DDA0DD" />
+        </mesh>
+        <mesh position={[0.2, -0.8, 0]}>
+          <boxGeometry args={[0.2, 0.8, 0.2]} />
+          <meshStandardMaterial color="#DDA0DD" />
+        </mesh>
+        
+        {/* Shoes */}
+        <mesh position={[-0.2, -1.3, 0]}>
+          <boxGeometry args={[0.25, 0.1, 0.3]} />
+          <meshStandardMaterial color="#F0E68C" />
+        </mesh>
+        <mesh position={[0.2, -1.3, 0]}>
+          <boxGeometry args={[0.25, 0.1, 0.3]} />
+          <meshStandardMaterial color="#F0E68C" />
+        </mesh>
+        
+        {/* Blush */}
+        <mesh position={[-0.3, 0.9, 0.35]}>
+          <sphereGeometry args={[0.06]} />
+          <meshStandardMaterial color="#FFB6C1" />
+        </mesh>
+        <mesh position={[0.3, 0.9, 0.35]}>
+          <sphereGeometry args={[0.06]} />
+          <meshStandardMaterial color="#FFB6C1" />
+        </mesh>
+        
+        {/* Cute flower accessory */}
+        <mesh position={[0, 1.4, 0]}>
+          <sphereGeometry args={[0.1]} />
+          <meshStandardMaterial color="#FF69B4" />
         </mesh>
       </group>
     )
