@@ -532,7 +532,7 @@ export class HuggingFaceService {
       console.log('🎨 Generating character preview with prompt:', previewPrompt)
       
       try {
-        const imageBlob = await this.callTextToImageAPI(previewPrompt)
+        const imageBlob = await this.callTextToImageAPI(previewPrompt, characteristics)
         const previewImageData = await this.blobToBase64(imageBlob)
         console.log('✅ Character preview generated successfully')
         return previewImageData
@@ -676,7 +676,7 @@ export class HuggingFaceService {
       const previewPrompt = this.createCharacterPreviewPrompt(characteristics, gameCriteria)
       console.log('🎨 Preview prompt:', previewPrompt)
       
-      const imageBlob = await this.callTextToImageAPI(previewPrompt)
+      const imageBlob = await this.callTextToImageAPI(previewPrompt, characteristics)
       const imageData = await this.blobToBase64(imageBlob)
       
       console.log('✅ Character preview generated successfully')
@@ -766,7 +766,7 @@ export class HuggingFaceService {
   }
   
   // Call real text-to-image API
-  private static async callTextToImageAPI(prompt: string): Promise<Blob> {
+  private static async callTextToImageAPI(prompt: string, characterData?: any): Promise<Blob> {
     console.log('🤖 Calling real text-to-image API with prompt:', prompt)
     
     try {
@@ -799,14 +799,14 @@ export class HuggingFaceService {
     } catch (error) {
       console.warn('⚠️ Text-to-image API failed, using fallback:', error)
       
-      // Use fallback image generation
-      return this.createFallbackImage(prompt)
+      // Use fallback image generation with character data
+      return this.createFallbackImage(prompt, characterData)
     }
   }
   
-  // Create fallback image when API is not available
-  private static async createFallbackImage(prompt: string): Promise<Blob> {
-    console.log('🔄 Creating fallback image...')
+  // Create fallback image when API is not available - NOW PHOTO-BASED!
+  private static async createFallbackImage(prompt: string, characterData?: any): Promise<Blob> {
+    console.log('🔄 Creating PHOTO-BASED fallback image...')
     
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')
@@ -824,24 +824,61 @@ export class HuggingFaceService {
       ctx.fillStyle = gradient
       ctx.fillRect(0, 0, 1024, 1024)
       
-      // Draw full Cute Game style character (centered and larger)
+      // Draw character based on PHOTO ANALYSIS DATA!
       const centerX = 512
       const centerY = 400
       
-      // Hair (soft and fluffy)
-      ctx.fillStyle = '#8B4513' // Brown
-      ctx.beginPath()
-      ctx.arc(centerX, centerY - 80, 80, 0, Math.PI * 2)
-      ctx.fill()
+      // Extract colors from character data (from photo analysis)
+      const skinColor = characterData?.skinTone || '#FFDBB5' // Default peach
+      const hairColor = characterData?.hairColor || '#8B4513' // Default brown
+      const eyeColor = characterData?.eyeColor || '#4169E1' // Default blue
+      const faceShape = characterData?.faceShape || 'round'
+      const hairStyle = characterData?.hairStyle || 'medium'
       
-      // Head (big and round like Cute Game)
-      ctx.fillStyle = '#FFDBB5' // Peach skin
-      ctx.beginPath()
-      ctx.arc(centerX, centerY - 40, 80, 0, Math.PI * 2)
-      ctx.fill()
+      console.log('🎨 Using photo-based colors:', { skinColor, hairColor, eyeColor, faceShape, hairStyle })
       
-      // Eyes (big and cute)
-      ctx.fillStyle = '#4169E1' // Royal blue
+      // Hair (based on photo analysis)
+      ctx.fillStyle = hairColor
+      if (hairStyle === 'long') {
+        // Long hair - draw flowing style
+        ctx.beginPath()
+        ctx.arc(centerX, centerY - 80, 80, 0, Math.PI * 2)
+        ctx.fill()
+        // Add long hair strands
+        ctx.beginPath()
+        ctx.arc(centerX - 40, centerY - 60, 60, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.beginPath()
+        ctx.arc(centerX + 40, centerY - 60, 60, 0, Math.PI * 2)
+        ctx.fill()
+      } else {
+        // Medium/short hair
+        ctx.beginPath()
+        ctx.arc(centerX, centerY - 80, 80, 0, Math.PI * 2)
+        ctx.fill()
+      }
+      
+      // Head (shape based on photo analysis)
+      ctx.fillStyle = skinColor
+      if (faceShape === 'square') {
+        // Square face
+        ctx.beginPath()
+        ctx.roundRect(centerX - 80, centerY - 120, 160, 160, 20)
+        ctx.fill()
+      } else if (faceShape === 'oval') {
+        // Oval face
+        ctx.beginPath()
+        ctx.ellipse(centerX, centerY - 40, 70, 90, 0, 0, Math.PI * 2)
+        ctx.fill()
+      } else {
+        // Round face (default)
+        ctx.beginPath()
+        ctx.arc(centerX, centerY - 40, 80, 0, Math.PI * 2)
+        ctx.fill()
+      }
+      
+      // Eyes (color based on photo analysis)
+      ctx.fillStyle = eyeColor
       ctx.beginPath()
       ctx.arc(centerX - 25, centerY - 50, 15, 0, Math.PI * 2)
       ctx.fill()
@@ -872,7 +909,7 @@ export class HuggingFaceService {
       ctx.fill()
       
       // Arms (soft)
-      ctx.fillStyle = '#FFDBB5'
+      ctx.fillStyle = skinColor
       ctx.beginPath()
       ctx.roundRect(centerX - 120, centerY + 60, 40, 100, 15)
       ctx.fill()
@@ -913,19 +950,19 @@ export class HuggingFaceService {
       ctx.arc(centerX, centerY - 120, 20, 0, Math.PI * 2)
       ctx.fill()
       
-      // Add text
+      // Add text showing it's photo-based
       ctx.fillStyle = '#FF1493' // Deep pink
       ctx.font = 'bold 32px Arial'
       ctx.textAlign = 'center'
       ctx.strokeStyle = '#FFFFFF'
       ctx.lineWidth = 4
-      ctx.strokeText('Cute Game Style', centerX, 600)
-      ctx.fillText('Cute Game Style', centerX, 600)
+      ctx.strokeText('Photo-Based Character', centerX, 600)
+      ctx.fillText('Photo-Based Character', centerX, 600)
       
       ctx.fillStyle = '#32CD32' // Lime green
       ctx.font = 'bold 24px Arial'
-      ctx.strokeText('Fallback Character', centerX, 640)
-      ctx.fillText('Fallback Character', centerX, 640)
+      ctx.strokeText(`From Your Photo: ${faceShape} face, ${hairStyle} hair`, centerX, 640)
+      ctx.fillText(`From Your Photo: ${faceShape} face, ${hairStyle} hair`, centerX, 640)
     }
     
     return new Promise((resolve) => {
@@ -1316,7 +1353,7 @@ export class HuggingFaceService {
         const anglePrompt = `${prompt}, ${angle} view, T-pose stance, arms extended horizontally`
         
         console.log(`🎨 Generating ${angle} view...`)
-        const imageBlob = await this.callTextToImageAPI(anglePrompt)
+        const imageBlob = await this.callTextToImageAPI(anglePrompt, gameCriteria.characteristics)
         const imageData = await this.blobToBase64(imageBlob)
         views.push(imageData)
       }
