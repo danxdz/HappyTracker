@@ -112,4 +112,4 @@ async function generateAvatar(photoUrl) {
 5. **Replace fallback** with real 3D models
 6. **Add animations** from Mixamo if needed
 
-PlayerZero.me is perfect for your Cute Game + Pop Art vision!
+PlayerZero.me is perfect for your Cute Game + Vibrant Art vision!

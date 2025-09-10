@@ -1204,14 +1204,14 @@ export class HuggingFaceService {
   private static createTPoseViewsPrompt(characteristics: PopGenerationResult['characteristics'], gameCriteria: any): string {
     const { visualStyle, characterClass } = gameCriteria
     
-    let prompt = `A Pop Art style character inspired by Cute Game aesthetics for HappyTracker game, `
+    let prompt = `A Vibrant Art style character inspired by Cute Game aesthetics for HappyTracker game, `
     prompt += `${visualStyle.faceShape} face, ${visualStyle.eyeColor} eyes, `
     prompt += `${visualStyle.hairColor} ${visualStyle.hairStyle} hair, `
     prompt += `${visualStyle.skinTone} skin tone, `
     prompt += `character class: ${characterClass}, `
     
-    // Pop Art + Cute Game style details
-    prompt += 'Pop Art style, bold vibrant colors, clean black outlines, '
+    // Vibrant Art + Cute Game style details
+    prompt += 'Vibrant Art style, bold vibrant colors, clean black outlines, '
     prompt += 'rounded cute shapes, Cute Game charm, Playful aesthetic, '
     prompt += 'T-pose stance, arms extended horizontally, legs slightly apart, '
     prompt += 'happy friendly expression, big cute eyes, adorable smile, '
@@ -1447,7 +1447,7 @@ export class HuggingFaceService {
         ctx.fillRect(240, 380, 20, 60)   // Left leg
         ctx.fillRect(252, 380, 20, 60)   // Right leg
         
-        // Add Pop Art + Cute Game branding
+        // Add Vibrant Art + Cute Game branding
         ctx.fillStyle = '#FF1493' // Deep pink
         ctx.font = 'bold 20px Arial'
         ctx.textAlign = 'center'
@@ -1607,7 +1607,7 @@ export class HuggingFaceService {
       canvas.height = 512
       
       if (ctx) {
-        // Pop Art + Cute Game style background
+        // Vibrant Art + Cute Game style background
         const gradient = ctx.createLinearGradient(0, 0, 512, 512)
         gradient.addColorStop(0, '#FFB6C1') // Light pink
         gradient.addColorStop(0.3, '#87CEEB') // Sky blue
@@ -1617,10 +1617,10 @@ export class HuggingFaceService {
         ctx.fillStyle = gradient
         ctx.fillRect(0, 0, 512, 512)
         
-        // Draw Pop Art + Cute Game style character
+        // Draw Vibrant Art + Cute Game style character
         this.drawPopArtCharacter(ctx, 256, 200, i, characterClass)
         
-        // Add Pop Art text with bold, vibrant style
+        // Add Vibrant Art text with bold, vibrant style
         ctx.fillStyle = '#FF1493' // Deep pink
         ctx.font = 'bold 24px Arial'
         ctx.textAlign = 'center'
@@ -1641,7 +1641,7 @@ export class HuggingFaceService {
     return views
   }
   
-  // Draw Pop Art + Cute Game style character
+  // Draw Vibrant Art + Cute Game style character
   private static drawPopArtCharacter(ctx: CanvasRenderingContext2D, x: number, y: number, viewIndex: number, characterClass: string) {
     // Cute Game colors - soft and cute
     const colors = {
