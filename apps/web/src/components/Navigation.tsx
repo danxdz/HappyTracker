@@ -11,7 +11,7 @@ export const Navigation: React.FC = () => {
     { path: '/avatar', label: 'Avatar', icon: User },
     { path: '/health', label: 'Health', icon: Heart },
     { path: '/photo-to-pop', label: 'Photo to Pop', icon: Camera },
-    { path: '/pop-world', label: 'Pop World', icon: Globe },
+    { path: '/character-world', label: 'Character World', icon: Globe },
     { path: '/galaxy', label: 'Galaxy', icon: Sparkles },
     { path: '/social', label: 'Social', icon: Users },
   ]

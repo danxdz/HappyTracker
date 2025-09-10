@@ -1,8 +1,8 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { PopWorld } from '../components/PopWorld'
+import { CharacterWorld } from '../components/CharacterWorld'
 
-export const PopWorldPage: React.FC = () => {
+export const CharacterWorldPage: React.FC = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -25,19 +25,19 @@ export const PopWorldPage: React.FC = () => {
           
           <h1 className="text-2xl sm:text-5xl font-bold text-white mb-3 sm:mb-6">
             <span className="bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
-              Your Pop World
+              Your Character World
             </span>
           </h1>
           
           <p className="text-sm sm:text-xl text-gray-300 max-w-3xl mx-auto mb-4 sm:mb-8 px-2">
-            Welcome to your 3D world where your pop lives! Watch your pop bounce, 
+            Welcome to your 3D world where your character lives! Watch your character bounce, 
             grow, and change colors based on your health choices!
           </p>
         </motion.div>
       </section>
 
       {/* 3D World Component */}
-      <PopWorld />
+        <CharacterWorld />
 
       {/* Features Section */}
       <section className="container mx-auto px-2 sm:px-4 py-8 sm:py-16 relative z-20">

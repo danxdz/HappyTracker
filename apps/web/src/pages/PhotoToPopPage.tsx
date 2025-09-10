@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { PhotoToPop } from '../components/PhotoToPop'
-import { PopDisplay } from '../components/PopDisplay'
+import { CharacterDisplay } from '../components/CharacterDisplay'
 import { PopGenerationResult } from '../services/huggingFaceService'
 
 export const PhotoToPopPage: React.FC = () => {
@@ -22,7 +22,7 @@ export const PhotoToPopPage: React.FC = () => {
     // 1. Save the pop to the user's collection
     // 2. Navigate to the pop world
     // 3. Show the pop in the 3D world
-    alert('Pop added to your Pop World! 🌟')
+    alert('Character added to your Character World! 🌟')
     setGeneratedPop(null)
   }
 
@@ -246,7 +246,7 @@ export const PhotoToPopPage: React.FC = () => {
       )}
 
       {generatedPop && (
-        <PopDisplay
+        <CharacterDisplay
           pop={generatedPop}
           onClose={handleClosePop}
         />

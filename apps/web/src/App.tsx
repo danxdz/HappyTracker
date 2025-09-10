@@ -5,7 +5,7 @@ import { HomePage } from './pages/HomePage'
 import { AvatarPage } from './pages/AvatarPage'
 import { HealthPage } from './pages/HealthPage'
 import { SocialPage } from './pages/SocialPage'
-import { PopWorldPage } from './pages/PopWorldPage'
+import { CharacterWorldPage } from './pages/CharacterWorldPage'
 import { GalaxyPage } from './pages/GalaxyPage'
 import { PhotoToPopPage } from './pages/PhotoToPopPage'
 import { Navigation } from './components/Navigation'
@@ -64,14 +64,14 @@ function App() {
           } 
         />
         <Route 
-          path="/pop-world" 
+          path="/character-world" 
           element={
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
             >
-              <PopWorldPage />
+              <CharacterWorldPage />
             </motion.div>
           } 
         />

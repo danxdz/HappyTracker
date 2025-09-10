@@ -4,7 +4,7 @@ import { Heart, Zap, Brain, Shield, Sparkles, Star, Download, Eye, Camera, Box }
 import { PopGenerationResult } from '../services/huggingFaceService'
 import { Model3DViewer } from './Model3DViewer'
 
-interface PopDisplayProps {
+interface CharacterDisplayProps {
   pop: PopGenerationResult
   onClose?: () => void
 }
@@ -34,7 +34,7 @@ const getPersonalityDescription = (characteristics: PopGenerationResult['charact
   return description
 }
 
-export const PopDisplay: React.FC<PopDisplayProps> = ({ pop, onClose }) => {
+export const CharacterDisplay: React.FC<CharacterDisplayProps> = ({ pop, onClose }) => {
   const personalityDescription = getPersonalityDescription(pop.characteristics)
   
   const getPersonalityIcon = (trait: string, value: number) => {
@@ -382,7 +382,7 @@ export const PopDisplay: React.FC<PopDisplayProps> = ({ pop, onClose }) => {
               whileTap={{ scale: 0.95 }}
               className="flex-1 bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white font-semibold py-3 px-6 rounded-2xl transition-all duration-200"
             >
-              Add to Pop World
+              Add to Character World
             </motion.button>
             
             {onClose && (

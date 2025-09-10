@@ -79,7 +79,7 @@ The `netlify.toml` file is configured with:
 - ✅ Hugging Face AI integration
 - ✅ Responsive design
 - ✅ Beautiful landing page
-- ✅ Complete 3D Pop World system
+- ✅ Complete 3D Character World system
 - ✅ Galaxy system with 4 galaxy types
 - ✅ AI-powered photo-to-pop generation
 - ✅ Health tracking system

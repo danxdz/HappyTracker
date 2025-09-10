@@ -142,14 +142,14 @@ function WorldEnvironment() {
         anchorX="center"
         anchorY="middle"
       >
-        Your Pop World! 🌟
+        Your Character World! 🌟
       </Text>
     </>
   )
 }
 
 // Main 3D World Component
-export const PopWorld: React.FC = () => {
+export const CharacterWorld: React.FC = () => {
   const { currentAvatar } = useSelector((state: RootState) => state.avatar)
   
   // Create sample health data for the pop
@@ -162,7 +162,7 @@ export const PopWorld: React.FC = () => {
     <div className="w-full h-screen bg-gradient-to-b from-blue-400 to-green-400">
       {/* Mobile-friendly header */}
       <div className="absolute top-2 left-2 right-2 sm:top-4 sm:left-4 sm:right-auto z-10 bg-white/20 backdrop-blur-sm rounded-lg p-2 sm:p-4">
-        <h2 className="text-white font-bold text-sm sm:text-lg mb-1 sm:mb-2">Your Pop World 🌍</h2>
+        <h2 className="text-white font-bold text-sm sm:text-lg mb-1 sm:mb-2">Your Character World 🌍</h2>
         <p className="text-white text-xs sm:text-sm">
           Wellness: {sampleHealthData.wellnessScore}/100
         </p>

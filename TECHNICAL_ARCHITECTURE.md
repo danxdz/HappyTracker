@@ -127,7 +127,7 @@ interface AIPipeline {
 ```typescript
 // Three.js + React Three Fiber Integration
 interface ThreeJSIntegration {
-  // 3D Pop World
+  // 3D Character World
   PopWorld: {
     animatedCharacter: 'Health-responsive bouncing and rotation';
     environment: 'Trees, flowers, ground with realistic lighting';
