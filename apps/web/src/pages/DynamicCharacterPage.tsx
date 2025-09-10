@@ -39,6 +39,8 @@ export const DynamicCharacterPage: React.FC = () => {
     }
   })
   const [hfApiEnabled, setHfApiEnabled] = useState(false)
+  const [cartoonGenerated, setCartoonGenerated] = useState(false)
+  const [cartoonImage, setCartoonImage] = useState<string | null>(null)
 
   // Auto-progress through loading
   useEffect(() => {
@@ -197,8 +199,79 @@ export const DynamicCharacterPage: React.FC = () => {
     setTimeout(() => setCurrentStep('card'), 500)
   }
 
-  const handleCardComplete = () => {
-    setTimeout(() => setCurrentStep('complete'), 1000)
+  const handleCardComplete = async () => {
+    try {
+      console.log('🎨 Starting cartoon generation...')
+      setCartoonGenerated(true)
+      
+      // Simulate cartoon generation process
+      await new Promise(resolve => setTimeout(resolve, 3000))
+      
+      // Generate a simple cartoon placeholder (in real implementation, this would call the cartoon generator)
+      const canvas = document.createElement('canvas')
+      canvas.width = 400
+      canvas.height = 400
+      const ctx = canvas.getContext('2d')!
+      
+      // Create a simple cartoon character based on character data
+      const age = characterData.age
+      const height = characterData.height
+      const weight = characterData.weight
+      
+      // Background
+      ctx.fillStyle = '#4F46E5'
+      ctx.fillRect(0, 0, 400, 400)
+      
+      // Character body (size based on height/weight)
+      const bodyHeight = Math.min(200, Math.max(100, height - 100))
+      const bodyWidth = Math.min(120, Math.max(60, weight - 40))
+      
+      // Body
+      ctx.fillStyle = '#F59E0B'
+      ctx.fillRect(200 - bodyWidth/2, 300 - bodyHeight, bodyWidth, bodyHeight)
+      
+      // Head (size based on age - older = bigger head)
+      const headSize = Math.min(80, Math.max(40, age))
+      ctx.fillStyle = '#FDE68A'
+      ctx.beginPath()
+      ctx.arc(200, 200 - bodyHeight/2, headSize/2, 0, Math.PI * 2)
+      ctx.fill()
+      
+      // Eyes
+      ctx.fillStyle = '#1F2937'
+      ctx.beginPath()
+      ctx.arc(185, 190 - bodyHeight/2, 5, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.beginPath()
+      ctx.arc(215, 190 - bodyHeight/2, 5, 0, Math.PI * 2)
+      ctx.fill()
+      
+      // Smile
+      ctx.strokeStyle = '#1F2937'
+      ctx.lineWidth = 3
+      ctx.beginPath()
+      ctx.arc(200, 200 - bodyHeight/2, 20, 0, Math.PI)
+      ctx.stroke()
+      
+      // Add character info text
+      ctx.fillStyle = '#FFFFFF'
+      ctx.font = '16px Arial'
+      ctx.textAlign = 'center'
+      ctx.fillText(`${characterData.name}`, 200, 50)
+      ctx.fillText(`Age: ${age}`, 200, 70)
+      ctx.fillText(`Height: ${height}cm`, 200, 90)
+      ctx.fillText(`Weight: ${weight}kg`, 200, 110)
+      
+      // Convert to image
+      const cartoonDataUrl = canvas.toDataURL('image/png')
+      setCartoonImage(cartoonDataUrl)
+      
+      console.log('🎨 Cartoon generated successfully!')
+      setTimeout(() => setCurrentStep('complete'), 1000)
+    } catch (error) {
+      console.error('❌ Error generating cartoon:', error)
+      setTimeout(() => setCurrentStep('complete'), 1000)
+    }
   }
 
   return (
@@ -316,10 +389,27 @@ export const DynamicCharacterPage: React.FC = () => {
                   transition={{ delay: 0.3, type: "spring" }}
                   className="mt-6"
                 >
-                  <div className="w-16 h-16 bg-green-500 rounded-full mx-auto flex items-center justify-center">
+                  <div className="w-16 h-16 bg-green-500 rounded-full mx-auto flex items-center justify-center mb-4">
                     <Check className="w-8 h-8 text-white" />
                   </div>
-                  <p className="text-green-400 font-semibold mt-2">Character Complete!</p>
+                  <p className="text-green-400 font-semibold mb-4">Character Complete!</p>
+                  
+                  {/* Show the generated cartoon */}
+                  {cartoonImage && (
+                    <div className="bg-white/10 rounded-xl p-4 max-w-sm mx-auto">
+                      <h4 className="text-white font-semibold mb-3 text-center">🎨 Your Cartoon Character</h4>
+                      <div className="w-64 h-64 bg-white rounded-lg mx-auto flex items-center justify-center overflow-hidden">
+                        <img 
+                          src={cartoonImage} 
+                          alt="Your Cartoon Character" 
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                      <p className="text-gray-300 text-sm mt-3 text-center">
+                        {characterData.name} - Age: {characterData.age}, Height: {characterData.height}cm, Weight: {characterData.weight}kg
+                      </p>
+                    </div>
+                  )}
                 </motion.div>
               )}
             </div>
@@ -655,23 +745,45 @@ export const DynamicCharacterPage: React.FC = () => {
                   <div className="text-center">
                     <div className="bg-white/5 rounded-xl p-6">
                       <h4 className="text-xl font-bold text-white mb-4">Cartoon Preview</h4>
-                      <div className="w-48 h-48 bg-gradient-to-br from-blue-400 to-purple-500 rounded-xl mx-auto flex items-center justify-center mb-4">
-                        <div className="text-6xl">🎨</div>
-                      </div>
+                      {cartoonGenerated ? (
+                        <div className="w-48 h-48 bg-white rounded-xl mx-auto mb-4 flex items-center justify-center overflow-hidden">
+                          {cartoonImage ? (
+                            <img 
+                              src={cartoonImage} 
+                              alt="Generated Cartoon" 
+                              className="w-full h-full object-contain"
+                            />
+                          ) : (
+                            <div className="text-6xl animate-spin">🎨</div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="w-48 h-48 bg-gradient-to-br from-blue-400 to-purple-500 rounded-xl mx-auto flex items-center justify-center mb-4">
+                          <div className="text-6xl">🎨</div>
+                        </div>
+                      )}
                       <p className="text-gray-300 text-sm">
-                        Your cartoon character will be generated based on this information
+                        {cartoonGenerated 
+                          ? 'Your cartoon character has been generated!' 
+                          : 'Your cartoon character will be generated based on this information'
+                        }
                       </p>
                     </div>
                   </div>
                 </div>
 
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: cartoonGenerated ? 1 : 1.05 }}
+                  whileTap={{ scale: cartoonGenerated ? 1 : 0.95 }}
                   onClick={handleCardComplete}
-                  className="w-full mt-6 py-3 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-xl font-semibold hover:from-green-600 hover:to-blue-600 transition-all"
+                  disabled={cartoonGenerated}
+                  className={`w-full mt-6 py-3 rounded-xl font-semibold transition-all ${
+                    cartoonGenerated 
+                      ? 'bg-gray-500 text-gray-300 cursor-not-allowed' 
+                      : 'bg-gradient-to-r from-green-500 to-blue-500 text-white hover:from-green-600 hover:to-blue-600'
+                  }`}
                 >
-                  Generate Cartoon Character
+                  {cartoonGenerated ? '✅ Cartoon Generated!' : '🎨 Generate Cartoon Character'}
                 </motion.button>
               </div>
             </motion.div>
