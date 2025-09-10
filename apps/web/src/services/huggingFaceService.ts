@@ -173,8 +173,17 @@ export class HuggingFaceService {
       hairStyle: hairStyles[Math.floor(Math.random() * hairStyles.length)],
       emotions,
       style,
-      confidence: 0.75, // Moderate confidence for fallback
-      processingTime: 1000 // Simulated processing time
+      age: Math.floor(Math.random() * 50) + 18, // 18-68 years old
+      gender: ['male', 'female', 'other'][Math.floor(Math.random() * 3)] as 'male' | 'female' | 'other',
+      landmarks: {
+        eyes: { 
+          left: [Math.random() * 100, Math.random() * 100], 
+          right: [Math.random() * 100, Math.random() * 100] 
+        },
+        nose: [Math.random() * 100, Math.random() * 100],
+        mouth: [Math.random() * 100, Math.random() * 100],
+        chin: [Math.random() * 100, Math.random() * 100]
+      }
     }
   }
   
