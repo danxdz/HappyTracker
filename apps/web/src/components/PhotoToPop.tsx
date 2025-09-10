@@ -77,18 +77,14 @@ export const PhotoToPop: React.FC<PhotoToPopProps> = ({ onPhotoProcessed, onClos
           updateStepStatus('character-preview', 'active')
         } else if (step.includes('Character preview ready')) {
           updateStepStatus('character-preview', 'completed', data)
-        } else if (step.includes('Generating T-pose views')) {
-          updateStepStatus('tpose-generation', 'active')
-        } else if (step.includes('T-pose views complete')) {
-          updateStepStatus('tpose-generation', 'completed', data)
-        } else if (step.includes('Generating 3D model')) {
+        } else if (step.includes('Creating your unique pop character')) {
+          updateStepStatus('pop-generation', 'active')
+        } else if (step.includes('Your pop character is ready')) {
+          updateStepStatus('pop-generation', 'completed', data)
+        } else if (step.includes('Preparing 3D model')) {
           updateStepStatus('3d-model', 'active')
         } else if (step.includes('3D model ready')) {
           updateStepStatus('3d-model', 'completed', data)
-        } else if (step.includes('Creating final pop image')) {
-          updateStepStatus('final-pop', 'active')
-        } else if (step.includes('Final pop complete')) {
-          updateStepStatus('final-pop', 'completed', data)
         }
         
         if (data) {

@@ -77,21 +77,17 @@ export const StepByStepProgress: React.FC<StepByStepProgressProps> = ({
               </div>
             )}
 
-            {/* T-Pose Views Grid */}
-            {step.id === 'tpose-generation' && step.data && typeof step.data === 'object' && (
+            {/* Pop Character Preview */}
+            {step.id === 'pop-generation' && step.data && (
               <div className="mt-3">
-                <h4 className="text-sm font-medium text-gray-700 mb-2">T-Pose Views:</h4>
-                <div className="grid grid-cols-3 gap-2">
-                  {Object.entries(step.data).map(([view, imageUrl]) => (
-                    <div key={view} className="text-center">
-                      <img
-                        src={imageUrl as string}
-                        alt={`${view} view`}
-                        className="w-20 h-20 object-cover rounded border"
-                      />
-                      <p className="text-xs text-gray-600 mt-1 capitalize">{view}</p>
-                    </div>
-                  ))}
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Your Pop Character:</h4>
+                <div className="text-center">
+                  <img
+                    src={step.data}
+                    alt="Your pop character"
+                    className="w-32 h-32 object-cover rounded-lg border-2 border-gray-200 mx-auto"
+                  />
+                  <p className="text-xs text-gray-600 mt-2">✨ Your unique pop character is ready!</p>
                 </div>
               </div>
             )}
@@ -159,33 +155,23 @@ export const StepByStepProgress: React.FC<StepByStepProgressProps> = ({
 // Predefined steps for photo-to-pop pipeline
 export const PHOTO_TO_POP_STEPS: Omit<Step, 'status'>[] = [
   {
-    id: 'photo-analysis',
-    title: '📸 Photo Analysis',
-    description: 'Analyzing your uploaded photo for facial features and characteristics'
-  },
-  {
     id: 'face-analysis',
     title: '🔍 AI Face Analysis',
-    description: 'Using AI to detect emotions, age, and facial structure'
+    description: 'Using AI to analyze your photo and detect facial features, emotions, and characteristics'
   },
   {
     id: 'character-preview',
     title: '👤 Character Preview',
-    description: 'Creating personality traits and visual characteristics'
+    description: 'Creating personality traits and visual characteristics based on your photo analysis'
   },
   {
-    id: 'tpose-generation',
-    title: '🎭 T-Pose Generation',
-    description: 'Generating 6 different T-pose views for 3D modeling'
+    id: 'pop-generation',
+    title: '🎨 Creating Your Pop Character',
+    description: 'Generating your unique pop character with AI-powered image generation'
   },
   {
     id: '3d-model',
-    title: '🎨 3D Model Creation',
-    description: 'Converting T-pose images into a 3D GLB model'
-  },
-  {
-    id: 'final-pop',
-    title: '✨ Final Pop Creation',
-    description: 'Combining all elements into your unique pop character'
+    title: '🎮 Preparing 3D Model',
+    description: 'Creating a 3D model for future interactive features'
   }
 ]
