@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { Camera, Upload, X, Sparkles, User, Brain, Zap } from 'lucide-react'
 import { HuggingFaceService, PopGenerationResult } from '../services/huggingFaceService'
 import { StepByStepProgress, PHOTO_TO_POP_STEPS } from './StepByStepProgress'
+import { ErrorBoundary } from './ErrorBoundary'
 
 interface PhotoToPopProps {
   onPhotoProcessed?: (result: PopGenerationResult) => void
@@ -66,35 +67,46 @@ export const PhotoToPop: React.FC<PhotoToPopProps> = ({ onPhotoProcessed, onClos
     try {
       // Call AI service with step-by-step processing
       const result = await HuggingFaceService.generate3DPop(selectedPhoto, (step, data) => {
-        setProcessingStep(step)
-        
-        // Map service steps to our step IDs
-        if (step.includes('Analyzing face')) {
-          updateStepStatus('face-analysis', 'active')
-        } else if (step.includes('Face analysis complete')) {
-          updateStepStatus('face-analysis', 'completed', data)
-        } else if (step.includes('Creating character criteria')) {
-          updateStepStatus('character-criteria', 'active')
-        } else if (step.includes('Character criteria ready')) {
-          updateStepStatus('character-criteria', 'completed', data)
-        } else if (step.includes('Creating 3D in-game character')) {
-          updateStepStatus('3d-character', 'active')
-        } else if (step.includes('3D character model ready')) {
-          updateStepStatus('3d-character', 'completed', data)
-        } else if (step.includes('Creating character preview')) {
-          updateStepStatus('character-preview', 'active')
-        } else if (step.includes('Character preview ready')) {
-          updateStepStatus('character-preview', 'completed', data)
-        }
-        
-        if (data) {
-          console.log('Step data:', data)
+        try {
+          setProcessingStep(step)
+          
+          // Map service steps to our step IDs with safe data handling
+          if (step.includes('Analyzing face')) {
+            updateStepStatus('face-analysis', 'active')
+          } else if (step.includes('Face analysis complete')) {
+            updateStepStatus('face-analysis', 'completed', data || {})
+          } else if (step.includes('Creating character criteria')) {
+            updateStepStatus('character-criteria', 'active')
+          } else if (step.includes('Character criteria ready')) {
+            updateStepStatus('character-criteria', 'completed', data || {})
+          } else if (step.includes('Creating 3D in-game character')) {
+            updateStepStatus('3d-character', 'active')
+          } else if (step.includes('3D character model ready')) {
+            updateStepStatus('3d-character', 'completed', data || {})
+          } else if (step.includes('Creating character preview')) {
+            updateStepStatus('character-preview', 'active')
+          } else if (step.includes('Character preview ready')) {
+            updateStepStatus('character-preview', 'completed', data || '')
+          }
+          
+          if (data) {
+            console.log('Step data:', data)
+          }
+        } catch (stepError) {
+          console.warn('Error in step processing:', stepError)
+          // Continue processing even if step update fails
         }
       })
       
       setIsProcessing(false)
       setProcessingStep('')
-      onPhotoProcessed?.(result)
+      
+      // Safely call the callback
+      try {
+        onPhotoProcessed?.(result)
+      } catch (callbackError) {
+        console.warn('Error in photo processed callback:', callbackError)
+      }
       
     } catch (error) {
       console.error('AI processing error:', error)
@@ -107,6 +119,9 @@ export const PhotoToPop: React.FC<PhotoToPopProps> = ({ onPhotoProcessed, onClos
         : 'AI processing failed. Please check your API tokens and try again.'
       
       console.error(`❌ ${errorMessage}`)
+      
+      // Reset all steps to pending on error
+      setCurrentSteps(PHOTO_TO_POP_STEPS.map(step => ({ ...step, status: 'pending' as const })))
     }
   }
 
@@ -295,13 +310,15 @@ export const PhotoToPop: React.FC<PhotoToPopProps> = ({ onPhotoProcessed, onClos
 
             {/* Step-by-Step Progress */}
             <div className="max-h-96 overflow-y-auto">
-              <StepByStepProgress 
-                steps={currentSteps}
-                currentStep={processingStep}
-                onStepComplete={(stepId, data) => {
-                  console.log(`Step ${stepId} completed:`, data)
-                }}
-              />
+              <ErrorBoundary>
+                <StepByStepProgress 
+                  steps={currentSteps}
+                  currentStep={processingStep}
+                  onStepComplete={(stepId, data) => {
+                    console.log(`Step ${stepId} completed:`, data)
+                  }}
+                />
+              </ErrorBoundary>
             </div>
 
             {/* AI Processing Status Notice */}

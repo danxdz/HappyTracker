@@ -82,14 +82,14 @@ export const StepByStepProgress: React.FC<StepByStepProgressProps> = ({
               <div className="mt-3">
                 <h4 className="text-sm font-medium text-gray-700 mb-2">Character Criteria:</h4>
                 <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div><span className="font-medium">Class:</span> {step.data.gameCriteria?.characterClass}</div>
-                  <div><span className="font-medium">Health Potential:</span> {step.data.gameCriteria?.gameAttributes?.healthPotential}/100</div>
-                  <div><span className="font-medium">Social Skills:</span> {step.data.gameCriteria?.gameAttributes?.socialSkills}/100</div>
-                  <div><span className="font-medium">Learning Ability:</span> {step.data.gameCriteria?.gameAttributes?.learningAbility}/100</div>
+                  <div><span className="font-medium">Class:</span> {step.data.gameCriteria?.characterClass || 'Unknown'}</div>
+                  <div><span className="font-medium">Health Potential:</span> {step.data.gameCriteria?.gameAttributes?.healthPotential || 0}/100</div>
+                  <div><span className="font-medium">Social Skills:</span> {step.data.gameCriteria?.gameAttributes?.socialSkills || 0}/100</div>
+                  <div><span className="font-medium">Learning Ability:</span> {step.data.gameCriteria?.gameAttributes?.learningAbility || 0}/100</div>
                   <div className="col-span-2">
                     <span className="font-medium">Special Abilities:</span>
                     <div className="mt-1 flex flex-wrap gap-1">
-                      {step.data.gameCriteria?.specialAbilities?.map((ability: string, i: number) => (
+                      {(step.data.gameCriteria?.specialAbilities || []).map((ability: string, i: number) => (
                         <span key={i} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
                           {ability}
                         </span>
@@ -106,7 +106,7 @@ export const StepByStepProgress: React.FC<StepByStepProgressProps> = ({
                 <h4 className="text-sm font-medium text-gray-700 mb-2">3D In-Game Character:</h4>
                 
                 {/* T-pose Views */}
-                {step.data.tPoseViews && step.data.tPoseViews.length > 0 && (
+                {step.data.tPoseViews && Array.isArray(step.data.tPoseViews) && step.data.tPoseViews.length > 0 && (
                   <div className="mb-3">
                     <h5 className="text-xs font-medium text-gray-600 mb-2">T-Pose Views:</h5>
                     <div className="grid grid-cols-3 gap-2">
@@ -116,6 +116,10 @@ export const StepByStepProgress: React.FC<StepByStepProgressProps> = ({
                           src={view}
                           alt={`T-pose view ${index + 1}`}
                           className="w-20 h-20 object-cover rounded border"
+                          onError={(e) => {
+                            console.warn(`Failed to load T-pose view ${index + 1}`)
+                            e.currentTarget.style.display = 'none'
+                          }}
                         />
                       ))}
                     </div>
@@ -128,7 +132,7 @@ export const StepByStepProgress: React.FC<StepByStepProgressProps> = ({
                     <div className="text-center">
                       <div className="text-2xl mb-1">🎮</div>
                       <div className="text-xs text-gray-600">3D Model</div>
-                      <div className="text-xs text-gray-500">{step.data.characterClass}</div>
+                      <div className="text-xs text-gray-500">{step.data.characterClass || 'Character'}</div>
                     </div>
                   </div>
                   <p className="text-xs text-gray-600 mt-2">✨ Your 3D character is ready for the game!</p>
@@ -145,6 +149,10 @@ export const StepByStepProgress: React.FC<StepByStepProgressProps> = ({
                     src={step.data}
                     alt="Your 3D character preview"
                     className="w-32 h-32 object-cover rounded-lg border-2 border-gray-200 mx-auto"
+                    onError={(e) => {
+                      console.warn('Failed to load character preview image')
+                      e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgdmlld0JveD0iMCAwIDEyOCAxMjgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiBmaWxsPSIjRjNGNEY2Ii8+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMyIiBmaWxsPSIjRTVFN0VCIi8+Cjx0ZXh0IHg9IjY0IiB5PSI3MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiBmaWxsPSIjNkI3MjgwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5QcmV2aWV3PC90ZXh0Pgo8L3N2Zz4K'
+                    }}
                   />
                   <p className="text-xs text-gray-600 mt-2">✨ Your character preview is ready!</p>
                 </div>
