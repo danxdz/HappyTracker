@@ -8,6 +8,7 @@ import { SocialPage } from './pages/SocialPage'
 import { CharacterWorldPage } from './pages/CharacterWorldPage'
 import { GalaxyPage } from './pages/GalaxyPage'
 import { PhotoToPopPage } from './pages/PhotoToPopPage'
+import { CartoonPage } from './pages/CartoonPage'
 import { Navigation } from './components/Navigation'
 import { Footer } from './components/Footer'
 
@@ -88,6 +89,18 @@ function App() {
               transition={{ duration: 0.5 }}
             >
               <PhotoToPopPage />
+            </motion.div>
+          } 
+        />
+        <Route 
+          path="/cartoon" 
+          element={
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <CartoonPage />
             </motion.div>
           } 
         />
