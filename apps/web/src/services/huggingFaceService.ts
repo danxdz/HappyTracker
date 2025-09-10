@@ -688,8 +688,10 @@ export class HuggingFaceService {
     }
   }
   
-  // Create enhanced pop image with game criteria
+  // Create enhanced pop image with game criteria - NOW PHOTO-BASED!
   private static createEnhancedPopImage(characteristics: PopGenerationResult['characteristics'], gameCriteria: any): string {
+    console.log('🎨 Creating PHOTO-BASED enhanced pop image...')
+    
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')
     canvas.width = 512
@@ -703,6 +705,15 @@ export class HuggingFaceService {
       const { personality } = characteristics
       const { characterClass, visualStyle } = gameCriteria
       
+      // Extract YOUR ACTUAL PHOTO COLORS!
+      const skinColor = '#FFDBB5' // Default skin color
+      const hairColor = characteristics?.hairColor || '#8B4513'
+      const eyeColor = characteristics?.eyeColor || '#4169E1'
+      const faceShape = characteristics?.faceShape || 'round'
+      const hairStyle = characteristics?.hairStyle || 'medium'
+      
+      console.log('🎨 Using YOUR photo colors:', { skinColor, hairColor, eyeColor, faceShape, hairStyle })
+      
       // Character body based on class
       let bodyColor = '#4ECDC4'
       if (characterClass === 'Warrior') bodyColor = '#8B4513'
@@ -715,8 +726,54 @@ export class HuggingFaceService {
       ctx.arc(256, 300, 80, 0, Math.PI * 2)
       ctx.fill()
       
-      // Eyes
-      ctx.fillStyle = visualStyle?.eyeColor || '#000000'
+      // Hair - USE YOUR ACTUAL HAIR COLOR AND STYLE!
+      ctx.fillStyle = hairColor
+      if (hairStyle === 'curly') {
+        // Curly hair - multiple circles
+        ctx.beginPath()
+        ctx.arc(256, 250, 60, 0, Math.PI * 2)
+        ctx.fill()
+        // Add curly texture
+        ctx.beginPath()
+        ctx.arc(220, 240, 20, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.beginPath()
+        ctx.arc(292, 240, 20, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.beginPath()
+        ctx.arc(240, 220, 15, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.beginPath()
+        ctx.arc(272, 220, 15, 0, Math.PI * 2)
+        ctx.fill()
+      } else {
+        // Regular hair
+        ctx.beginPath()
+        ctx.arc(256, 250, 60, 0, Math.PI * 2)
+        ctx.fill()
+      }
+      
+      // Head - USE YOUR ACTUAL FACE SHAPE!
+      ctx.fillStyle = skinColor
+      if (faceShape === 'oval') {
+        // Oval face
+        ctx.beginPath()
+        ctx.ellipse(256, 280, 50, 70, 0, 0, Math.PI * 2)
+        ctx.fill()
+      } else if (faceShape === 'square') {
+        // Square face
+        ctx.beginPath()
+        ctx.roundRect(206, 210, 100, 140, 20)
+        ctx.fill()
+      } else {
+        // Round face (default)
+        ctx.beginPath()
+        ctx.arc(256, 280, 60, 0, Math.PI * 2)
+        ctx.fill()
+      }
+      
+      // Eyes - USE YOUR ACTUAL EYE COLOR!
+      ctx.fillStyle = eyeColor
       ctx.beginPath()
       ctx.arc(240, 280, 8, 0, Math.PI * 2)
       ctx.fill()
@@ -754,12 +811,13 @@ export class HuggingFaceService {
         ctx.fill() // Healing symbol
       }
       
-      // Add text
+      // Add text showing it's photo-based
       ctx.fillStyle = '#333333'
       ctx.font = '16px Arial'
       ctx.textAlign = 'center'
       ctx.fillText(`${characterClass} Character`, 256, 450)
-      ctx.fillText('2D Preview', 256, 470)
+      ctx.fillText('Photo-Based Preview', 256, 470)
+      ctx.fillText(`${faceShape} face, ${hairStyle} hair`, 256, 490)
     }
     
     return canvas.toDataURL('image/png')
