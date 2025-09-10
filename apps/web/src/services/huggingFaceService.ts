@@ -814,7 +814,7 @@ export class HuggingFaceService {
     canvas.height = 1024
     
     if (ctx) {
-      // Create Animal Crossing style gradient background
+      // Create Cute Game style gradient background
       const gradient = ctx.createLinearGradient(0, 0, 1024, 1024)
       gradient.addColorStop(0, '#FFE4E1') // Misty rose
       gradient.addColorStop(0.3, '#E0FFFF') // Light cyan
@@ -824,7 +824,7 @@ export class HuggingFaceService {
       ctx.fillStyle = gradient
       ctx.fillRect(0, 0, 1024, 1024)
       
-      // Draw full Animal Crossing style character (centered and larger)
+      // Draw full Cute Game style character (centered and larger)
       const centerX = 512
       const centerY = 400
       
@@ -834,7 +834,7 @@ export class HuggingFaceService {
       ctx.arc(centerX, centerY - 80, 80, 0, Math.PI * 2)
       ctx.fill()
       
-      // Head (big and round like Animal Crossing)
+      // Head (big and round like Cute Game)
       ctx.fillStyle = '#FFDBB5' // Peach skin
       ctx.beginPath()
       ctx.arc(centerX, centerY - 40, 80, 0, Math.PI * 2)
@@ -898,7 +898,7 @@ export class HuggingFaceService {
       ctx.roundRect(centerX, centerY + 320, 50, 20, 8)
       ctx.fill()
       
-      // Blush (Animal Crossing style)
+      // Blush (Cute Game style)
       ctx.fillStyle = '#FFB6C1'
       ctx.beginPath()
       ctx.arc(centerX - 60, centerY - 10, 15, 0, Math.PI * 2)
@@ -919,8 +919,8 @@ export class HuggingFaceService {
       ctx.textAlign = 'center'
       ctx.strokeStyle = '#FFFFFF'
       ctx.lineWidth = 4
-      ctx.strokeText('Animal Crossing Style', centerX, 600)
-      ctx.fillText('Animal Crossing Style', centerX, 600)
+      ctx.strokeText('Cute Game Style', centerX, 600)
+      ctx.fillText('Cute Game Style', centerX, 600)
       
       ctx.fillStyle = '#32CD32' // Lime green
       ctx.font = 'bold 24px Arial'
@@ -956,7 +956,7 @@ export class HuggingFaceService {
           },
           body: JSON.stringify({
             image: imageBase64,
-            style: 'animal_crossing', // Animal Crossing style
+            style: 'animal_crossing', // Cute Game style
             quality: 'high',
             format: 'glb'
           })
@@ -1204,15 +1204,15 @@ export class HuggingFaceService {
   private static createTPoseViewsPrompt(characteristics: PopGenerationResult['characteristics'], gameCriteria: any): string {
     const { visualStyle, characterClass } = gameCriteria
     
-    let prompt = `A Pop Art style character inspired by Animal Crossing aesthetics for HappyTracker game, `
+    let prompt = `A Pop Art style character inspired by Cute Game aesthetics for HappyTracker game, `
     prompt += `${visualStyle.faceShape} face, ${visualStyle.eyeColor} eyes, `
     prompt += `${visualStyle.hairColor} ${visualStyle.hairStyle} hair, `
     prompt += `${visualStyle.skinTone} skin tone, `
     prompt += `character class: ${characterClass}, `
     
-    // Pop Art + Animal Crossing style details
+    // Pop Art + Cute Game style details
     prompt += 'Pop Art style, bold vibrant colors, clean black outlines, '
-    prompt += 'rounded cute shapes, Animal Crossing charm, Nintendo aesthetic, '
+    prompt += 'rounded cute shapes, Cute Game charm, Playful aesthetic, '
     prompt += 'T-pose stance, arms extended horizontally, legs slightly apart, '
     prompt += 'happy friendly expression, big cute eyes, adorable smile, '
     prompt += 'front view, side view, back view, '
@@ -1293,7 +1293,7 @@ export class HuggingFaceService {
     console.log('📐 Generating T-pose views for 3D model...')
     
     try {
-      // Try PlayerZero.me first (Animal Crossing style 3D avatar generation)
+      // Try PlayerZero.me first (Cute Game style 3D avatar generation)
       const playerZeroResult = await this.generatePlayerZeroAvatar(imageData)
       if (playerZeroResult) {
         console.log('✅ PlayerZero.me 3D avatar generated successfully')
@@ -1371,9 +1371,9 @@ export class HuggingFaceService {
     }
   }
   
-  // Generate 3D avatar using PlayerZero.me (Animal Crossing style)
+  // Generate 3D avatar using PlayerZero.me (Cute Game style)
   private static async generatePlayerZeroAvatar(imageData: string): Promise<{views: string[], modelUrl?: string} | null> {
-    console.log('🎮 Trying PlayerZero.me for Animal Crossing style 3D avatar generation...')
+    console.log('🎮 Trying PlayerZero.me for Cute Game style 3D avatar generation...')
     
     try {
       // PlayerZero.me API endpoint for avatar generation
@@ -1383,7 +1383,7 @@ export class HuggingFaceService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          // PlayerZero.me specializes in Animal Crossing/Stardew Valley style
+          // PlayerZero.me specializes in Cute Game/Farm Game style
           style: 'animal_crossing',
           aesthetic: 'cute_friendly',
           colorPalette: 'pastel_vibrant',
@@ -1447,7 +1447,7 @@ export class HuggingFaceService {
         ctx.fillRect(240, 380, 20, 60)   // Left leg
         ctx.fillRect(252, 380, 20, 60)   // Right leg
         
-        // Add Pop Art + Animal Crossing branding
+        // Add Pop Art + Cute Game branding
         ctx.fillStyle = '#FF1493' // Deep pink
         ctx.font = 'bold 20px Arial'
         ctx.textAlign = 'center'
@@ -1458,8 +1458,8 @@ export class HuggingFaceService {
         
         ctx.fillStyle = '#32CD32' // Lime green
         ctx.font = 'bold 14px Arial'
-        ctx.strokeText('Animal Crossing Style', 256, 480)
-        ctx.fillText('Animal Crossing Style', 256, 480)
+        ctx.strokeText('Cute Game Style', 256, 480)
+        ctx.fillText('Cute Game Style', 256, 480)
       }
       
       views.push(canvas.toDataURL('image/png'))
@@ -1472,7 +1472,7 @@ export class HuggingFaceService {
   private static async createViewsFromPlayerZero(modelData: any): Promise<string[]> {
     console.log('🔄 Creating views from PlayerZero.me model...')
     
-    // For now, create placeholder views with Animal Crossing style
+    // For now, create placeholder views with Cute Game style
     const views = []
     
     for (let i = 0; i < 3; i++) {
@@ -1482,7 +1482,7 @@ export class HuggingFaceService {
       canvas.height = 512
       
       if (ctx) {
-        // Create Animal Crossing style background
+        // Create Cute Game style background
         const gradient = ctx.createLinearGradient(0, 0, 512, 512)
         gradient.addColorStop(0, '#FFE4E1') // Misty rose
         gradient.addColorStop(0.3, '#E0FFFF') // Light cyan
@@ -1492,8 +1492,8 @@ export class HuggingFaceService {
         ctx.fillStyle = gradient
         ctx.fillRect(0, 0, 512, 512)
         
-        // Add Animal Crossing style character (much cuter!)
-        // Head (big and round like Animal Crossing)
+        // Add Cute Game style character (much cuter!)
+        // Head (big and round like Cute Game)
         ctx.fillStyle = '#FFDBB5' // Peach skin
         ctx.beginPath()
         ctx.arc(256, 180, 50, 0, Math.PI * 2)
@@ -1563,7 +1563,7 @@ export class HuggingFaceService {
         ctx.roundRect(247, 400, 30, 15, 5)
         ctx.fill()
         
-        // Blush (Animal Crossing style)
+        // Blush (Cute Game style)
         ctx.fillStyle = '#FFB6C1'
         ctx.beginPath()
         ctx.arc(230, 185, 8, 0, Math.PI * 2)
@@ -1583,8 +1583,8 @@ export class HuggingFaceService {
         
         ctx.fillStyle = '#32CD32' // Lime green
         ctx.font = 'bold 14px Arial'
-        ctx.strokeText('Animal Crossing Style', 256, 480)
-        ctx.fillText('Animal Crossing Style', 256, 480)
+        ctx.strokeText('Cute Game Style', 256, 480)
+        ctx.fillText('Cute Game Style', 256, 480)
       }
       
       views.push(canvas.toDataURL('image/png'))
@@ -1607,7 +1607,7 @@ export class HuggingFaceService {
       canvas.height = 512
       
       if (ctx) {
-        // Pop Art + Animal Crossing style background
+        // Pop Art + Cute Game style background
         const gradient = ctx.createLinearGradient(0, 0, 512, 512)
         gradient.addColorStop(0, '#FFB6C1') // Light pink
         gradient.addColorStop(0.3, '#87CEEB') // Sky blue
@@ -1617,7 +1617,7 @@ export class HuggingFaceService {
         ctx.fillStyle = gradient
         ctx.fillRect(0, 0, 512, 512)
         
-        // Draw Pop Art + Animal Crossing style character
+        // Draw Pop Art + Cute Game style character
         this.drawPopArtCharacter(ctx, 256, 200, i, characterClass)
         
         // Add Pop Art text with bold, vibrant style
@@ -1641,16 +1641,16 @@ export class HuggingFaceService {
     return views
   }
   
-  // Draw Pop Art + Animal Crossing style character
+  // Draw Pop Art + Cute Game style character
   private static drawPopArtCharacter(ctx: CanvasRenderingContext2D, x: number, y: number, viewIndex: number, characterClass: string) {
-    // Animal Crossing colors - soft and cute
+    // Cute Game colors - soft and cute
     const colors = {
       skin: '#FFDBB5',      // Peach skin tone
       hair: '#8B4513',      // Brown hair
       outline: '#8B4513'    // Soft brown outline (not black!)
     }
     
-    // Character class colors (Animal Crossing style - softer)
+    // Character class colors (Cute Game style - softer)
     const classColors = {
       Warrior: { shirt: '#FFB6C1', pants: '#DDA0DD', accent: '#F0E68C' }, // Light pink, plum, khaki
       Mage: { shirt: '#E6E6FA', pants: '#D8BFD8', accent: '#F0E68C' },    // Lavender, thistle, khaki
@@ -1661,11 +1661,11 @@ export class HuggingFaceService {
     
     const classColor = classColors[characterClass as keyof typeof classColors] || classColors.default
     
-    // Draw character with Animal Crossing style (no harsh outlines!)
+    // Draw character with Cute Game style (no harsh outlines!)
     ctx.strokeStyle = colors.outline
     ctx.lineWidth = 2 // Much thinner outline
     
-    // Head (round and cute like Animal Crossing)
+    // Head (round and cute like Cute Game)
     ctx.fillStyle = colors.skin
     ctx.beginPath()
     ctx.arc(x, y - 40, 50, 0, Math.PI * 2)
@@ -1679,8 +1679,8 @@ export class HuggingFaceService {
     ctx.fill()
     ctx.stroke()
     
-    // Eyes (big and cute like Animal Crossing)
-    ctx.fillStyle = '#4169E1' // Royal blue (Animal Crossing style)
+    // Eyes (big and cute like Cute Game)
+    ctx.fillStyle = '#4169E1' // Royal blue (Cute Game style)
     ctx.beginPath()
     ctx.arc(x - 15, y - 45, 10, 0, Math.PI * 2)
     ctx.fill()
@@ -1697,14 +1697,14 @@ export class HuggingFaceService {
     ctx.arc(x + 18, y - 48, 3, 0, Math.PI * 2)
     ctx.fill()
     
-    // Smile (happy and friendly like Animal Crossing)
+    // Smile (happy and friendly like Cute Game)
     ctx.strokeStyle = colors.outline
     ctx.lineWidth = 2
     ctx.beginPath()
     ctx.arc(x, y - 25, 18, 0, Math.PI)
     ctx.stroke()
     
-    // Body (soft, rounded like Animal Crossing)
+    // Body (soft, rounded like Cute Game)
     ctx.fillStyle = classColor.shirt
     ctx.beginPath()
     ctx.roundRect(x - 35, y + 10, 70, 90, 15) // Rounded rectangle
@@ -1744,7 +1744,7 @@ export class HuggingFaceService {
     ctx.fill()
     ctx.stroke()
     
-    // Add Animal Crossing details
+    // Add Cute Game details
     if (viewIndex === 0) { // Front view
       // Add a cute flower or bow
       ctx.fillStyle = '#FF69B4' // Hot pink
@@ -1753,7 +1753,7 @@ export class HuggingFaceService {
       ctx.fill()
       ctx.stroke()
       
-      // Add blush (Animal Crossing style)
+      // Add blush (Cute Game style)
       ctx.fillStyle = '#FFB6C1'
       ctx.beginPath()
       ctx.arc(x - 25, y - 20, 8, 0, Math.PI * 2)

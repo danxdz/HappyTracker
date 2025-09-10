@@ -102,7 +102,7 @@ Your HappyTracker app will automatically try Hunyuan3D-2 first!
 
 ### **✅ High Quality**
 - **Professional 3D models** - Enterprise-grade quality
-- **Animal Crossing style** - Perfect for your vision
+- **Cute Game style** - Perfect for your vision
 - **GLB format** - Web-compatible 3D models
 
 ### **✅ Full Control**
@@ -159,6 +159,6 @@ Once set up, your HappyTracker app will:
 - ✅ **Try Hunyuan3D-2 first** - FREE 3D generation
 - ✅ **Generate high-quality models** - Professional results
 - ✅ **No API costs** - Completely free
-- ✅ **Animal Crossing style** - Perfect aesthetic match
+- ✅ **Cute Game style** - Perfect aesthetic match
 
 **Hunyuan3D-2 is the perfect solution for your free 3D character generation!** 🎮✨

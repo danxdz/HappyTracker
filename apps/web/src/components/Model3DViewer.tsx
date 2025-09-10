@@ -91,7 +91,7 @@ function Model({ modelData }: { modelData: string }) {
   if (isFallbackData || !objectUrl) {
     return (
       <group ref={groupRef}>
-        {/* Animal Crossing style placeholder character - much more detailed! */}
+        {/* Cute game character placeholder - much more detailed! */}
         
         {/* Body (main torso) */}
         <mesh position={[0, 0, 0]}>
