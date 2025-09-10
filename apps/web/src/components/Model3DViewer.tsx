@@ -91,102 +91,140 @@ function Model({ modelData }: { modelData: string }) {
   if (isFallbackData || !objectUrl) {
     return (
       <group ref={groupRef}>
-        {/* Cute game character placeholder - much more detailed! */}
+        {/* 🎨 GEOMETRIC STYLIZED CHARACTER - Iconic Design! */}
         
-        {/* Body (main torso) */}
-        <mesh position={[0, 0, 0]}>
-          <boxGeometry args={[0.6, 1.2, 0.3]} />
-          <meshStandardMaterial color="#FFB6C1" />
-        </mesh>
-        
-        {/* Head */}
-        <mesh position={[0, 1.0, 0]}>
-          <sphereGeometry args={[0.5]} />
+        {/* === HEAD SECTION === */}
+        {/* Main head (large sphere - like Mickey Mouse style) */}
+        <mesh position={[0, 1.1, 0]}>
+          <sphereGeometry args={[0.7, 16, 16]} />
           <meshStandardMaterial color="#FFDBB5" />
         </mesh>
         
-        {/* Hair */}
-        <mesh position={[0, 1.2, 0]}>
-          <sphereGeometry args={[0.45]} />
+        {/* Hair (slightly larger sphere behind head) */}
+        <mesh position={[0, 1.3, -0.1]}>
+          <sphereGeometry args={[0.75, 16, 16]} />
           <meshStandardMaterial color="#8B4513" />
         </mesh>
         
-        {/* Eyes */}
-        <mesh position={[-0.15, 1.05, 0.4]}>
-          <sphereGeometry args={[0.08]} />
-          <meshStandardMaterial color="#4169E1" />
+        {/* Hair tuft (small sphere on top - iconic style) */}
+        <mesh position={[0, 1.6, 0]}>
+          <sphereGeometry args={[0.3, 12, 12]} />
+          <meshStandardMaterial color="#8B4513" />
         </mesh>
-        <mesh position={[0.15, 1.05, 0.4]}>
-          <sphereGeometry args={[0.08]} />
+        
+        {/* === FACE FEATURES === */}
+        {/* Left eye (large circle - big and expressive) */}
+        <mesh position={[-0.25, 1.15, 0.6]}>
+          <sphereGeometry args={[0.12, 12, 12]} />
           <meshStandardMaterial color="#4169E1" />
         </mesh>
         
-        {/* Eye highlights */}
-        <mesh position={[-0.12, 1.08, 0.45]}>
-          <sphereGeometry args={[0.03]} />
+        {/* Right eye (large circle) */}
+        <mesh position={[0.25, 1.15, 0.6]}>
+          <sphereGeometry args={[0.12, 12, 12]} />
+          <meshStandardMaterial color="#4169E1" />
+        </mesh>
+        
+        {/* Eye highlights (white dots - sparkle effect) */}
+        <mesh position={[-0.22, 1.18, 0.65]}>
+          <sphereGeometry args={[0.04, 8, 8]} />
           <meshStandardMaterial color="#FFFFFF" />
         </mesh>
-        <mesh position={[0.18, 1.08, 0.45]}>
-          <sphereGeometry args={[0.03]} />
+        <mesh position={[0.28, 1.18, 0.65]}>
+          <sphereGeometry args={[0.04, 8, 8]} />
           <meshStandardMaterial color="#FFFFFF" />
         </mesh>
         
-        {/* Nose */}
-        <mesh position={[0, 0.95, 0.4]}>
-          <sphereGeometry args={[0.05]} />
+        {/* Nose (small sphere) */}
+        <mesh position={[0, 1.05, 0.65]}>
+          <sphereGeometry args={[0.06, 8, 8]} />
           <meshStandardMaterial color="#FFDBB5" />
         </mesh>
         
-        {/* Mouth */}
-        <mesh position={[0, 0.85, 0.4]}>
-          <sphereGeometry args={[0.08, 0.04]} />
+        {/* Mouth (small sphere - happy expression) */}
+        <mesh position={[0, 0.95, 0.7]}>
+          <sphereGeometry args={[0.08, 8, 8]} />
           <meshStandardMaterial color="#FF69B4" />
         </mesh>
         
-        {/* Arms */}
-        <mesh position={[-0.5, 0.2, 0]}>
-          <boxGeometry args={[0.2, 0.8, 0.2]} />
-          <meshStandardMaterial color="#FFDBB5" />
-        </mesh>
-        <mesh position={[0.5, 0.2, 0]}>
-          <boxGeometry args={[0.2, 0.8, 0.2]} />
-          <meshStandardMaterial color="#FFDBB5" />
-        </mesh>
-        
-        {/* Legs */}
-        <mesh position={[-0.2, -0.8, 0]}>
-          <boxGeometry args={[0.2, 0.8, 0.2]} />
-          <meshStandardMaterial color="#DDA0DD" />
-        </mesh>
-        <mesh position={[0.2, -0.8, 0]}>
-          <boxGeometry args={[0.2, 0.8, 0.2]} />
-          <meshStandardMaterial color="#DDA0DD" />
-        </mesh>
-        
-        {/* Shoes */}
-        <mesh position={[-0.2, -1.3, 0]}>
-          <boxGeometry args={[0.25, 0.1, 0.3]} />
-          <meshStandardMaterial color="#F0E68C" />
-        </mesh>
-        <mesh position={[0.2, -1.3, 0]}>
-          <boxGeometry args={[0.25, 0.1, 0.3]} />
-          <meshStandardMaterial color="#F0E68C" />
-        </mesh>
-        
-        {/* Blush */}
-        <mesh position={[-0.3, 0.9, 0.35]}>
-          <sphereGeometry args={[0.06]} />
+        {/* Blush (small pink circles - cute detail) */}
+        <mesh position={[-0.4, 1.0, 0.5]}>
+          <sphereGeometry args={[0.08, 8, 8]} />
           <meshStandardMaterial color="#FFB6C1" />
         </mesh>
-        <mesh position={[0.3, 0.9, 0.35]}>
-          <sphereGeometry args={[0.06]} />
+        <mesh position={[0.4, 1.0, 0.5]}>
+          <sphereGeometry args={[0.08, 8, 8]} />
           <meshStandardMaterial color="#FFB6C1" />
         </mesh>
         
-        {/* Cute flower accessory */}
-        <mesh position={[0, 1.4, 0]}>
-          <sphereGeometry args={[0.1]} />
+        {/* === BODY SECTION === */}
+        {/* Main torso (cylinder - more organic than box) */}
+        <mesh position={[0, 0.2, 0]}>
+          <cylinderGeometry args={[0.5, 0.6, 1.0, 12]} />
+          <meshStandardMaterial color="#FFB6C1" />
+        </mesh>
+        
+        {/* === ARMS === */}
+        {/* Left arm (cylinder with slight angle) */}
+        <mesh position={[-0.7, 0.3, 0]} rotation={[0, 0, 0.3]}>
+          <cylinderGeometry args={[0.15, 0.15, 0.8, 8]} />
+          <meshStandardMaterial color="#FFDBB5" />
+        </mesh>
+        
+        {/* Right arm (cylinder with slight angle) */}
+        <mesh position={[0.7, 0.3, 0]} rotation={[0, 0, -0.3]}>
+          <cylinderGeometry args={[0.15, 0.15, 0.8, 8]} />
+          <meshStandardMaterial color="#FFDBB5" />
+        </mesh>
+        
+        {/* Left hand (small sphere) */}
+        <mesh position={[-1.0, -0.1, 0]}>
+          <sphereGeometry args={[0.12, 8, 8]} />
+          <meshStandardMaterial color="#FFDBB5" />
+        </mesh>
+        
+        {/* Right hand (small sphere) */}
+        <mesh position={[1.0, -0.1, 0]}>
+          <sphereGeometry args={[0.12, 8, 8]} />
+          <meshStandardMaterial color="#FFDBB5" />
+        </mesh>
+        
+        {/* === LEGS === */}
+        {/* Left leg (cylinder) */}
+        <mesh position={[-0.25, -0.8, 0]}>
+          <cylinderGeometry args={[0.2, 0.2, 0.9, 8]} />
+          <meshStandardMaterial color="#DDA0DD" />
+        </mesh>
+        
+        {/* Right leg (cylinder) */}
+        <mesh position={[0.25, -0.8, 0]}>
+          <cylinderGeometry args={[0.2, 0.2, 0.9, 8]} />
+          <meshStandardMaterial color="#DDA0DD" />
+        </mesh>
+        
+        {/* Left foot (box - more defined than sphere) */}
+        <mesh position={[-0.25, -1.4, 0.1]}>
+          <boxGeometry args={[0.3, 0.15, 0.4]} />
+          <meshStandardMaterial color="#F0E68C" />
+        </mesh>
+        
+        {/* Right foot (box) */}
+        <mesh position={[0.25, -1.4, 0.1]}>
+          <boxGeometry args={[0.3, 0.15, 0.4]} />
+          <meshStandardMaterial color="#F0E68C" />
+        </mesh>
+        
+        {/* === ACCESSORIES === */}
+        {/* Cute bow (small box - geometric style) */}
+        <mesh position={[0, 1.5, 0.2]}>
+          <boxGeometry args={[0.15, 0.1, 0.05]} />
           <meshStandardMaterial color="#FF69B4" />
+        </mesh>
+        
+        {/* Bow center (small sphere) */}
+        <mesh position={[0, 1.5, 0.25]}>
+          <sphereGeometry args={[0.05, 6, 6]} />
+          <meshStandardMaterial color="#FF1493" />
         </mesh>
       </group>
     )
