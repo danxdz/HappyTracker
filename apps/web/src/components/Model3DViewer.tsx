@@ -13,15 +13,27 @@ interface Model3DViewerProps {
 function Model({ modelData }: { modelData: string }) {
   const groupRef = useRef<Group>(null)
   
+  // Check if this is fallback data (not a real GLB model)
+  const isFallbackData = React.useMemo(() => {
+    if (!modelData || typeof modelData !== 'string') return true
+    
+    // Check if it's a very small base64 string (likely fallback)
+    let base64Data = modelData
+    if (modelData.includes(',')) {
+      base64Data = modelData.split(',')[1]
+    } else if (modelData.startsWith('data:')) {
+      base64Data = modelData.split(',')[1]
+    }
+    
+    // If it's very small, it's probably fallback data
+    return base64Data.length < 1000
+  }, [modelData])
+  
   // Convert base64 to blob URL for GLB loading
   const blob = React.useMemo(() => {
+    if (isFallbackData) return null
+    
     try {
-      // Check if modelData is a string and has the expected format
-      if (!modelData || typeof modelData !== 'string') {
-        console.warn('Model3DViewer: Invalid modelData format')
-        return null
-      }
-      
       // Handle different base64 formats
       let base64Data = modelData
       if (modelData.includes(',')) {
@@ -41,14 +53,24 @@ function Model({ modelData }: { modelData: string }) {
       console.error('Error converting base64 to blob:', error)
       return null
     }
-  }, [modelData])
+  }, [modelData, isFallbackData])
 
   const objectUrl = React.useMemo(() => {
     if (!blob) return null
     return URL.createObjectURL(blob)
   }, [blob])
 
-  const { scene } = useGLTF(objectUrl || '')
+  // Only try to load GLB if we have a real model
+  let scene = null
+  try {
+    if (objectUrl) {
+      const gltfResult = useGLTF(objectUrl)
+      scene = gltfResult.scene
+    }
+  } catch (error) {
+    console.warn('Failed to load GLB model:', error)
+    scene = null
+  }
 
   // Auto-rotate the model
   useFrame(() => {
@@ -65,13 +87,30 @@ function Model({ modelData }: { modelData: string }) {
     }
   }, [objectUrl])
 
-  // Don't render if we don't have a valid object URL
-  if (!objectUrl) {
+  // If we have fallback data or no valid object URL, show placeholder
+  if (isFallbackData || !objectUrl) {
     return (
       <group ref={groupRef}>
-        <mesh>
-          <boxGeometry args={[1, 1, 1]} />
-          <meshStandardMaterial color="gray" />
+        {/* Animal Crossing style placeholder character */}
+        <mesh position={[0, 0, 0]}>
+          <boxGeometry args={[0.8, 1.6, 0.4]} />
+          <meshStandardMaterial color="#FFB6C1" />
+        </mesh>
+        <mesh position={[0, 1.2, 0]}>
+          <sphereGeometry args={[0.6]} />
+          <meshStandardMaterial color="#FFDBB5" />
+        </mesh>
+        <mesh position={[-0.3, 1.2, 0]}>
+          <sphereGeometry args={[0.1]} />
+          <meshStandardMaterial color="#4169E1" />
+        </mesh>
+        <mesh position={[0.3, 1.2, 0]}>
+          <sphereGeometry args={[0.1]} />
+          <meshStandardMaterial color="#4169E1" />
+        </mesh>
+        <mesh position={[0, 0.8, 0]}>
+          <sphereGeometry args={[0.2]} />
+          <meshStandardMaterial color="#8B4513" />
         </mesh>
       </group>
     )
@@ -79,7 +118,7 @@ function Model({ modelData }: { modelData: string }) {
 
   return (
     <group ref={groupRef}>
-      <primitive object={scene} scale={[1, 1, 1]} />
+      {scene && <primitive object={scene} scale={[1, 1, 1]} />}
     </group>
   )
 }
@@ -131,8 +170,8 @@ export const Model3DViewer: React.FC<Model3DViewerProps> = ({
           <Environment preset="studio" />
           
           {/* Model or Placeholder */}
-          {hasModel && modelData ? (
-            <Model modelData={modelData} />
+          {hasModel ? (
+            <Model modelData={modelData || ''} />
           ) : (
             <PlaceholderModel />
           )}
