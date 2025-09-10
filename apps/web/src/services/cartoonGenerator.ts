@@ -133,6 +133,7 @@ export class CartoonGenerator {
    * 🎯 Create Optimal Prompt for One-Shot Generation
    * 
    * Crafted for maximum quality with minimal tokens
+   * Enhanced to better match the original photo
    */
   private static createOptimalPrompt(analysis: PhotoAnalysis, style: string): string {
     const stylePrompts = {
@@ -144,7 +145,8 @@ export class CartoonGenerator {
 
     const basePrompt = stylePrompts[style as keyof typeof stylePrompts] || stylePrompts.cute
     
-    return `${basePrompt}, ${analysis.faceShape} face, ${analysis.hairColor} ${analysis.hairStyle} hair, ${analysis.eyeColor} eyes, ${analysis.skinTone} skin, ${analysis.dominantEmotion} expression, high quality, clean background, game character style`
+    // Enhanced prompt for better photo matching
+    return `${basePrompt}, ${analysis.faceShape} face shape, ${analysis.hairColor} ${analysis.hairStyle} hair, ${analysis.eyeColor} eyes, ${analysis.skinTone} skin tone, ${analysis.dominantEmotion} facial expression, matching the original photo's features, high quality cartoon, clean background, game character style, photorealistic cartoon conversion`
   }
 
   /**

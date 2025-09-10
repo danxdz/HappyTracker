@@ -482,12 +482,26 @@ export const DynamicCharacterPage: React.FC = () => {
                 </div>
 
                 <div className="text-center">
-                  <div className="w-32 h-32 bg-white/20 rounded-xl mx-auto mb-6 flex items-center justify-center">
-                    <span className="text-4xl">📷</span>
-                  </div>
+                  {/* Photo Preview */}
+                  {characterData.photo ? (
+                    <div className="w-32 h-32 bg-white rounded-xl mx-auto mb-6 flex items-center justify-center overflow-hidden">
+                      <img 
+                        src={URL.createObjectURL(characterData.photo)} 
+                        alt="Your Photo" 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-32 h-32 bg-white/20 rounded-xl mx-auto mb-6 flex items-center justify-center">
+                      <span className="text-4xl">📷</span>
+                    </div>
+                  )}
+                  
+                  {/* File Upload */}
                   <input
                     type="file"
                     accept="image/*"
+                    capture="environment"
                     onChange={(e) => {
                       const file = e.target.files?.[0]
                       if (file) {
@@ -497,18 +511,50 @@ export const DynamicCharacterPage: React.FC = () => {
                     className="hidden"
                     id="photo-upload"
                   />
-                  <label
-                    htmlFor="photo-upload"
-                    className="block w-full py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition-all cursor-pointer"
-                  >
-                    Choose Photo
-                  </label>
+                  
+                  {/* Camera Capture */}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="user"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        handlePhotoUpload(file)
+                      }
+                    }}
+                    className="hidden"
+                    id="photo-camera"
+                  />
+                  
+                  <div className="space-y-3">
+                    <label
+                      htmlFor="photo-upload"
+                      className="block w-full py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition-all cursor-pointer"
+                    >
+                      📁 Choose from Gallery
+                    </label>
+                    
+                    <label
+                      htmlFor="photo-camera"
+                      className="block w-full py-3 bg-green-500 text-white rounded-xl font-semibold hover:bg-green-600 transition-all cursor-pointer"
+                    >
+                      📸 Take Photo
+                    </label>
+                  </div>
+                  
                   <p className="text-gray-400 text-sm mt-4">
                     {hfApiEnabled 
-                      ? 'Real AI will analyze your photo for age and measurements' 
-                      : 'Simulated AI will analyze your photo for age and measurements'
+                      ? 'Real AI will analyze your photo and create a matching cartoon character' 
+                      : 'Simulated AI will analyze your photo and create a matching cartoon character'
                     }
                   </p>
+                  
+                  {characterData.photo && (
+                    <p className="text-green-400 text-sm mt-2">
+                      ✅ Photo ready for analysis!
+                    </p>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -763,6 +809,22 @@ export const DynamicCharacterPage: React.FC = () => {
                   <div className="text-center">
                     <div className="bg-white/5 rounded-xl p-6">
                       <h4 className="text-xl font-bold text-white mb-4">Cartoon Preview</h4>
+                      
+                      {/* Original Photo */}
+                      {characterData.photo && (
+                        <div className="mb-4">
+                          <h5 className="text-white font-medium mb-2">📸 Original Photo</h5>
+                          <div className="w-32 h-32 bg-white rounded-lg mx-auto flex items-center justify-center overflow-hidden">
+                            <img 
+                              src={URL.createObjectURL(characterData.photo)} 
+                              alt="Original Photo" 
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Cartoon Result */}
                       {cartoonGenerated ? (
                         <div className="w-48 h-48 bg-white rounded-xl mx-auto mb-4 flex items-center justify-center overflow-hidden">
                           {cartoonImage ? (
@@ -780,11 +842,12 @@ export const DynamicCharacterPage: React.FC = () => {
                           <div className="text-6xl">🎨</div>
                         </div>
                       )}
+                      
                       <p className="text-gray-300 text-sm">
                         {cartoonGenerated 
                           ? 'Your cartoon character has been generated!' 
                           : hfApiEnabled 
-                            ? 'Real AI will generate your cartoon character from the photo'
+                            ? 'Real AI will generate your cartoon character matching the photo'
                             : 'Simulated cartoon will be generated based on this information'
                         }
                       </p>
