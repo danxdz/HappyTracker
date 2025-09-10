@@ -1,11 +1,25 @@
 # 🆓 Free 3D Character Creation Guide
 
-## **ReadyPlayerMe (Recommended)**
+## **PlayerZero.me (Perfect Match!)**
+- **Website**: https://playerzero.me/
+- **Style**: Animal Crossing & Stardew Valley aesthetics
+- **Features**: Cute, friendly characters, cross-platform integration
+- **Integration**: SDK available for easy implementation
+- **Revenue**: Revenue sharing system for participating games
+
+## **ReadyPlayerMe (Also Great)**
 - **Website**: https://readyplayer.me/
 - **API**: https://docs.readyplayer.me/
 - **Free tier**: Unlimited basic avatars
 - **Features**: Photo-to-3D, GLB/GLTF export, web integration
 - **Integration**: Easy API integration for web apps
+
+### **How to Use PlayerZero.me:**
+1. **Sign up** for free account
+2. **Get SDK** from their platform
+3. **Integrate** Animal Crossing style avatars
+4. **Customize** characters with cute aesthetics
+5. **Enable** cross-platform compatibility
 
 ### **How to Use ReadyPlayerMe:**
 1. **Sign up** for free account
@@ -80,20 +94,22 @@ async function generateAvatar(photoUrl) {
 
 ## **Implementation Priority**
 
-1. **ReadyPlayerMe** - Best for web integration
-2. **Mixamo** - Good for animations
-3. **VRoid Studio** - Anime style characters
-4. **MakeHuman** - Realistic characters
-5. **Blender** - Full control but complex
+1. **PlayerZero.me** - Perfect for Animal Crossing style
+2. **ReadyPlayerMe** - Best for web integration
+3. **Mixamo** - Good for animations
+4. **VRoid Studio** - Anime style characters
+5. **MakeHuman** - Realistic characters
+6. **Blender** - Full control but complex
 
 ---
 
 ## **Next Steps**
 
-1. **Sign up** for ReadyPlayerMe account
-2. **Get API key** from dashboard
+1. **Sign up** for PlayerZero.me account (Animal Crossing style)
+2. **Get SDK** from their platform
 3. **Test integration** with your app
-4. **Replace fallback** with real 3D models
-5. **Add animations** from Mixamo if needed
+4. **Sign up** for ReadyPlayerMe as backup
+5. **Replace fallback** with real 3D models
+6. **Add animations** from Mixamo if needed
 
-ReadyPlayerMe is the easiest to integrate and provides the best results for web applications!
+PlayerZero.me is perfect for your Animal Crossing + Pop Art vision!
