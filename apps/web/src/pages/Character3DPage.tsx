@@ -8,7 +8,7 @@ import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { IdentityCard, CharacterIdentity } from '../components/IdentityCard'
 import { Character3DGenerator, Character3DResult } from '../services/character3DGenerator'
-import { Download, Share2, RefreshCw, Eye, Users, Sparkles } from 'lucide-react'
+import { Download, Share2, RefreshCw, Eye, Users, Sparkles, Settings } from 'lucide-react'
 
 export const Character3DPage: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<'identity' | 'generating' | 'result'>('identity')
@@ -73,9 +73,27 @@ export const Character3DPage: React.FC = () => {
             3D Character Creator
           </span>
         </h1>
-        <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+        <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-4">
           Create photo-realistic 3D characters with 6 T-pose views for animation
         </p>
+        
+        {/* Mode Indicator */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="flex items-center justify-center space-x-2"
+        >
+          <Settings className="w-4 h-4 text-gray-400" />
+          <span className="text-sm text-gray-400">
+            Current Mode: 
+            <span className={`ml-1 font-semibold ${
+              Character3DGenerator.getCurrentMode() === 'hf' ? 'text-green-400' : 'text-blue-400'
+            }`}>
+              {Character3DGenerator.getCurrentMode() === 'hf' ? '🤖 HF API' : '🎨 Canvas Only'}
+            </span>
+          </span>
+        </motion.div>
       </motion.div>
 
       {/* Main Content */}

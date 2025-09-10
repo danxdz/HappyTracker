@@ -47,32 +47,40 @@ export class Character3DGenerator {
   private static readonly HF_API_URL = 'https://api-inference.huggingface.co/models'
   private static readonly HF_TOKEN = (import.meta as any).env?.VITE_HUGGINGFACE_TOKEN || ''
   
+  // 🎛️ HF Toggle System - Easy to turn on/off
+  private static readonly USE_HF_API = false // Set to true when ready for HF
+  
   // Debug token loading
   static {
     console.log('🔑 HF Token loaded:', this.HF_TOKEN ? '✅ Yes' : '❌ No')
     console.log('🌍 Environment:', (import.meta as any).env?.MODE || 'unknown')
+    console.log('🎛️ HF API Mode:', this.USE_HF_API ? '🟢 ENABLED' : '🔴 DISABLED (Canvas Only)')
   }
 
   /**
-   * 🎯 GENERATE 6 T-POSE VIEWS (Canvas Only)
+   * 🎯 GENERATE 6 T-POSE VIEWS (Smart Mode)
    * 
    * Creates front, back, left, right, top, bottom views
    * Photo-realistic head + body type system
-   * Uses canvas fallbacks for fast, reliable generation
+   * Automatically chooses HF API or Canvas based on USE_HF_API setting
    */
   static async generate3DCharacter(identity: CharacterIdentity): Promise<Character3DResult> {
     const startTime = Date.now()
     
     try {
-      console.log('🎯 Starting 3D character generation (Canvas Only)...')
+      console.log(`🎯 Starting 3D character generation (${this.USE_HF_API ? 'HF API' : 'Canvas Only'})...`)
       console.log('📋 Identity:', identity)
       
-      // Step 1: Analyze photo for head features (simplified)
-      const headFeatures = this.analyzeHeadFeaturesSimple(identity.photo)
+      // Step 1: Analyze photo for head features
+      const headFeatures = this.USE_HF_API 
+        ? await this.analyzeHeadFeaturesHF(identity.photo)
+        : this.analyzeHeadFeaturesSimple(identity.photo)
       console.log('👤 Head features:', headFeatures)
       
-      // Step 2: Generate 6 T-pose views (canvas only)
-      const views = this.generateTPoseViewsCanvas(identity, headFeatures)
+      // Step 2: Generate 6 T-pose views
+      const views = this.USE_HF_API
+        ? await this.generateTPoseViewsHF(identity, headFeatures)
+        : this.generateTPoseViewsCanvas(identity, headFeatures)
       console.log('📸 T-pose views generated:', Object.keys(views))
       
       const processingTime = Date.now() - startTime
@@ -111,6 +119,54 @@ export class Character3DGenerator {
   }
 
   /**
+   * 👤 ANALYZE HEAD FEATURES (HF API)
+   * 
+   * Uses Hugging Face API for photo analysis
+   * Falls back to simple analysis if API fails
+   */
+  private static async analyzeHeadFeaturesHF(photo?: File): Promise<any> {
+    if (!photo) {
+      return this.analyzeHeadFeaturesSimple(photo)
+    }
+
+    console.log('👤 Analyzing head features (HF API)...')
+    
+    try {
+      const photoBase64 = await this.fileToBase64(photo)
+      
+      const response = await fetch(`${this.HF_API_URL}/google/vit-base-patch16-224`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.HF_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          inputs: photoBase64,
+          parameters: { max_length: 30 }
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`HF analysis failed: ${response.statusText}`)
+      }
+
+      const result = await response.json()
+      
+      return {
+        faceShape: this.extractFaceShape(result),
+        eyeColor: this.extractEyeColor(result),
+        hairColor: this.extractHairColor(result),
+        hairStyle: this.extractHairStyle(result),
+        skinTone: this.extractSkinTone(result)
+      }
+      
+    } catch (error) {
+      console.warn('⚠️ HF analysis failed, using simple analysis:', error)
+      return this.analyzeHeadFeaturesSimple(photo)
+    }
+  }
+
+  /**
    * 👤 ANALYZE HEAD FEATURES (Simplified)
    * 
    * Creates realistic features based on photo analysis
@@ -131,6 +187,44 @@ export class Character3DGenerator {
     
     console.log('🎨 Generated features:', features)
     return features
+  }
+
+  /**
+   * 📸 GENERATE 6 T-POSE VIEWS (HF API)
+   * 
+   * Creates front, back, left, right, top, bottom views using HF API
+   * Falls back to canvas if API fails
+   */
+  private static async generateTPoseViewsHF(
+    identity: CharacterIdentity, 
+    headFeatures: any
+  ): Promise<Character3DResult['views']> {
+    console.log('📸 Generating 6 T-pose views (HF API)...')
+    
+    const views = {
+      front: '',
+      back: '',
+      left: '',
+      right: '',
+      top: '',
+      bottom: ''
+    }
+
+    // Generate each view using HF API
+    const viewPrompts = this.createViewPrompts(identity, headFeatures)
+    
+    for (const [viewName, prompt] of Object.entries(viewPrompts)) {
+      try {
+        console.log(`🎨 Generating ${viewName} view (HF API)...`)
+        const imageUrl = await this.generateViewImageHF(prompt)
+        views[viewName as keyof typeof views] = imageUrl
+      } catch (error) {
+        console.warn(`⚠️ ${viewName} view HF failed, using canvas fallback:`, error)
+        views[viewName as keyof typeof views] = this.createCanvasView(viewName, identity, headFeatures)
+      }
+    }
+
+    return views
   }
 
   /**
@@ -190,11 +284,11 @@ export class Character3DGenerator {
   }
 
   /**
-   * 🎨 GENERATE VIEW IMAGE
+   * 🎨 GENERATE VIEW IMAGE (HF API)
    * 
-   * Creates single view image using AI
+   * Creates single view image using Hugging Face API
    */
-  private static async generateViewImage(prompt: string): Promise<string> {
+  private static async generateViewImageHF(prompt: string): Promise<string> {
     const response = await fetch(`${this.HF_API_URL}/stabilityai/stable-diffusion-xl-base-1.0`, {
       method: 'POST',
       headers: {
@@ -213,7 +307,7 @@ export class Character3DGenerator {
     })
 
     if (!response.ok) {
-      throw new Error(`View generation failed: ${response.statusText}`)
+      throw new Error(`HF view generation failed: ${response.statusText}`)
     }
 
     const imageBlob = await response.blob()
@@ -560,6 +654,20 @@ export class Character3DGenerator {
       top: '',
       bottom: ''
     }
+  }
+
+  /**
+   * 🎛️ TOGGLE HF API MODE
+   * 
+   * Easy way to enable/disable HF API
+   * Just change USE_HF_API to true when ready
+   */
+  static getCurrentMode(): 'canvas' | 'hf' {
+    return this.USE_HF_API ? 'hf' : 'canvas'
+  }
+
+  static isHFEnabled(): boolean {
+    return this.USE_HF_API
   }
 
   // Random feature generators
