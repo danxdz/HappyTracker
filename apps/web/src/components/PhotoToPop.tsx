@@ -4,6 +4,7 @@ import { Camera, Upload, X, Sparkles, User, Brain, Zap } from 'lucide-react'
 import { HuggingFaceService, PopGenerationResult } from '../services/huggingFaceService'
 import { StepByStepProgress, PHOTO_TO_POP_STEPS } from './StepByStepProgress'
 import { ErrorBoundary } from './ErrorBoundary'
+import { CharacterIdentityCard } from './CharacterIdentityCard'
 
 interface PhotoToPopProps {
   onPhotoProcessed?: (result: PopGenerationResult) => void
@@ -16,6 +17,7 @@ export const PhotoToPop: React.FC<PhotoToPopProps> = ({ onPhotoProcessed, onClos
   const [processingStep, setProcessingStep] = useState<string>('')
   const [hasValidToken, setHasValidToken] = useState<boolean | null>(null)
   const [currentSteps, setCurrentSteps] = useState(PHOTO_TO_POP_STEPS.map(step => ({ ...step, status: 'pending' as 'pending' | 'active' | 'completed' })))
+  const [generatedCharacter, setGeneratedCharacter] = useState<PopGenerationResult | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Check HF token availability on component mount
@@ -100,6 +102,7 @@ export const PhotoToPop: React.FC<PhotoToPopProps> = ({ onPhotoProcessed, onClos
       
       setIsProcessing(false)
       setProcessingStep('')
+      setGeneratedCharacter(result)
       
       // Safely call the callback
       try {
@@ -129,6 +132,7 @@ export const PhotoToPop: React.FC<PhotoToPopProps> = ({ onPhotoProcessed, onClos
     setSelectedPhoto(null)
     setIsProcessing(false)
     setProcessingStep('')
+    setGeneratedCharacter(null)
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
@@ -280,6 +284,47 @@ export const PhotoToPop: React.FC<PhotoToPopProps> = ({ onPhotoProcessed, onClos
                 className="bg-white/10 hover:bg-white/20 text-white font-semibold py-3 px-6 rounded-2xl transition-all duration-200"
               >
                 Change Photo
+              </motion.button>
+            </div>
+          </div>
+        )}
+
+        {/* Generated Character Identity Card */}
+        {generatedCharacter && !isProcessing && (
+          <div className="space-y-4">
+            <div className="text-center mb-4">
+              <h3 className="text-white font-bold text-lg mb-2">🎉 Your Character is Ready!</h3>
+              <p className="text-gray-300 text-sm">Here's your unique character identity card</p>
+            </div>
+            
+            <div className="max-h-96 overflow-y-auto">
+              <CharacterIdentityCard 
+                character={generatedCharacter}
+                className="mx-auto"
+              />
+            </div>
+            
+            <div className="flex space-x-3">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  setGeneratedCharacter(null)
+                  setSelectedPhoto(null)
+                }}
+                className="flex-1 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-semibold py-3 px-6 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-2"
+              >
+                <Sparkles className="w-5 h-5" />
+                <span>Create Another</span>
+              </motion.button>
+              
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={onClose}
+                className="bg-white/10 hover:bg-white/20 text-white font-semibold py-3 px-6 rounded-2xl transition-all duration-200"
+              >
+                Done
               </motion.button>
             </div>
           </div>

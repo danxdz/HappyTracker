@@ -1031,7 +1031,7 @@ export class HuggingFaceService {
       // Generate T-pose views using AI
       const tPoseViews = await this.generateTPoseViews(imageData, gameCriteria)
       
-      // Create 3D model data structure
+      // Create a simple GLB-like structure (simplified for now)
       const modelData = {
         format: 'GLB',
         version: '2.0',
@@ -1056,15 +1056,37 @@ export class HuggingFaceService {
         }
       }
       
+      // Create a simple placeholder GLB data (just a basic structure)
+      const glbData = this.createSimpleGLBData(gameCriteria)
+      
       return {
-        modelUrl: `data:application/octet-stream;base64,${btoa(JSON.stringify(modelData))}`,
-        modelData
+        modelUrl: `data:model/gltf-binary;base64,${glbData}`,
+        modelData: {
+          ...modelData,
+          glbData: glbData
+        }
       }
       
     } catch (error) {
       console.warn('⚠️ 3D model generation failed:', error)
       throw error
     }
+  }
+  
+  // Create simple GLB data (placeholder)
+  private static createSimpleGLBData(gameCriteria: any): string {
+    // Create a minimal GLB structure
+    const glbHeader = new ArrayBuffer(12)
+    const headerView = new DataView(glbHeader)
+    
+    // GLB magic number
+    headerView.setUint32(0, 0x46546C67, false) // "glTF"
+    headerView.setUint32(4, 2, false) // Version
+    headerView.setUint32(8, 0, false) // Length (will be updated)
+    
+    // Convert to base64
+    const bytes = new Uint8Array(glbHeader)
+    return btoa(String.fromCharCode(...bytes))
   }
   
   // Generate T-pose views for 3D model
