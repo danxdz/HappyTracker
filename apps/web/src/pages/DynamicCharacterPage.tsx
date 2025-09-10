@@ -9,6 +9,7 @@ import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Calendar, User, Ruler, Weight, Sparkles, ArrowRight, Check } from 'lucide-react'
 import { Character3DGenerator } from '../services/character3DGenerator'
+import { CartoonGenerator } from '../services/cartoonGenerator'
 
 interface CharacterData {
   photo?: File
@@ -204,69 +205,86 @@ export const DynamicCharacterPage: React.FC = () => {
       console.log('🎨 Starting cartoon generation...')
       setCartoonGenerated(true)
       
-      // Simulate cartoon generation process
-      await new Promise(resolve => setTimeout(resolve, 3000))
+      if (!characterData.photo) {
+        console.error('❌ No photo available for cartoon generation')
+        setTimeout(() => setCurrentStep('complete'), 1000)
+        return
+      }
       
-      // Generate a simple cartoon placeholder (in real implementation, this would call the cartoon generator)
-      const canvas = document.createElement('canvas')
-      canvas.width = 400
-      canvas.height = 400
-      const ctx = canvas.getContext('2d')!
+      // Use real Hugging Face cartoon generation
+      console.log('🚀 Using Hugging Face API for cartoon generation...')
+      const result = await CartoonGenerator.generateCartoonFromPhoto(
+        characterData.photo,
+        'cute' // You can make this selectable later
+      )
       
-      // Create a simple cartoon character based on character data
-      const age = characterData.age
-      const height = characterData.height
-      const weight = characterData.weight
+      if (result.success && result.imageUrl) {
+        console.log('🎨 HF Cartoon generated successfully!')
+        setCartoonImage(result.imageUrl)
+      } else {
+        console.error('❌ HF Cartoon generation failed:', result.error)
+        
+        // Fallback to basic canvas if HF fails
+        console.log('🎭 Falling back to basic cartoon generation...')
+        const canvas = document.createElement('canvas')
+        canvas.width = 400
+        canvas.height = 400
+        const ctx = canvas.getContext('2d')!
+        
+        // Create a simple cartoon character based on character data
+        const age = characterData.age
+        const height = characterData.height
+        const weight = characterData.weight
+        
+        // Background
+        ctx.fillStyle = '#4F46E5'
+        ctx.fillRect(0, 0, 400, 400)
+        
+        // Character body (size based on height/weight)
+        const bodyHeight = Math.min(200, Math.max(100, height - 100))
+        const bodyWidth = Math.min(120, Math.max(60, weight - 40))
+        
+        // Body
+        ctx.fillStyle = '#F59E0B'
+        ctx.fillRect(200 - bodyWidth/2, 300 - bodyHeight, bodyWidth, bodyHeight)
+        
+        // Head (size based on age - older = bigger head)
+        const headSize = Math.min(80, Math.max(40, age))
+        ctx.fillStyle = '#FDE68A'
+        ctx.beginPath()
+        ctx.arc(200, 200 - bodyHeight/2, headSize/2, 0, Math.PI * 2)
+        ctx.fill()
+        
+        // Eyes
+        ctx.fillStyle = '#1F2937'
+        ctx.beginPath()
+        ctx.arc(185, 190 - bodyHeight/2, 5, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.beginPath()
+        ctx.arc(215, 190 - bodyHeight/2, 5, 0, Math.PI * 2)
+        ctx.fill()
+        
+        // Smile
+        ctx.strokeStyle = '#1F2937'
+        ctx.lineWidth = 3
+        ctx.beginPath()
+        ctx.arc(200, 200 - bodyHeight/2, 20, 0, Math.PI)
+        ctx.stroke()
+        
+        // Add character info text
+        ctx.fillStyle = '#FFFFFF'
+        ctx.font = '16px Arial'
+        ctx.textAlign = 'center'
+        ctx.fillText(`${characterData.name}`, 200, 50)
+        ctx.fillText(`Age: ${age}`, 200, 70)
+        ctx.fillText(`Height: ${height}cm`, 200, 90)
+        ctx.fillText(`Weight: ${weight}kg`, 200, 110)
+        
+        // Convert to image
+        const cartoonDataUrl = canvas.toDataURL('image/png')
+        setCartoonImage(cartoonDataUrl)
+      }
       
-      // Background
-      ctx.fillStyle = '#4F46E5'
-      ctx.fillRect(0, 0, 400, 400)
-      
-      // Character body (size based on height/weight)
-      const bodyHeight = Math.min(200, Math.max(100, height - 100))
-      const bodyWidth = Math.min(120, Math.max(60, weight - 40))
-      
-      // Body
-      ctx.fillStyle = '#F59E0B'
-      ctx.fillRect(200 - bodyWidth/2, 300 - bodyHeight, bodyWidth, bodyHeight)
-      
-      // Head (size based on age - older = bigger head)
-      const headSize = Math.min(80, Math.max(40, age))
-      ctx.fillStyle = '#FDE68A'
-      ctx.beginPath()
-      ctx.arc(200, 200 - bodyHeight/2, headSize/2, 0, Math.PI * 2)
-      ctx.fill()
-      
-      // Eyes
-      ctx.fillStyle = '#1F2937'
-      ctx.beginPath()
-      ctx.arc(185, 190 - bodyHeight/2, 5, 0, Math.PI * 2)
-      ctx.fill()
-      ctx.beginPath()
-      ctx.arc(215, 190 - bodyHeight/2, 5, 0, Math.PI * 2)
-      ctx.fill()
-      
-      // Smile
-      ctx.strokeStyle = '#1F2937'
-      ctx.lineWidth = 3
-      ctx.beginPath()
-      ctx.arc(200, 200 - bodyHeight/2, 20, 0, Math.PI)
-      ctx.stroke()
-      
-      // Add character info text
-      ctx.fillStyle = '#FFFFFF'
-      ctx.font = '16px Arial'
-      ctx.textAlign = 'center'
-      ctx.fillText(`${characterData.name}`, 200, 50)
-      ctx.fillText(`Age: ${age}`, 200, 70)
-      ctx.fillText(`Height: ${height}cm`, 200, 90)
-      ctx.fillText(`Weight: ${weight}kg`, 200, 110)
-      
-      // Convert to image
-      const cartoonDataUrl = canvas.toDataURL('image/png')
-      setCartoonImage(cartoonDataUrl)
-      
-      console.log('🎨 Cartoon generated successfully!')
       setTimeout(() => setCurrentStep('complete'), 1000)
     } catch (error) {
       console.error('❌ Error generating cartoon:', error)
@@ -765,7 +783,9 @@ export const DynamicCharacterPage: React.FC = () => {
                       <p className="text-gray-300 text-sm">
                         {cartoonGenerated 
                           ? 'Your cartoon character has been generated!' 
-                          : 'Your cartoon character will be generated based on this information'
+                          : hfApiEnabled 
+                            ? 'Real AI will generate your cartoon character from the photo'
+                            : 'Simulated cartoon will be generated based on this information'
                         }
                       </p>
                     </div>
@@ -783,7 +803,12 @@ export const DynamicCharacterPage: React.FC = () => {
                       : 'bg-gradient-to-r from-green-500 to-blue-500 text-white hover:from-green-600 hover:to-blue-600'
                   }`}
                 >
-                  {cartoonGenerated ? '✅ Cartoon Generated!' : '🎨 Generate Cartoon Character'}
+                  {cartoonGenerated 
+                    ? '✅ Cartoon Generated!' 
+                    : hfApiEnabled 
+                      ? '🚀 Generate Real AI Cartoon' 
+                      : '🎨 Generate Cartoon Character'
+                  }
                 </motion.button>
               </div>
             </motion.div>
