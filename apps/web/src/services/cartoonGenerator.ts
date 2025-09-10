@@ -52,8 +52,12 @@ export class CartoonGenerator {
       const photoAnalysis = await this.analyzePhoto(photoFile)
       console.log('📸 Photo analysis:', photoAnalysis)
       
+      // Get photo description for better prompt
+      const photoDescription = await this.getPhotoDescription(photoFile)
+      console.log('📝 Photo description:', photoDescription)
+      
       // Step 2: Generate perfect prompt
-      const prompt = this.createOptimalPrompt(photoAnalysis, style)
+      const prompt = this.createOptimalPrompt(photoAnalysis, style, photoDescription)
       console.log('🎯 Optimized prompt:', prompt)
       
       // Step 3: Single API call for cartoon generation
@@ -91,18 +95,15 @@ export class CartoonGenerator {
     const photoBase64 = await this.fileToBase64(photoFile)
     
     try {
-      // Use lightweight face analysis
-      const response = await fetch(`${this.HF_API_URL}/google/vit-base-patch16-224`, {
+      // Use proper image captioning model to describe the photo
+      const response = await fetch(`${this.HF_API_URL}/Salesforce/blip-image-captioning-base`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.HF_TOKEN}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          inputs: photoBase64,
-          parameters: {
-            max_length: 50 // Keep it short for cost efficiency
-          }
+          inputs: photoBase64
         })
       })
 
@@ -111,17 +112,11 @@ export class CartoonGenerator {
       }
 
       const result = await response.json()
+      console.log('📝 Photo description:', result)
       
-      // Extract key features (simplified for cost efficiency)
-      return {
-        faceShape: this.extractFaceShape(result),
-        eyeColor: this.extractEyeColor(result),
-        hairColor: this.extractHairColor(result),
-        hairStyle: this.extractHairStyle(result),
-        skinTone: this.extractSkinTone(result),
-        dominantEmotion: this.extractEmotion(result),
-        confidence: 0.85 // Default confidence
-      }
+      // Extract features from the description
+      const description = Array.isArray(result) ? result[0]?.generated_text || '' : result.generated_text || ''
+      return this.extractFeaturesFromDescription(description)
       
     } catch (error) {
       console.warn('⚠️ Photo analysis failed, using fallback:', error)
@@ -135,7 +130,7 @@ export class CartoonGenerator {
    * Crafted for maximum quality with minimal tokens
    * Enhanced to better match the original photo
    */
-  private static createOptimalPrompt(analysis: PhotoAnalysis, style: string): string {
+  private static createOptimalPrompt(analysis: PhotoAnalysis, style: string, photoDescription?: string): string {
     const stylePrompts = {
       cute: 'cute cartoon character, big eyes, friendly smile, rounded shapes, bright colors',
       anime: 'anime style character, large expressive eyes, detailed hair, vibrant colors',
@@ -146,7 +141,16 @@ export class CartoonGenerator {
     const basePrompt = stylePrompts[style as keyof typeof stylePrompts] || stylePrompts.cute
     
     // Enhanced prompt for better photo matching
-    return `${basePrompt}, ${analysis.faceShape} face shape, ${analysis.hairColor} ${analysis.hairStyle} hair, ${analysis.eyeColor} eyes, ${analysis.skinTone} skin tone, ${analysis.dominantEmotion} facial expression, matching the original photo's features, high quality cartoon, clean background, game character style, photorealistic cartoon conversion`
+    let prompt = `${basePrompt}, ${analysis.faceShape} face shape, ${analysis.hairColor} ${analysis.hairStyle} hair, ${analysis.eyeColor} eyes, ${analysis.skinTone} skin tone, ${analysis.dominantEmotion} facial expression`
+    
+    // Add photo description if available
+    if (photoDescription) {
+      prompt += `, based on: ${photoDescription}`
+    }
+    
+    prompt += `, high quality cartoon, clean background, game character style, photorealistic cartoon conversion`
+    
+    return prompt
   }
 
   /**
@@ -284,7 +288,123 @@ export class CartoonGenerator {
     })
   }
 
-  // Simplified extraction methods for cost efficiency
+  // Get photo description using image captioning
+  private static async getPhotoDescription(photoFile: File): Promise<string> {
+    try {
+      const photoBase64 = await this.fileToBase64(photoFile)
+      
+      const response = await fetch(`${this.HF_API_URL}/Salesforce/blip-image-captioning-base`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.HF_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          inputs: photoBase64
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`Photo description failed: ${response.statusText}`)
+      }
+
+      const result = await response.json()
+      const description = Array.isArray(result) ? result[0]?.generated_text || '' : result.generated_text || ''
+      
+      return description
+    } catch (error) {
+      console.warn('⚠️ Photo description failed:', error)
+      return 'a person in a photo' // fallback
+    }
+  }
+
+  // Extract features from photo description
+  private static extractFeaturesFromDescription(description: string): PhotoAnalysis {
+    console.log('🔍 Extracting features from description:', description)
+    
+    const lowerDesc = description.toLowerCase()
+    
+    // Extract face shape
+    const faceShape = this.extractFaceShapeFromText(lowerDesc)
+    
+    // Extract hair color
+    const hairColor = this.extractHairColorFromText(lowerDesc)
+    
+    // Extract hair style
+    const hairStyle = this.extractHairStyleFromText(lowerDesc)
+    
+    // Extract eye color
+    const eyeColor = this.extractEyeColorFromText(lowerDesc)
+    
+    // Extract skin tone
+    const skinTone = this.extractSkinToneFromText(lowerDesc)
+    
+    // Extract emotion
+    const dominantEmotion = this.extractEmotionFromText(lowerDesc)
+    
+    return {
+      faceShape,
+      eyeColor,
+      hairColor,
+      hairStyle,
+      skinTone,
+      dominantEmotion,
+      confidence: 0.9
+    }
+  }
+
+  private static extractFaceShapeFromText(text: string): PhotoAnalysis['faceShape'] {
+    if (text.includes('round') || text.includes('circular')) return 'round'
+    if (text.includes('oval')) return 'oval'
+    if (text.includes('square')) return 'square'
+    if (text.includes('heart')) return 'heart'
+    if (text.includes('diamond')) return 'diamond'
+    return 'round' // default
+  }
+
+  private static extractHairColorFromText(text: string): string {
+    if (text.includes('white') || text.includes('gray') || text.includes('grey')) return '#FFFFFF'
+    if (text.includes('blonde') || text.includes('blond')) return '#FFD700'
+    if (text.includes('brown')) return '#8B4513'
+    if (text.includes('black')) return '#000000'
+    if (text.includes('red')) return '#FF4500'
+    if (text.includes('gray') || text.includes('grey')) return '#808080'
+    return '#8B4513' // default brown
+  }
+
+  private static extractHairStyleFromText(text: string): PhotoAnalysis['hairStyle'] {
+    if (text.includes('short')) return 'short'
+    if (text.includes('long')) return 'long'
+    if (text.includes('curly')) return 'curly'
+    if (text.includes('straight')) return 'straight'
+    if (text.includes('wavy')) return 'wavy'
+    return 'medium' // default
+  }
+
+  private static extractEyeColorFromText(text: string): string {
+    if (text.includes('blue')) return '#4169E1'
+    if (text.includes('brown')) return '#8B4513'
+    if (text.includes('green')) return '#32CD32'
+    if (text.includes('hazel')) return '#8B4513'
+    return '#4169E1' // default blue
+  }
+
+  private static extractSkinToneFromText(text: string): string {
+    if (text.includes('pale') || text.includes('light')) return '#FFDBB5'
+    if (text.includes('dark') || text.includes('brown')) return '#D2B48C'
+    if (text.includes('tan')) return '#F4A460'
+    return '#FFDBB5' // default light
+  }
+
+  private static extractEmotionFromText(text: string): string {
+    if (text.includes('smiling') || text.includes('happy')) return 'happy'
+    if (text.includes('serious') || text.includes('stern')) return 'neutral'
+    if (text.includes('sad')) return 'sad'
+    if (text.includes('angry')) return 'angry'
+    return 'happy' // default
+  }
+
+  // Simplified extraction methods for cost efficiency (fallback)
   private static extractFaceShape(result: any): PhotoAnalysis['faceShape'] {
     return 'round' // Simplified for cost efficiency
   }
