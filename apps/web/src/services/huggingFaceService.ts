@@ -1401,17 +1401,85 @@ export class HuggingFaceService {
         ctx.fillStyle = gradient
         ctx.fillRect(0, 0, 512, 512)
         
-        // Add Animal Crossing style character
-        ctx.fillStyle = '#FFB6C1' // Light pink
+        // Add Animal Crossing style character (much cuter!)
+        // Head (big and round like Animal Crossing)
+        ctx.fillStyle = '#FFDBB5' // Peach skin
         ctx.beginPath()
-        ctx.arc(256, 200, 60, 0, Math.PI * 2) // Head
+        ctx.arc(256, 180, 50, 0, Math.PI * 2)
         ctx.fill()
         
-        ctx.fillRect(220, 260, 72, 120) // Body
-        ctx.fillRect(200, 280, 40, 20)   // Left arm
-        ctx.fillRect(272, 280, 40, 20)   // Right arm
-        ctx.fillRect(240, 380, 20, 60)   // Left leg
-        ctx.fillRect(252, 380, 20, 60)   // Right leg
+        // Hair (soft and fluffy)
+        ctx.fillStyle = '#8B4513' // Brown
+        ctx.beginPath()
+        ctx.arc(256, 160, 45, 0, Math.PI * 2)
+        ctx.fill()
+        
+        // Eyes (big and cute)
+        ctx.fillStyle = '#4169E1' // Royal blue
+        ctx.beginPath()
+        ctx.arc(240, 175, 12, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.beginPath()
+        ctx.arc(272, 175, 12, 0, Math.PI * 2)
+        ctx.fill()
+        
+        // Eye highlights
+        ctx.fillStyle = '#FFFFFF'
+        ctx.beginPath()
+        ctx.arc(243, 172, 4, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.beginPath()
+        ctx.arc(275, 172, 4, 0, Math.PI * 2)
+        ctx.fill()
+        
+        // Smile (happy)
+        ctx.strokeStyle = '#8B4513'
+        ctx.lineWidth = 3
+        ctx.beginPath()
+        ctx.arc(256, 190, 15, 0, Math.PI)
+        ctx.stroke()
+        
+        // Body (soft and rounded)
+        ctx.fillStyle = '#FFB6C1' // Light pink
+        ctx.beginPath()
+        ctx.roundRect(220, 230, 72, 100, 15)
+        ctx.fill()
+        
+        // Arms (soft)
+        ctx.fillStyle = '#FFDBB5'
+        ctx.beginPath()
+        ctx.roundRect(200, 240, 30, 60, 10)
+        ctx.fill()
+        ctx.beginPath()
+        ctx.roundRect(282, 240, 30, 60, 10)
+        ctx.fill()
+        
+        // Legs (soft)
+        ctx.fillStyle = '#DDA0DD' // Plum
+        ctx.beginPath()
+        ctx.roundRect(240, 330, 20, 70, 8)
+        ctx.fill()
+        ctx.beginPath()
+        ctx.roundRect(252, 330, 20, 70, 8)
+        ctx.fill()
+        
+        // Shoes (cute)
+        ctx.fillStyle = '#F0E68C' // Khaki
+        ctx.beginPath()
+        ctx.roundRect(235, 400, 30, 15, 5)
+        ctx.fill()
+        ctx.beginPath()
+        ctx.roundRect(247, 400, 30, 15, 5)
+        ctx.fill()
+        
+        // Blush (Animal Crossing style)
+        ctx.fillStyle = '#FFB6C1'
+        ctx.beginPath()
+        ctx.arc(230, 185, 8, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.beginPath()
+        ctx.arc(282, 185, 8, 0, Math.PI * 2)
+        ctx.fill()
         
         // Add PlayerZero.me branding
         ctx.fillStyle = '#FF69B4' // Hot pink
@@ -1484,27 +1552,27 @@ export class HuggingFaceService {
   
   // Draw Pop Art + Animal Crossing style character
   private static drawPopArtCharacter(ctx: CanvasRenderingContext2D, x: number, y: number, viewIndex: number, characterClass: string) {
-    // Pop Art colors - bold and vibrant
+    // Animal Crossing colors - soft and cute
     const colors = {
       skin: '#FFDBB5',      // Peach skin tone
       hair: '#8B4513',      // Brown hair
-      outline: '#000000'    // Black outline
+      outline: '#8B4513'    // Soft brown outline (not black!)
     }
     
-    // Character class colors (Pop Art style)
+    // Character class colors (Animal Crossing style - softer)
     const classColors = {
-      Warrior: { shirt: '#FF6B6B', pants: '#8B4513', accent: '#FFD700' },
-      Mage: { shirt: '#4B0082', pants: '#9370DB', accent: '#FFD700' },
-      Healer: { shirt: '#32CD32', pants: '#98FB98', accent: '#FFD700' },
-      Rogue: { shirt: '#2F4F4F', pants: '#696969', accent: '#FFD700' },
-      default: { shirt: '#4682B4', pants: '#87CEEB', accent: '#FFD700' }
+      Warrior: { shirt: '#FFB6C1', pants: '#DDA0DD', accent: '#F0E68C' }, // Light pink, plum, khaki
+      Mage: { shirt: '#E6E6FA', pants: '#D8BFD8', accent: '#F0E68C' },    // Lavender, thistle, khaki
+      Healer: { shirt: '#98FB98', pants: '#F0FFF0', accent: '#F0E68C' },   // Pale green, honeydew, khaki
+      Rogue: { shirt: '#D3D3D3', pants: '#F5F5F5', accent: '#F0E68C' },   // Light gray, white smoke, khaki
+      default: { shirt: '#87CEEB', pants: '#E0FFFF', accent: '#F0E68C' }  // Sky blue, light cyan, khaki
     }
     
     const classColor = classColors[characterClass as keyof typeof classColors] || classColors.default
     
-    // Draw character with Pop Art style
+    // Draw character with Animal Crossing style (no harsh outlines!)
     ctx.strokeStyle = colors.outline
-    ctx.lineWidth = 4
+    ctx.lineWidth = 2 // Much thinner outline
     
     // Head (round and cute like Animal Crossing)
     ctx.fillStyle = colors.skin
@@ -1513,63 +1581,95 @@ export class HuggingFaceService {
     ctx.fill()
     ctx.stroke()
     
-    // Hair (simple, cute style)
+    // Hair (soft, fluffy style)
     ctx.fillStyle = colors.hair
     ctx.beginPath()
-    ctx.arc(x, y - 60, 45, 0, Math.PI * 2)
+    ctx.arc(x, y - 65, 45, 0, Math.PI * 2)
     ctx.fill()
     ctx.stroke()
     
-    // Eyes (big and cute)
-    ctx.fillStyle = '#000000'
+    // Eyes (big and cute like Animal Crossing)
+    ctx.fillStyle = '#4169E1' // Royal blue (Animal Crossing style)
     ctx.beginPath()
-    ctx.arc(x - 15, y - 45, 8, 0, Math.PI * 2)
+    ctx.arc(x - 15, y - 45, 10, 0, Math.PI * 2)
     ctx.fill()
     ctx.beginPath()
-    ctx.arc(x + 15, y - 45, 8, 0, Math.PI * 2)
+    ctx.arc(x + 15, y - 45, 10, 0, Math.PI * 2)
     ctx.fill()
     
-    // Smile (happy and friendly)
+    // Eye highlights (cute sparkle)
+    ctx.fillStyle = '#FFFFFF'
+    ctx.beginPath()
+    ctx.arc(x - 12, y - 48, 3, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.beginPath()
+    ctx.arc(x + 18, y - 48, 3, 0, Math.PI * 2)
+    ctx.fill()
+    
+    // Smile (happy and friendly like Animal Crossing)
     ctx.strokeStyle = colors.outline
-    ctx.lineWidth = 3
+    ctx.lineWidth = 2
     ctx.beginPath()
-    ctx.arc(x, y - 25, 20, 0, Math.PI)
+    ctx.arc(x, y - 25, 18, 0, Math.PI)
     ctx.stroke()
     
-    // Body (T-pose, simple, rounded)
+    // Body (soft, rounded like Animal Crossing)
     ctx.fillStyle = classColor.shirt
-    ctx.fillRect(x - 40, y + 10, 80, 100)
-    ctx.strokeRect(x - 40, y + 10, 80, 100)
+    ctx.beginPath()
+    ctx.roundRect(x - 35, y + 10, 70, 90, 15) // Rounded rectangle
+    ctx.fill()
+    ctx.stroke()
     
-    // Arms (T-pose)
+    // Arms (soft, rounded)
     ctx.fillStyle = colors.skin
-    ctx.fillRect(x - 80, y + 20, 30, 60)
-    ctx.strokeRect(x - 80, y + 20, 30, 60)
-    ctx.fillRect(x + 50, y + 20, 30, 60)
-    ctx.strokeRect(x + 50, y + 20, 30, 60)
+    ctx.beginPath()
+    ctx.roundRect(x - 75, y + 20, 25, 50, 10)
+    ctx.fill()
+    ctx.stroke()
+    ctx.beginPath()
+    ctx.roundRect(x + 50, y + 20, 25, 50, 10)
+    ctx.fill()
+    ctx.stroke()
     
-    // Legs
+    // Legs (soft, rounded)
     ctx.fillStyle = classColor.pants
-    ctx.fillRect(x - 30, y + 110, 25, 80)
-    ctx.strokeRect(x - 30, y + 110, 25, 80)
-    ctx.fillRect(x + 5, y + 110, 25, 80)
-    ctx.strokeRect(x + 5, y + 110, 25, 80)
+    ctx.beginPath()
+    ctx.roundRect(x - 25, y + 100, 20, 70, 8)
+    ctx.fill()
+    ctx.stroke()
+    ctx.beginPath()
+    ctx.roundRect(x + 5, y + 100, 20, 70, 8)
+    ctx.fill()
+    ctx.stroke()
     
-    // Shoes
+    // Shoes (cute and rounded)
     ctx.fillStyle = classColor.accent
-    ctx.fillRect(x - 35, y + 190, 35, 20)
-    ctx.strokeRect(x - 35, y + 190, 35, 20)
-    ctx.fillRect(x, y + 190, 35, 20)
-    ctx.strokeRect(x, y + 190, 35, 20)
+    ctx.beginPath()
+    ctx.roundRect(x - 30, y + 170, 30, 15, 5)
+    ctx.fill()
+    ctx.stroke()
+    ctx.beginPath()
+    ctx.roundRect(x, y + 170, 30, 15, 5)
+    ctx.fill()
+    ctx.stroke()
     
-    // Add some Pop Art details
+    // Add Animal Crossing details
     if (viewIndex === 0) { // Front view
-      // Add a cute bow or hat
+      // Add a cute flower or bow
       ctx.fillStyle = '#FF69B4' // Hot pink
       ctx.beginPath()
-      ctx.arc(x, y - 80, 15, 0, Math.PI * 2)
+      ctx.arc(x, y - 85, 12, 0, Math.PI * 2)
       ctx.fill()
       ctx.stroke()
+      
+      // Add blush (Animal Crossing style)
+      ctx.fillStyle = '#FFB6C1'
+      ctx.beginPath()
+      ctx.arc(x - 25, y - 20, 8, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.beginPath()
+      ctx.arc(x + 25, y - 20, 8, 0, Math.PI * 2)
+      ctx.fill()
     }
   }
   
