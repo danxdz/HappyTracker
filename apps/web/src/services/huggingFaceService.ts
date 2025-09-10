@@ -829,11 +829,14 @@ export class HuggingFaceService {
       const centerY = 400
       
       // Extract colors from character data (from photo analysis)
-      const skinColor = characterData?.skinTone || '#FFDBB5' // Default peach
+      // Handle both direct properties and nested structure
+      const skinColor = characterData?.skinTone || characterData?.skinColor || '#FFDBB5' // Default peach
       const hairColor = characterData?.hairColor || '#8B4513' // Default brown
       const eyeColor = characterData?.eyeColor || '#4169E1' // Default blue
       const faceShape = characterData?.faceShape || 'round'
       const hairStyle = characterData?.hairStyle || 'medium'
+      
+      console.log('🔍 Character data received:', characterData)
       
       console.log('🎨 Using photo-based colors:', { skinColor, hairColor, eyeColor, faceShape, hairStyle })
       
