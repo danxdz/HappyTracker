@@ -840,7 +840,7 @@ export class HuggingFaceService {
       
       console.log('🎨 Using photo-based colors:', { skinColor, hairColor, eyeColor, faceShape, hairStyle })
       
-      // Hair (based on photo analysis)
+      // Hair (based on photo analysis - YOUR ACTUAL HAIR COLOR!)
       ctx.fillStyle = hairColor
       if (hairStyle === 'long') {
         // Long hair - draw flowing style
@@ -853,6 +853,24 @@ export class HuggingFaceService {
         ctx.fill()
         ctx.beginPath()
         ctx.arc(centerX + 40, centerY - 60, 60, 0, Math.PI * 2)
+        ctx.fill()
+      } else if (hairStyle === 'curly') {
+        // Curly hair - draw multiple small circles for curls
+        ctx.beginPath()
+        ctx.arc(centerX, centerY - 80, 80, 0, Math.PI * 2)
+        ctx.fill()
+        // Add curly texture
+        ctx.beginPath()
+        ctx.arc(centerX - 30, centerY - 70, 25, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.beginPath()
+        ctx.arc(centerX + 30, centerY - 70, 25, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.beginPath()
+        ctx.arc(centerX - 20, centerY - 50, 20, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.beginPath()
+        ctx.arc(centerX + 20, centerY - 50, 20, 0, Math.PI * 2)
         ctx.fill()
       } else {
         // Medium/short hair
@@ -964,8 +982,31 @@ export class HuggingFaceService {
       
       ctx.fillStyle = '#32CD32' // Lime green
       ctx.font = 'bold 24px Arial'
-      ctx.strokeText(`From Your Photo: ${faceShape} face, ${hairStyle} hair`, centerX, 640)
-      ctx.fillText(`From Your Photo: ${faceShape} face, ${hairStyle} hair`, centerX, 640)
+      ctx.strokeText(`From Your Photo: ${faceShape} face, ${hairStyle} hair, ${eyeColor} eyes`, centerX, 640)
+      ctx.fillText(`From Your Photo: ${faceShape} face, ${hairStyle} hair, ${eyeColor} eyes`, centerX, 640)
+      
+      // Add color swatches to show actual colors used
+      ctx.fillStyle = skinColor
+      ctx.beginPath()
+      ctx.roundRect(centerX - 150, centerY + 400, 30, 30, 5)
+      ctx.fill()
+      ctx.fillStyle = '#000000'
+      ctx.font = 'bold 16px Arial'
+      ctx.fillText('Skin', centerX - 110, centerY + 420)
+      
+      ctx.fillStyle = hairColor
+      ctx.beginPath()
+      ctx.roundRect(centerX - 50, centerY + 400, 30, 30, 5)
+      ctx.fill()
+      ctx.fillStyle = '#000000'
+      ctx.fillText('Hair', centerX - 10, centerY + 420)
+      
+      ctx.fillStyle = eyeColor
+      ctx.beginPath()
+      ctx.roundRect(centerX + 50, centerY + 400, 30, 30, 5)
+      ctx.fill()
+      ctx.fillStyle = '#000000'
+      ctx.fillText('Eyes', centerX + 90, centerY + 420)
     }
     
     return new Promise((resolve) => {
