@@ -95,8 +95,8 @@ export class CartoonGenerator {
     const photoBase64 = await this.fileToBase64(photoFile)
     
     try {
-      // Use proper image captioning model to describe the photo
-      const response = await fetch(`${this.HF_API_URL}/Salesforce/blip-image-captioning-base`, {
+      // Use working image captioning model to describe the photo
+      const response = await fetch(`${this.HF_API_URL}/nlpconnect/vit-gpt2-image-captioning`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.HF_TOKEN}`,
@@ -112,10 +112,11 @@ export class CartoonGenerator {
       }
 
       const result = await response.json()
-      console.log('📝 Photo description:', result)
+      console.log('📝 Photo analysis result:', result)
       
       // Extract features from the description
       const description = Array.isArray(result) ? result[0]?.generated_text || '' : result.generated_text || ''
+      console.log('📝 Extracted description:', description)
       return this.extractFeaturesFromDescription(description)
       
     } catch (error) {
@@ -293,7 +294,7 @@ export class CartoonGenerator {
     try {
       const photoBase64 = await this.fileToBase64(photoFile)
       
-      const response = await fetch(`${this.HF_API_URL}/Salesforce/blip-image-captioning-base`, {
+      const response = await fetch(`${this.HF_API_URL}/nlpconnect/vit-gpt2-image-captioning`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.HF_TOKEN}`,
@@ -309,7 +310,10 @@ export class CartoonGenerator {
       }
 
       const result = await response.json()
+      console.log('📝 Photo description result:', result)
+      
       const description = Array.isArray(result) ? result[0]?.generated_text || '' : result.generated_text || ''
+      console.log('📝 Extracted description:', description)
       
       return description
     } catch (error) {
@@ -363,12 +367,13 @@ export class CartoonGenerator {
   }
 
   private static extractHairColorFromText(text: string): string {
-    if (text.includes('white') || text.includes('gray') || text.includes('grey')) return '#FFFFFF'
+    if (text.includes('white') || text.includes('gray') || text.includes('grey') || text.includes('silver')) return '#FFFFFF'
     if (text.includes('blonde') || text.includes('blond')) return '#FFD700'
     if (text.includes('brown')) return '#8B4513'
     if (text.includes('black')) return '#000000'
     if (text.includes('red')) return '#FF4500'
     if (text.includes('gray') || text.includes('grey')) return '#808080'
+    if (text.includes('elderly') || text.includes('old') || text.includes('senior')) return '#FFFFFF' // Default to white for elderly
     return '#8B4513' // default brown
   }
 
@@ -393,6 +398,7 @@ export class CartoonGenerator {
     if (text.includes('pale') || text.includes('light')) return '#FFDBB5'
     if (text.includes('dark') || text.includes('brown')) return '#D2B48C'
     if (text.includes('tan')) return '#F4A460'
+    if (text.includes('elderly') || text.includes('old') || text.includes('senior') || text.includes('wrinkled')) return '#F5DEB3' // Slightly more aged skin tone
     return '#FFDBB5' // default light
   }
 
