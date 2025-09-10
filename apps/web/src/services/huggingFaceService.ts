@@ -1113,18 +1113,20 @@ export class HuggingFaceService {
   private static createTPoseViewsPrompt(characteristics: PopGenerationResult['characteristics'], gameCriteria: any): string {
     const { visualStyle, characterClass } = gameCriteria
     
-    let prompt = `A 3D character model sheet for HappyTracker game, `
+    let prompt = `A Pop Art style character inspired by Animal Crossing aesthetics for HappyTracker game, `
     prompt += `${visualStyle.faceShape} face, ${visualStyle.eyeColor} eyes, `
     prompt += `${visualStyle.hairColor} ${visualStyle.hairStyle} hair, `
     prompt += `${visualStyle.skinTone} skin tone, `
     prompt += `character class: ${characterClass}, `
     
-    // T-pose specific details
+    // Pop Art + Animal Crossing style details
+    prompt += 'Pop Art style, bold vibrant colors, clean black outlines, '
+    prompt += 'rounded cute shapes, Animal Crossing charm, Nintendo aesthetic, '
     prompt += 'T-pose stance, arms extended horizontally, legs slightly apart, '
-    prompt += 'neutral expression, front view, side view, back view, '
-    prompt += '3D model reference sheet, character design, '
-    prompt += 'clean white background, professional character sheet, '
-    prompt += 'detailed anatomy, proper proportions, game character style'
+    prompt += 'happy friendly expression, big cute eyes, adorable smile, '
+    prompt += 'front view, side view, back view, '
+    prompt += 'coral red, sky blue, lime green, hot pink color palette, '
+    prompt += 'whimsical, cheerful, cozy, welcoming character design'
     
     return prompt
   }
@@ -1307,14 +1309,19 @@ export class HuggingFaceService {
         ctx.fillRect(240, 380, 20, 60)   // Left leg
         ctx.fillRect(252, 380, 20, 60)   // Right leg
         
-        // Add ReadyPlayerMe branding
-        ctx.fillStyle = '#333333'
+        // Add Pop Art + Animal Crossing branding
+        ctx.fillStyle = '#FF1493' // Deep pink
         ctx.font = 'bold 20px Arial'
         ctx.textAlign = 'center'
-        ctx.fillText('ReadyPlayerMe', 256, 460)
+        ctx.strokeStyle = '#FFFFFF'
+        ctx.lineWidth = 2
+        ctx.strokeText('POP ART', 256, 460)
+        ctx.fillText('POP ART', 256, 460)
         
-        ctx.font = '14px Arial'
-        ctx.fillText('3D Avatar', 256, 480)
+        ctx.fillStyle = '#32CD32' // Lime green
+        ctx.font = 'bold 14px Arial'
+        ctx.strokeText('Animal Crossing Style', 256, 480)
+        ctx.fillText('Animal Crossing Style', 256, 480)
       }
       
       views.push(canvas.toDataURL('image/png'))
@@ -1337,41 +1344,129 @@ export class HuggingFaceService {
       canvas.height = 512
       
       if (ctx) {
-        // Background
-        ctx.fillStyle = '#ffffff'
+        // Pop Art + Animal Crossing style background
+        const gradient = ctx.createLinearGradient(0, 0, 512, 512)
+        gradient.addColorStop(0, '#FFB6C1') // Light pink
+        gradient.addColorStop(0.3, '#87CEEB') // Sky blue
+        gradient.addColorStop(0.7, '#98FB98') // Pale green
+        gradient.addColorStop(1, '#DDA0DD') // Plum
+        
+        ctx.fillStyle = gradient
         ctx.fillRect(0, 0, 512, 512)
         
-        // T-pose character
-        ctx.fillStyle = characterClass === 'Warrior' ? '#8B4513' : 
-                       characterClass === 'Mage' ? '#4B0082' : 
-                       characterClass === 'Healer' ? '#228B22' : 
-                       characterClass === 'Rogue' ? '#2F4F4F' : '#4682B4'
+        // Draw Pop Art + Animal Crossing style character
+        this.drawPopArtCharacter(ctx, 256, 200, i, characterClass)
         
-        // Body (T-pose)
-        ctx.fillRect(240, 200, 32, 120) // Torso
-        ctx.fillRect(200, 220, 40, 20)   // Left arm (horizontal)
-        ctx.fillRect(272, 220, 40, 20)   // Right arm (horizontal)
-        ctx.fillRect(248, 320, 16, 60)   // Left leg
-        ctx.fillRect(248, 320, 16, 60)   // Right leg
-        
-        // Head
-        ctx.fillStyle = '#FDBCB4'
-        ctx.beginPath()
-        ctx.arc(256, 180, 20, 0, Math.PI * 2)
-        ctx.fill()
-        
-        // Add text
-        ctx.fillStyle = '#333333'
-        ctx.font = '14px Arial'
+        // Add Pop Art text with bold, vibrant style
+        ctx.fillStyle = '#FF1493' // Deep pink
+        ctx.font = 'bold 24px Arial'
         ctx.textAlign = 'center'
-        ctx.fillText(`${characterClass} T-Pose`, 256, 450)
-        ctx.fillText(`View ${i + 1}`, 256, 470)
+        ctx.strokeStyle = '#FFFFFF'
+        ctx.lineWidth = 3
+        ctx.strokeText('POP ART', 256, 450)
+        ctx.fillText('POP ART', 256, 450)
+        
+        ctx.fillStyle = '#32CD32' // Lime green
+        ctx.font = 'bold 16px Arial'
+        ctx.strokeText(`${characterClass} Style`, 256, 475)
+        ctx.fillText(`${characterClass} Style`, 256, 475)
       }
       
       views.push(canvas.toDataURL('image/png'))
     }
     
     return views
+  }
+  
+  // Draw Pop Art + Animal Crossing style character
+  private static drawPopArtCharacter(ctx: CanvasRenderingContext2D, x: number, y: number, viewIndex: number, characterClass: string) {
+    // Pop Art colors - bold and vibrant
+    const colors = {
+      skin: '#FFDBB5',      // Peach skin tone
+      hair: '#8B4513',      // Brown hair
+      outline: '#000000'    // Black outline
+    }
+    
+    // Character class colors (Pop Art style)
+    const classColors = {
+      Warrior: { shirt: '#FF6B6B', pants: '#8B4513', accent: '#FFD700' },
+      Mage: { shirt: '#4B0082', pants: '#9370DB', accent: '#FFD700' },
+      Healer: { shirt: '#32CD32', pants: '#98FB98', accent: '#FFD700' },
+      Rogue: { shirt: '#2F4F4F', pants: '#696969', accent: '#FFD700' },
+      default: { shirt: '#4682B4', pants: '#87CEEB', accent: '#FFD700' }
+    }
+    
+    const classColor = classColors[characterClass as keyof typeof classColors] || classColors.default
+    
+    // Draw character with Pop Art style
+    ctx.strokeStyle = colors.outline
+    ctx.lineWidth = 4
+    
+    // Head (round and cute like Animal Crossing)
+    ctx.fillStyle = colors.skin
+    ctx.beginPath()
+    ctx.arc(x, y - 40, 50, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.stroke()
+    
+    // Hair (simple, cute style)
+    ctx.fillStyle = colors.hair
+    ctx.beginPath()
+    ctx.arc(x, y - 60, 45, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.stroke()
+    
+    // Eyes (big and cute)
+    ctx.fillStyle = '#000000'
+    ctx.beginPath()
+    ctx.arc(x - 15, y - 45, 8, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.beginPath()
+    ctx.arc(x + 15, y - 45, 8, 0, Math.PI * 2)
+    ctx.fill()
+    
+    // Smile (happy and friendly)
+    ctx.strokeStyle = colors.outline
+    ctx.lineWidth = 3
+    ctx.beginPath()
+    ctx.arc(x, y - 25, 20, 0, Math.PI)
+    ctx.stroke()
+    
+    // Body (T-pose, simple, rounded)
+    ctx.fillStyle = classColor.shirt
+    ctx.fillRect(x - 40, y + 10, 80, 100)
+    ctx.strokeRect(x - 40, y + 10, 80, 100)
+    
+    // Arms (T-pose)
+    ctx.fillStyle = colors.skin
+    ctx.fillRect(x - 80, y + 20, 30, 60)
+    ctx.strokeRect(x - 80, y + 20, 30, 60)
+    ctx.fillRect(x + 50, y + 20, 30, 60)
+    ctx.strokeRect(x + 50, y + 20, 30, 60)
+    
+    // Legs
+    ctx.fillStyle = classColor.pants
+    ctx.fillRect(x - 30, y + 110, 25, 80)
+    ctx.strokeRect(x - 30, y + 110, 25, 80)
+    ctx.fillRect(x + 5, y + 110, 25, 80)
+    ctx.strokeRect(x + 5, y + 110, 25, 80)
+    
+    // Shoes
+    ctx.fillStyle = classColor.accent
+    ctx.fillRect(x - 35, y + 190, 35, 20)
+    ctx.strokeRect(x - 35, y + 190, 35, 20)
+    ctx.fillRect(x, y + 190, 35, 20)
+    ctx.strokeRect(x, y + 190, 35, 20)
+    
+    // Add some Pop Art details
+    if (viewIndex === 0) { // Front view
+      // Add a cute bow or hat
+      ctx.fillStyle = '#FF69B4' // Hot pink
+      ctx.beginPath()
+      ctx.arc(x, y - 80, 15, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.stroke()
+    }
   }
   
   // Create fallback 3D model
