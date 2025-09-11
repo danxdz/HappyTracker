@@ -215,7 +215,13 @@ export const DynamicCharacterPage: React.FC = () => {
       console.log('🚀 Using Hugging Face API for cartoon generation...')
       const result = await CartoonGenerator.generateCartoonFromPhoto(
         characterData.photo,
-        'cute' // You can make this selectable later
+        'cute', // You can make this selectable later
+        {
+          name: characterData.name,
+          age: characterData.age,
+          height: characterData.height,
+          weight: characterData.weight
+        }
       )
       
       if (result.success && result.imageUrl) {

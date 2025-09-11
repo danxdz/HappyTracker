@@ -42,43 +42,36 @@ export class CartoonGenerator {
   /**
    * 🎨 Generate Cartoon from Photo
    * 
-   * Creates a perfect cartoon character from photo in single API call
-   * Uses real AI analysis - no fallbacks
+   * Creates a cartoon character using text-to-image generation
+   * Uses character data to create dynamic prompts
    */
   static async generateCartoonFromPhoto(
     photoFile: File,
-    style: 'cute' | 'anime' | 'disney' | 'pixar' = 'cute'
+    style: 'cute' | 'anime' | 'disney' | 'pixar' = 'cute',
+    characterData?: { name: string; age: number; height: number; weight: number }
   ): Promise<CartoonGenerationResult> {
     const startTime = Date.now()
     
     try {
-      console.log('🎨 Starting AI-powered cartoon generation...')
+      console.log('🎨 Starting text-to-cartoon generation...')
       
-      // Step 1: Analyze photo with AI - NO FALLBACKS
-      const photoAnalysis = await this.analyzePhoto(photoFile)
-      console.log('📸 AI Photo analysis:', photoAnalysis)
+      // Create prompt based on character data and filename
+      const prompt = this.createCharacterPrompt(photoFile, style, characterData)
+      console.log('🎯 Character prompt:', prompt)
       
-      // Step 2: Get photo description with AI - NO FALLBACKS
-      const photoDescription = await this.getPhotoDescription(photoFile)
-      console.log('📝 AI Photo description:', photoDescription)
-      
-      // Step 3: Create dynamic prompt based on real AI analysis
-      const prompt = this.createOptimalPrompt(photoAnalysis, style, photoDescription)
-      console.log('🎯 Dynamic AI prompt:', prompt)
-      
-      // Step 4: Generate cartoon with AI - NO FALLBACKS
+      // Generate cartoon with AI
       const cartoonImage = await this.generateCartoonImage(prompt)
       
       const processingTime = Date.now() - startTime
       
-      // Cost estimation based on HF API pricing
+      // Cost estimation - only cartoon generation
       const costBreakdown = {
-        imageAnalysis: 0.001, // microsoft/git-base-coco (lightweight)
-        cartoonGeneration: 0.03, // stabilityai/stable-diffusion-xl-base-1.0 (compute intensive)
-        total: 0.031
+        imageAnalysis: 0, // No image analysis
+        cartoonGeneration: 0.03, // stabilityai/stable-diffusion-xl-base-1.0
+        total: 0.03
       }
       
-      console.log(`✅ AI Cartoon generated in ${processingTime}ms`)
+      console.log(`✅ Cartoon generated in ${processingTime}ms`)
       console.log(`💰 Estimated cost: $${costBreakdown.total.toFixed(3)}`)
       
       return {
@@ -89,10 +82,10 @@ export class CartoonGenerator {
         breakdown: costBreakdown
       }
     } catch (error) {
-      console.error('❌ AI Cartoon generation failed:', error)
+      console.error('❌ Cartoon generation failed:', error)
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'AI generation failed',
+        error: error instanceof Error ? error.message : 'Generation failed',
         processingTime: Date.now() - startTime,
         cost: 0,
         breakdown: {
@@ -102,6 +95,57 @@ export class CartoonGenerator {
         }
       }
     }
+  }
+
+  /**
+   * 🎯 Create Character Prompt
+   * 
+   * Creates a prompt based on character data and filename
+   */
+  private static createCharacterPrompt(
+    photoFile: File, 
+    style: string, 
+    characterData?: { name: string; age: number; height: number; weight: number }
+  ): string {
+    const basePrompt = this.getStylePrompt(style)
+    
+    // Extract info from filename
+    const fileName = photoFile.name.toLowerCase()
+    let personDescription = 'a person'
+    
+    if (fileName.includes('old') || fileName.includes('elderly') || fileName.includes('senior')) {
+      personDescription = 'an elderly person with white hair and aged features'
+    } else if (fileName.includes('young') || fileName.includes('teen')) {
+      personDescription = 'a young person with youthful features'
+    } else if (fileName.includes('leonardo') || fileName.includes('lightning')) {
+      personDescription = 'a person with artistic lighting and detailed features'
+    } else {
+      personDescription = 'a person'
+    }
+    
+    // Add character data if available
+    let characterDetails = ''
+    if (characterData) {
+      const { name, age, height, weight } = characterData
+      characterDetails = `, ${age} years old, ${height}cm tall, ${weight}kg`
+    }
+    
+    // Single character portrait requirements
+    const singleCharacterRequirements = [
+      'single character portrait only',
+      'head and shoulders view',
+      'clean solid background',
+      'no multiple characters',
+      'no comic book panels',
+      'no grid layout',
+      'no multiple images',
+      'one character only',
+      'centered composition',
+      'high quality cartoon character portrait',
+      'professional character design'
+    ].join(', ')
+    
+    return `${basePrompt}, ${personDescription}${characterDetails}, ${singleCharacterRequirements}`
   }
 
   /**
@@ -117,7 +161,7 @@ export class CartoonGenerator {
     const photoBase64 = await this.fileToBase64(photoFile)
     
     // Use AI to describe the photo - if this fails, we fail
-    const response = await fetch(`${this.HF_API_URL}/Salesforce/blip-image-captioning-large`, {
+    const response = await fetch(`${this.HF_API_URL}/nlpconnect/vit-gpt2-image-captioning`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${this.HF_TOKEN}`,
@@ -222,7 +266,7 @@ export class CartoonGenerator {
     try {
       const photoBase64 = await this.fileToBase64(photoFile)
       
-      const response = await fetch(`${this.HF_API_URL}/Salesforce/blip-image-captioning-large`, {
+      const response = await fetch(`${this.HF_API_URL}/nlpconnect/vit-gpt2-image-captioning`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.HF_TOKEN}`,
