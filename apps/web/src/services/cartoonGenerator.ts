@@ -133,15 +133,15 @@ export class CartoonGenerator {
    */
   private static createOptimalPrompt(analysis: PhotoAnalysis, style: string, photoDescription?: string): string {
     const stylePrompts = {
-      cute: 'cute cartoon character, big eyes, friendly smile, rounded shapes, bright colors',
-      anime: 'anime style character, large expressive eyes, detailed hair, vibrant colors',
-      disney: 'Disney style character, classic animation, expressive features, warm colors',
-      pixar: 'Pixar style character, 3D cartoon, detailed textures, cinematic lighting'
+      cute: 'single character portrait, cute cartoon character, big eyes, friendly smile, rounded shapes, bright colors',
+      anime: 'single character portrait, anime style character, large expressive eyes, detailed hair, vibrant colors',
+      disney: 'single character portrait, Disney style character, classic animation, expressive features, warm colors',
+      pixar: 'single character portrait, Pixar style character, 3D cartoon, detailed textures, cinematic lighting'
     }
 
     const basePrompt = stylePrompts[style as keyof typeof stylePrompts] || stylePrompts.cute
     
-    // Enhanced prompt for better photo matching
+    // Enhanced prompt for better photo matching - focus on single character portrait
     let prompt = `${basePrompt}, ${analysis.faceShape} face shape, ${analysis.hairColor} ${analysis.hairStyle} hair, ${analysis.eyeColor} eyes, ${analysis.skinTone} skin tone, ${analysis.dominantEmotion} facial expression`
     
     // Add photo description if available
@@ -149,7 +149,7 @@ export class CartoonGenerator {
       prompt += `, based on: ${photoDescription}`
     }
     
-    prompt += `, high quality cartoon, clean background, game character style, photorealistic cartoon conversion`
+    prompt += `, single character only, portrait view, head and shoulders, clean solid background, no multiple characters, no comic book panels, no grid layout, no multiple images, one character only, centered composition, high quality cartoon character portrait, professional character design, character sheet style`
     
     return prompt
   }
@@ -173,10 +173,11 @@ export class CartoonGenerator {
         body: JSON.stringify({
           inputs: prompt,
           parameters: {
-            num_inference_steps: 20, // Reduced for cost efficiency
-            guidance_scale: 7.5,
-            width: 512, // Smaller size for cost efficiency
-            height: 512
+            num_inference_steps: 25, // Increased for better quality
+            guidance_scale: 8.0, // Higher guidance for better prompt following
+            width: 512,
+            height: 512,
+            negative_prompt: "multiple characters, comic book panels, grid layout, multiple images, collage, montage, multiple people, crowd, group photo, comic strip, storyboard"
           }
         })
       })
