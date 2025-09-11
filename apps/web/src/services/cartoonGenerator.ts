@@ -16,6 +16,7 @@ export interface CartoonGenerationResult {
   imageUrl?: string
   error?: string
   processingTime?: number
+  cost?: number
 }
 
 /**
@@ -26,11 +27,11 @@ export interface CartoonGenerationResult {
  */
 export class CartoonGenerator {
   private static readonly HF_API_URL = 'https://api-inference.huggingface.co/models'
-  private static readonly HF_TOKEN = process.env.NEXT_PUBLIC_HUGGING_FACE_TOKEN || ''
+  private static readonly HF_TOKEN = import.meta.env.VITE_HUGGINGFACE_TOKEN || ''
 
   static {
     console.log('🔑 HF Token loaded:', this.HF_TOKEN ? '✅ Yes' : '❌ No')
-    console.log('🌍 Environment:', process.env.NODE_ENV)
+    console.log('🌍 Environment:', import.meta.env.MODE)
   }
 
   /**
@@ -69,14 +70,16 @@ export class CartoonGenerator {
       return {
         success: true,
         imageUrl: cartoonImage,
-        processingTime
+        processingTime,
+        cost: 0.01 // Estimated cost for HF API calls
       }
     } catch (error) {
       console.error('❌ AI Cartoon generation failed:', error)
       return {
         success: false,
         error: error instanceof Error ? error.message : 'AI generation failed',
-        processingTime: Date.now() - startTime
+        processingTime: Date.now() - startTime,
+        cost: 0
       }
     }
   }
