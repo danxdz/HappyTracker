@@ -8,7 +8,6 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Calendar, User, Ruler, Weight, Sparkles, ArrowRight, Check } from 'lucide-react'
-import { Character3DGenerator } from '../services/character3DGenerator'
 import { CartoonGenerator } from '../services/cartoonGenerator'
 
 interface CharacterData {
@@ -39,7 +38,7 @@ export const DynamicCharacterPage: React.FC = () => {
       weight: 70
     }
   })
-  const [hfApiEnabled, setHfApiEnabled] = useState(false)
+  const [hfApiEnabled, setHfApiEnabled] = useState(true) // Always enabled for AI cartoon generation
   const [cartoonGenerated, setCartoonGenerated] = useState(false)
   const [cartoonImage, setCartoonImage] = useState<string | null>(null)
 
@@ -224,65 +223,10 @@ export const DynamicCharacterPage: React.FC = () => {
       } else {
         console.error('❌ HF Cartoon generation failed:', result.error)
         
-        // Fallback to basic canvas if HF fails
-        console.log('🎭 Falling back to basic cartoon generation...')
-        const canvas = document.createElement('canvas')
-        canvas.width = 400
-        canvas.height = 400
-        const ctx = canvas.getContext('2d')!
-        
-        // Create a simple cartoon character based on character data
-        const age = characterData.age
-        const height = characterData.height
-        const weight = characterData.weight
-        
-        // Background
-        ctx.fillStyle = '#4F46E5'
-        ctx.fillRect(0, 0, 400, 400)
-        
-        // Character body (size based on height/weight)
-        const bodyHeight = Math.min(200, Math.max(100, height - 100))
-        const bodyWidth = Math.min(120, Math.max(60, weight - 40))
-        
-        // Body
-        ctx.fillStyle = '#F59E0B'
-        ctx.fillRect(200 - bodyWidth/2, 300 - bodyHeight, bodyWidth, bodyHeight)
-        
-        // Head (size based on age - older = bigger head)
-        const headSize = Math.min(80, Math.max(40, age))
-        ctx.fillStyle = '#FDE68A'
-        ctx.beginPath()
-        ctx.arc(200, 200 - bodyHeight/2, headSize/2, 0, Math.PI * 2)
-        ctx.fill()
-        
-        // Eyes
-        ctx.fillStyle = '#1F2937'
-        ctx.beginPath()
-        ctx.arc(185, 190 - bodyHeight/2, 5, 0, Math.PI * 2)
-        ctx.fill()
-        ctx.beginPath()
-        ctx.arc(215, 190 - bodyHeight/2, 5, 0, Math.PI * 2)
-        ctx.fill()
-        
-        // Smile
-        ctx.strokeStyle = '#1F2937'
-        ctx.lineWidth = 3
-        ctx.beginPath()
-        ctx.arc(200, 200 - bodyHeight/2, 20, 0, Math.PI)
-        ctx.stroke()
-        
-        // Add character info text
-        ctx.fillStyle = '#FFFFFF'
-        ctx.font = '16px Arial'
-        ctx.textAlign = 'center'
-        ctx.fillText(`${characterData.name}`, 200, 50)
-        ctx.fillText(`Age: ${age}`, 200, 70)
-        ctx.fillText(`Height: ${height}cm`, 200, 90)
-        ctx.fillText(`Weight: ${weight}kg`, 200, 110)
-        
-        // Convert to image
-        const cartoonDataUrl = canvas.toDataURL('image/png')
-        setCartoonImage(cartoonDataUrl)
+        // NO FALLBACK - if AI fails, we fail
+        console.error('❌ AI cartoon generation failed - no fallback available')
+        alert('AI cartoon generation failed. Please try again.')
+        return
       }
       
       setTimeout(() => setCurrentStep('complete'), 1000)
@@ -450,34 +394,18 @@ export const DynamicCharacterPage: React.FC = () => {
                   📸 Take Your Photo
                 </h3>
                 
-                {/* HF API Toggle */}
+                {/* AI Analysis Info */}
                 <div className="mb-6 p-4 bg-white/5 rounded-xl">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-white font-semibold">🤖 AI Analysis Mode</h4>
-                      <p className="text-gray-400 text-sm">
-                        {hfApiEnabled ? 'Real AI Analysis' : 'Simulated Analysis'}
+                  <div className="flex items-center justify-center">
+                    <div className="text-center">
+                      <h4 className="text-white font-semibold mb-1">🤖 AI-Powered Analysis</h4>
+                      <p className="text-gray-300 text-sm">
+                        Real AI analysis and cartoon generation
                       </p>
+                      <div className="mt-2 text-xs text-green-400">
+                        🟢 Using Hugging Face API
+                      </div>
                     </div>
-                    <button
-                      onClick={() => {
-                        const newState = !hfApiEnabled
-                        setHfApiEnabled(newState)
-                        Character3DGenerator.setHfApiEnabled(newState)
-                      }}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        hfApiEnabled ? 'bg-green-500' : 'bg-gray-600'
-                      }`}
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          hfApiEnabled ? 'translate-x-6' : 'translate-x-1'
-                        }`}
-                      />
-                    </button>
-                  </div>
-                  <div className="mt-2 text-xs text-gray-500">
-                    {hfApiEnabled ? '🟢 Using Hugging Face API' : '🔴 Canvas Only Mode'}
                   </div>
                 </div>
 
