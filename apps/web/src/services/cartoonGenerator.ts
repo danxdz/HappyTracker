@@ -1,17 +1,4 @@
-/**
- * 🎨 Cartoon Generator Service
- * 
- * Efficient one-shot cartoon generation from photos
- * Optimized for low-cost inference
- */
-
-export interface CartoonGenerationResult {
-  success: boolean
-  imageUrl?: string
-  error?: string
-  cost?: number
-  processingTime?: number
-}
+import { HuggingFaceService } from './huggingFaceService'
 
 export interface PhotoAnalysis {
   faceShape: 'round' | 'oval' | 'square' | 'heart' | 'diamond'
@@ -24,21 +11,33 @@ export interface PhotoAnalysis {
   confidence: number
 }
 
+export interface CartoonGenerationResult {
+  success: boolean
+  imageUrl?: string
+  error?: string
+  processingTime?: number
+}
+
+/**
+ * 🎨 AI-Powered Cartoon Generator
+ * 
+ * Uses Hugging Face API for real AI analysis and generation
+ * NO FALLBACKS - if AI fails, we fail
+ */
 export class CartoonGenerator {
   private static readonly HF_API_URL = 'https://api-inference.huggingface.co/models'
-  private static readonly HF_TOKEN = (import.meta as any).env?.VITE_HUGGINGFACE_TOKEN || ''
-  
-  // Debug token loading
+  private static readonly HF_TOKEN = process.env.NEXT_PUBLIC_HUGGING_FACE_TOKEN || ''
+
   static {
     console.log('🔑 HF Token loaded:', this.HF_TOKEN ? '✅ Yes' : '❌ No')
-    console.log('🌍 Environment:', (import.meta as any).env?.MODE || 'unknown')
+    console.log('🌍 Environment:', process.env.NODE_ENV)
   }
 
   /**
-   * 🎯 ONE-SHOT CARTOON GENERATION
+   * 🎨 Generate Cartoon from Photo
    * 
    * Creates a perfect cartoon character from photo in single API call
-   * Optimized for low-cost inference
+   * Uses real AI analysis - no fallbacks
    */
   static async generateCartoonFromPhoto(
     photoFile: File,
@@ -47,50 +46,49 @@ export class CartoonGenerator {
     const startTime = Date.now()
     
     try {
-      console.log('🎨 Starting ONE-SHOT cartoon generation...')
+      console.log('🎨 Starting AI-powered cartoon generation...')
       
-      // Step 1: Analyze photo (lightweight)
+      // Step 1: Analyze photo with AI - NO FALLBACKS
       const photoAnalysis = await this.analyzePhoto(photoFile)
-      console.log('📸 Photo analysis:', photoAnalysis)
+      console.log('📸 AI Photo analysis:', photoAnalysis)
       
-      // Get photo description for better prompt
+      // Step 2: Get photo description with AI - NO FALLBACKS
       const photoDescription = await this.getPhotoDescription(photoFile)
-      console.log('📝 Photo description:', photoDescription)
+      console.log('📝 AI Photo description:', photoDescription)
       
-      // Step 2: Generate perfect prompt
+      // Step 3: Create dynamic prompt based on real AI analysis
       const prompt = this.createOptimalPrompt(photoAnalysis, style, photoDescription)
-      console.log('🎯 Optimized prompt:', prompt)
+      console.log('🎯 Dynamic AI prompt:', prompt)
       
-      // Step 3: Single API call for cartoon generation
+      // Step 4: Generate cartoon with AI - NO FALLBACKS
       const cartoonImage = await this.generateCartoonImage(prompt)
       
       const processingTime = Date.now() - startTime
-      console.log(`✅ Cartoon generated in ${processingTime}ms`)
+      console.log(`✅ AI Cartoon generated in ${processingTime}ms`)
       
       return {
         success: true,
         imageUrl: cartoonImage,
-        processingTime,
-        cost: 0.001 // Estimated cost for single call
+        processingTime
       }
-      
     } catch (error) {
-      console.error('❌ Cartoon generation failed:', error)
+      console.error('❌ AI Cartoon generation failed:', error)
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'AI generation failed',
+        processingTime: Date.now() - startTime
       }
     }
   }
 
   /**
-   * 📸 Lightweight Photo Analysis
+   * 📸 AI Photo Analysis - NO FALLBACKS
    * 
-   * Extracts key features for cartoon generation
-   * Uses minimal API calls for cost efficiency
+   * Uses AI to analyze photo and extract features
+   * If AI fails, we fail
    */
   private static async analyzePhoto(photoFile: File): Promise<PhotoAnalysis> {
-    console.log('📸 Analyzing photo for cartoon generation...')
+    console.log('📸 Analyzing photo with AI...')
     
     // Convert photo to base64
     const photoBase64 = await this.fileToBase64(photoFile)
@@ -121,171 +119,82 @@ export class CartoonGenerator {
   }
 
   /**
-   * 🎯 Create Optimal Prompt for One-Shot Generation
+   * 🎯 Create Dynamic Prompt from AI Analysis
    * 
-   * Crafted for maximum quality with minimal tokens
-   * Enhanced to better match the original photo
+   * Uses real AI analysis to create perfect prompts
    */
   private static createOptimalPrompt(analysis: PhotoAnalysis, style: string, photoDescription?: string): string {
-    const stylePrompts = {
-      cute: 'single character portrait, cute cartoon character, big eyes, friendly smile, rounded shapes, bright colors',
-      anime: 'single character portrait, anime style character, large expressive eyes, detailed hair, vibrant colors',
-      disney: 'single character portrait, Disney style character, classic animation, expressive features, warm colors',
-      pixar: 'single character portrait, Pixar style character, 3D cartoon, detailed textures, cinematic lighting'
-    }
-
-    const basePrompt = stylePrompts[style as keyof typeof stylePrompts] || stylePrompts.cute
+    const basePrompt = this.getStylePrompt(style)
     
-    // Enhanced prompt for better photo matching - focus on single character portrait
-    let prompt = `${basePrompt}, ${analysis.faceShape} face shape, ${analysis.hairColor} ${analysis.hairStyle} hair, ${analysis.eyeColor} eyes, ${analysis.skinTone} skin tone, ${analysis.dominantEmotion} facial expression`
+    // Add AI-detected features
+    const features = [
+      `${analysis.faceShape} face shape`,
+      `${analysis.hairColor} ${analysis.hairStyle} hair`,
+      `${analysis.eyeColor} eyes`,
+      `${analysis.skinTone} skin tone`,
+      `${analysis.dominantEmotion} expression`,
+      `${analysis.gender} character`
+    ].join(', ')
     
     // Add photo description if available
-    if (photoDescription) {
-      prompt += `, based on: ${photoDescription}`
-    }
+    const photoContext = photoDescription ? `, based on: ${photoDescription}` : ''
     
-    prompt += `, single character only, portrait view, head and shoulders, clean solid background, no multiple characters, no comic book panels, no grid layout, no multiple images, one character only, centered composition, high quality cartoon character portrait, professional character design, character sheet style`
+    // Single character portrait requirements
+    const singleCharacterRequirements = [
+      'single character portrait only',
+      'head and shoulders view',
+      'clean solid background',
+      'no multiple characters',
+      'no comic book panels',
+      'no grid layout',
+      'no multiple images',
+      'one character only',
+      'centered composition',
+      'high quality cartoon character portrait',
+      'professional character design'
+    ].join(', ')
     
-    return prompt
+    return `${basePrompt}, ${features}${photoContext}, ${singleCharacterRequirements}`
   }
 
   /**
-   * 🎨 Generate Cartoon Image
+   * 🎨 Generate Cartoon Image with AI
    * 
-   * Single API call for cartoon generation
-   * Optimized for cost efficiency
+   * Uses Stable Diffusion XL for high-quality generation
    */
   private static async generateCartoonImage(prompt: string): Promise<string> {
-    console.log('🎨 Generating cartoon image with optimized prompt...')
+    console.log('🎨 Generating cartoon image with AI...')
     
-    try {
-      const response = await fetch(`${this.HF_API_URL}/stabilityai/stable-diffusion-xl-base-1.0`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.HF_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          inputs: prompt,
-          parameters: {
-            num_inference_steps: 25, // Increased for better quality
-            guidance_scale: 8.0, // Higher guidance for better prompt following
-            width: 512,
-            height: 512,
-            negative_prompt: "multiple characters, comic book panels, grid layout, multiple images, collage, montage, multiple people, crowd, group photo, comic strip, storyboard"
-          }
-        })
+    const response = await fetch(`${this.HF_API_URL}/stabilityai/stable-diffusion-xl-base-1.0`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.HF_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        inputs: prompt,
+        parameters: {
+          num_inference_steps: 25,
+          guidance_scale: 8.0,
+          negative_prompt: "multiple characters, comic book panels, grid layout, multiple images, low quality, blurry, distorted, ugly, bad anatomy, bad proportions, extra limbs, missing limbs, deformed, disfigured, text, watermark, signature"
+        }
       })
+    })
 
-      if (!response.ok) {
-        throw new Error(`Cartoon generation failed: ${response.statusText}`)
-      }
-
-      const imageBlob = await response.blob()
-      return await this.blobToBase64(imageBlob)
-      
-    } catch (error) {
-      console.warn('⚠️ AI generation failed, using canvas fallback:', error)
-      return this.createCanvasFallback(prompt)
+    if (!response.ok) {
+      throw new Error(`AI image generation failed: ${response.status} ${response.statusText}`)
     }
+
+    const blob = await response.blob()
+    return URL.createObjectURL(blob)
   }
 
   /**
-   * 🎨 Canvas Fallback for Cost-Free Generation
+   * 📝 Get Photo Description with AI - NO FALLBACKS
    * 
-   * Creates cartoon character when AI is unavailable
+   * Uses AI to describe the photo content
+   * If AI fails, we fail
    */
-  private static async createCanvasFallback(prompt: string): Promise<string> {
-    console.log('🎨 Creating canvas fallback cartoon...')
-    
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')
-    canvas.width = 512
-    canvas.height = 512
-    
-    if (ctx) {
-      // Cartoon-style background
-      const gradient = ctx.createLinearGradient(0, 0, 512, 512)
-      gradient.addColorStop(0, '#FFE4E1')
-      gradient.addColorStop(1, '#E0FFFF')
-      ctx.fillStyle = gradient
-      ctx.fillRect(0, 0, 512, 512)
-      
-      // Draw cartoon character
-      this.drawCartoonCharacter(ctx, 256, 256)
-      
-      // Add cartoon text
-      ctx.fillStyle = '#FF1493'
-      ctx.font = 'bold 24px Arial'
-      ctx.textAlign = 'center'
-      ctx.fillText('Cartoon Character', 256, 450)
-      ctx.fillText('Canvas Generated', 256, 480)
-    }
-    
-    return canvas.toDataURL('image/png')
-  }
-
-  /**
-   * 🎨 Draw Cartoon Character
-   * 
-   * Simple cartoon character drawing
-   */
-  private static drawCartoonCharacter(ctx: CanvasRenderingContext2D, x: number, y: number) {
-    // Head (big and round)
-    ctx.fillStyle = '#FFDBB5'
-    ctx.beginPath()
-    ctx.arc(x, y - 20, 60, 0, Math.PI * 2)
-    ctx.fill()
-    
-    // Hair (fluffy)
-    ctx.fillStyle = '#8B4513'
-    ctx.beginPath()
-    ctx.arc(x, y - 40, 50, 0, Math.PI * 2)
-    ctx.fill()
-    
-    // Eyes (big and cute)
-    ctx.fillStyle = '#4169E1'
-    ctx.beginPath()
-    ctx.arc(x - 20, y - 30, 12, 0, Math.PI * 2)
-    ctx.fill()
-    ctx.beginPath()
-    ctx.arc(x + 20, y - 30, 12, 0, Math.PI * 2)
-    ctx.fill()
-    
-    // Smile (happy)
-    ctx.strokeStyle = '#8B4513'
-    ctx.lineWidth = 3
-    ctx.beginPath()
-    ctx.arc(x, y - 10, 20, 0, Math.PI)
-    ctx.stroke()
-    
-    // Body (simple)
-    ctx.fillStyle = '#FFB6C1'
-    ctx.beginPath()
-    ctx.roundRect(x - 30, y + 40, 60, 80, 15)
-    ctx.fill()
-  }
-
-  // Helper methods for photo analysis
-  private static async fileToBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = () => resolve(reader.result as string)
-      reader.onerror = reject
-      reader.readAsDataURL(file)
-    })
-  }
-
-  private static async blobToBase64(blob: Blob): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = () => resolve(reader.result as string)
-      reader.onerror = reject
-      reader.readAsDataURL(blob)
-    })
-  }
-
-  // Get photo description using image captioning
   private static async getPhotoDescription(photoFile: File): Promise<string> {
     try {
       const photoBase64 = await this.fileToBase64(photoFile)
@@ -302,14 +211,14 @@ export class CartoonGenerator {
       })
 
       if (!response.ok) {
-        throw new Error(`Photo description failed: ${response.statusText}`)
+        throw new Error(`AI photo description failed: ${response.status} ${response.statusText}`)
       }
 
       const result = await response.json()
-      console.log('📝 Photo description result:', result)
+      console.log('📝 AI Photo description result:', result)
       
       const description = Array.isArray(result) ? result[0]?.generated_text || '' : result.generated_text || ''
-      console.log('📝 Extracted description:', description)
+      console.log('📝 AI Extracted description:', description)
       
       return description
     } catch (error) {
@@ -318,9 +227,9 @@ export class CartoonGenerator {
     }
   }
 
-  // Extract features from photo description
+  // Extract features from AI description
   private static extractFeaturesFromDescription(description: string): PhotoAnalysis {
-    console.log('🔍 Extracting features from description:', description)
+    console.log('🔍 Extracting features from AI description:', description)
     
     const lowerDesc = description.toLowerCase()
     
@@ -360,20 +269,19 @@ export class CartoonGenerator {
   private static extractFaceShapeFromText(text: string): PhotoAnalysis['faceShape'] {
     if (text.includes('round') || text.includes('circular')) return 'round'
     if (text.includes('oval')) return 'oval'
-    if (text.includes('square')) return 'square'
+    if (text.includes('square') || text.includes('angular')) return 'square'
     if (text.includes('heart')) return 'heart'
     if (text.includes('diamond')) return 'diamond'
     return 'round' // default
   }
 
   private static extractHairColorFromText(text: string): string {
-    if (text.includes('white') || text.includes('gray') || text.includes('grey') || text.includes('silver')) return '#FFFFFF'
-    if (text.includes('blonde') || text.includes('blond')) return '#FFD700'
-    if (text.includes('brown')) return '#8B4513'
-    if (text.includes('black')) return '#000000'
-    if (text.includes('red')) return '#FF4500'
-    if (text.includes('gray') || text.includes('grey')) return '#808080'
-    if (text.includes('elderly') || text.includes('old') || text.includes('senior')) return '#FFFFFF' // Default to white for elderly
+    if (text.includes('blonde') || text.includes('blond') || text.includes('yellow')) return '#FFD700'
+    if (text.includes('brown') || text.includes('brunette')) return '#8B4513'
+    if (text.includes('black') || text.includes('dark')) return '#2F2F2F'
+    if (text.includes('red') || text.includes('ginger')) return '#A0522D'
+    if (text.includes('gray') || text.includes('grey') || text.includes('silver')) return '#C0C0C0'
+    if (text.includes('white') || text.includes('elderly') || text.includes('old') || text.includes('senior')) return '#FFFFFF'
     return '#8B4513' // default brown
   }
 
@@ -389,15 +297,16 @@ export class CartoonGenerator {
   private static extractEyeColorFromText(text: string): string {
     if (text.includes('blue')) return '#4169E1'
     if (text.includes('brown')) return '#8B4513'
-    if (text.includes('green')) return '#32CD32'
+    if (text.includes('green')) return '#228B22'
     if (text.includes('hazel')) return '#8B4513'
+    if (text.includes('gray') || text.includes('grey')) return '#808080'
     return '#4169E1' // default blue
   }
 
   private static extractSkinToneFromText(text: string): string {
-    if (text.includes('pale') || text.includes('light')) return '#FFDBB5'
+    if (text.includes('pale') || text.includes('fair')) return '#FFDBB5'
+    if (text.includes('tan') || text.includes('olive')) return '#F4A460'
     if (text.includes('dark') || text.includes('brown')) return '#D2B48C'
-    if (text.includes('tan')) return '#F4A460'
     if (text.includes('elderly') || text.includes('old') || text.includes('senior') || text.includes('wrinkled')) return '#F5DEB3' // Slightly more aged skin tone
     return '#FFDBB5' // default light
   }
@@ -416,74 +325,25 @@ export class CartoonGenerator {
     return 'non-binary' // default
   }
 
-  // Simplified extraction methods for cost efficiency (fallback)
-  private static extractFaceShape(result: any): PhotoAnalysis['faceShape'] {
-    return 'round' // Simplified for cost efficiency
-  }
-
-  private static extractEyeColor(result: any): string {
-    return '#4169E1' // Default blue
-  }
-
-  private static extractHairColor(result: any): string {
-    return '#8B4513' // Default brown
-  }
-
-  private static extractHairStyle(result: any): PhotoAnalysis['hairStyle'] {
-    return 'medium' // Default medium
-  }
-
-  private static extractSkinTone(result: any): string {
-    return '#FFDBB5' // Default peach
-  }
-
-  private static extractEmotion(result: any): string {
-    return 'happy' // Default happy
-  }
-
-  private static createSmartFallbackAnalysis(photoFile: File): PhotoAnalysis {
-    const fileName = photoFile.name.toLowerCase()
-    
-    // Smart analysis based on filename
-    let hairColor = '#8B4513' // default brown
-    let skinTone = '#FFDBB5' // default light
-    let faceShape: PhotoAnalysis['faceShape'] = 'round'
-    
-    if (fileName.includes('leonardo') || fileName.includes('lightning')) {
-      // Artistic/portrait photos - likely more detailed
-      hairColor = '#8B4513' // brown
-      skinTone = '#FFDBB5' // light
-      faceShape = 'oval'
-    } else if (fileName.includes('old') || fileName.includes('elderly') || fileName.includes('senior')) {
-      hairColor = '#FFFFFF' // white for elderly
-      skinTone = '#F5DEB3' // aged skin tone
-      faceShape = 'round'
-    } else if (fileName.includes('young') || fileName.includes('teen')) {
-      hairColor = '#8B4513' // brown for young
-      skinTone = '#FFDBB5' // light skin
-      faceShape = 'oval'
+  private static getStylePrompt(style: string): string {
+    const stylePrompts = {
+      cute: 'cute cartoon character, big eyes, friendly smile, rounded shapes, bright colors',
+      anime: 'anime style character, large expressive eyes, detailed features, vibrant colors',
+      disney: 'Disney style character, classic animation style, expressive features, clean lines',
+      pixar: 'Pixar style character, 3D cartoon style, detailed textures, expressive animation'
     }
-    
-    return {
-      faceShape,
-      eyeColor: '#4169E1',
-      hairColor,
-      hairStyle: 'medium',
-      skinTone,
-      dominantEmotion: 'happy',
-      confidence: 0.6
-    }
+    return stylePrompts[style as keyof typeof stylePrompts] || stylePrompts.cute
   }
 
-  private static createFallbackAnalysis(): PhotoAnalysis {
-    return {
-      faceShape: 'round',
-      eyeColor: '#4169E1',
-      hairColor: '#8B4513',
-      hairStyle: 'medium',
-      skinTone: '#FFDBB5',
-      dominantEmotion: 'happy',
-      confidence: 0.7
-    }
+  private static async fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => {
+        const result = reader.result as string
+        resolve(result.split(',')[1]) // Remove data:image/...;base64, prefix
+      }
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    })
   }
 }
