@@ -17,6 +17,11 @@ export interface CartoonGenerationResult {
   error?: string
   processingTime?: number
   cost?: number
+  breakdown?: {
+    imageAnalysis: number
+    cartoonGeneration: number
+    total: number
+  }
 }
 
 /**
@@ -65,13 +70,23 @@ export class CartoonGenerator {
       const cartoonImage = await this.generateCartoonImage(prompt)
       
       const processingTime = Date.now() - startTime
+      
+      // Cost estimation based on HF API pricing
+      const costBreakdown = {
+        imageAnalysis: 0.001, // microsoft/git-base-coco (lightweight)
+        cartoonGeneration: 0.03, // stabilityai/stable-diffusion-xl-base-1.0 (compute intensive)
+        total: 0.031
+      }
+      
       console.log(`✅ AI Cartoon generated in ${processingTime}ms`)
+      console.log(`💰 Estimated cost: $${costBreakdown.total.toFixed(3)}`)
       
       return {
         success: true,
         imageUrl: cartoonImage,
         processingTime,
-        cost: 0.01 // Estimated cost for HF API calls
+        cost: costBreakdown.total,
+        breakdown: costBreakdown
       }
     } catch (error) {
       console.error('❌ AI Cartoon generation failed:', error)
@@ -79,7 +94,12 @@ export class CartoonGenerator {
         success: false,
         error: error instanceof Error ? error.message : 'AI generation failed',
         processingTime: Date.now() - startTime,
-        cost: 0
+        cost: 0,
+        breakdown: {
+          imageAnalysis: 0,
+          cartoonGeneration: 0,
+          total: 0
+        }
       }
     }
   }

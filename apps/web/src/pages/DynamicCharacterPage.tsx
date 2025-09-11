@@ -41,6 +41,7 @@ export const DynamicCharacterPage: React.FC = () => {
   const [hfApiEnabled, setHfApiEnabled] = useState(true) // Always enabled for AI cartoon generation
   const [cartoonGenerated, setCartoonGenerated] = useState(false)
   const [cartoonImage, setCartoonImage] = useState<string | null>(null)
+  const [generationCost, setGenerationCost] = useState<number | null>(null)
 
   // Auto-progress through loading
   useEffect(() => {
@@ -218,7 +219,12 @@ export const DynamicCharacterPage: React.FC = () => {
       )
       
       if (result.success && result.imageUrl) {
-        console.log('🎨 HF Cartoon generated successfully!')
+        console.log('🎨 AI Cartoon generated successfully!')
+        if (result.breakdown) {
+          console.log('💰 Cost breakdown:', result.breakdown)
+          console.log(`📊 Total cost: $${result.cost?.toFixed(3)}`)
+          setGenerationCost(result.cost || 0)
+        }
         setCartoonImage(result.imageUrl)
       } else {
         console.error('❌ HF Cartoon generation failed:', result.error)
@@ -360,14 +366,28 @@ export const DynamicCharacterPage: React.FC = () => {
                   {cartoonImage && (
                     <div className="bg-white/10 rounded-xl p-4 max-w-sm mx-auto">
                       <h4 className="text-white font-semibold mb-3 text-center">🎨 Your Cartoon Character</h4>
-                      <div className="w-64 h-64 bg-white rounded-lg mx-auto flex items-center justify-center overflow-hidden">
+                      <div className="w-64 h-64 bg-white rounded-lg mx-auto flex items-center justify-center overflow-hidden mb-4">
                         <img 
                           src={cartoonImage} 
                           alt="Your Cartoon Character" 
                           className="w-full h-full object-contain"
                         />
                       </div>
-                      <p className="text-gray-300 text-sm mt-3 text-center">
+                      
+                      {/* Cost Information */}
+                      {generationCost !== null && (
+                        <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-3 text-center mb-4">
+                          <div className="text-green-400 font-semibold mb-1">💰 Generation Cost</div>
+                          <div className="text-white text-sm">
+                            ${generationCost.toFixed(3)} USD
+                          </div>
+                          <div className="text-green-300 text-xs mt-1">
+                            Powered by Hugging Face AI
+                          </div>
+                        </div>
+                      )}
+                      
+                      <p className="text-gray-300 text-sm text-center">
                         {characterData.name} - Age: {characterData.age}, Height: {characterData.height}cm, Weight: {characterData.weight}kg
                       </p>
                     </div>
