@@ -117,7 +117,7 @@ export class CartoonGenerator {
     const photoBase64 = await this.fileToBase64(photoFile)
     
     // Use AI to describe the photo - if this fails, we fail
-    const response = await fetch(`${this.HF_API_URL}/microsoft/git-base-coco`, {
+    const response = await fetch(`${this.HF_API_URL}/Salesforce/blip-image-captioning-large`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${this.HF_TOKEN}`,
@@ -222,7 +222,7 @@ export class CartoonGenerator {
     try {
       const photoBase64 = await this.fileToBase64(photoFile)
       
-      const response = await fetch(`${this.HF_API_URL}/microsoft/git-base-coco`, {
+      const response = await fetch(`${this.HF_API_URL}/Salesforce/blip-image-captioning-large`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.HF_TOKEN}`,
