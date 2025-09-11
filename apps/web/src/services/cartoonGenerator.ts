@@ -97,7 +97,7 @@ export class CartoonGenerator {
     
     try {
       // Use working image captioning model to describe the photo
-      const response = await fetch(`${this.HF_API_URL}/Salesforce/blip-image-captioning-large`, {
+      const response = await fetch(`${this.HF_API_URL}/microsoft/git-base-coco`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.HF_TOKEN}`,
@@ -296,7 +296,7 @@ export class CartoonGenerator {
     try {
       const photoBase64 = await this.fileToBase64(photoFile)
       
-      const response = await fetch(`${this.HF_API_URL}/Salesforce/blip-image-captioning-large`, {
+      const response = await fetch(`${this.HF_API_URL}/microsoft/git-base-coco`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.HF_TOKEN}`,
@@ -359,6 +359,9 @@ export class CartoonGenerator {
     // Extract emotion
     const dominantEmotion = this.extractEmotionFromText(lowerDesc)
     
+    // Extract gender
+    const gender = this.extractGenderFromText(lowerDesc)
+    
     return {
       faceShape,
       eyeColor,
@@ -366,6 +369,7 @@ export class CartoonGenerator {
       hairStyle,
       skinTone,
       dominantEmotion,
+      gender,
       confidence: 0.9
     }
   }
@@ -421,6 +425,12 @@ export class CartoonGenerator {
     if (text.includes('sad')) return 'sad'
     if (text.includes('angry')) return 'angry'
     return 'happy' // default
+  }
+
+  private static extractGenderFromText(text: string): PhotoAnalysis['gender'] {
+    if (text.includes('man') || text.includes('male') || text.includes('guy') || text.includes('gentleman')) return 'male'
+    if (text.includes('woman') || text.includes('female') || text.includes('lady') || text.includes('girl')) return 'female'
+    return 'non-binary' // default
   }
 
   // Simplified extraction methods for cost efficiency (fallback)
