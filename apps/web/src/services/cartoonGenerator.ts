@@ -95,35 +95,29 @@ export class CartoonGenerator {
     // Convert photo to base64
     const photoBase64 = await this.fileToBase64(photoFile)
     
-    try {
-      // Use working image captioning model to describe the photo
-      const response = await fetch(`${this.HF_API_URL}/microsoft/git-base-coco`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.HF_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          inputs: photoBase64
-        })
+    // Use AI to describe the photo - if this fails, we fail
+    const response = await fetch(`${this.HF_API_URL}/microsoft/git-base-coco`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.HF_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        inputs: photoBase64
       })
+    })
 
-      if (!response.ok) {
-        throw new Error(`Photo analysis failed: ${response.statusText}`)
-      }
-
-      const result = await response.json()
-      console.log('📝 Photo analysis result:', result)
-      
-      // Extract features from the description
-      const description = Array.isArray(result) ? result[0]?.generated_text || '' : result.generated_text || ''
-      console.log('📝 Extracted description:', description)
-      return this.extractFeaturesFromDescription(description)
-      
-    } catch (error) {
-      console.warn('⚠️ Photo analysis failed, using fallback:', error)
-      return this.createSmartFallbackAnalysis(photoFile)
+    if (!response.ok) {
+      throw new Error(`AI photo analysis failed: ${response.status} ${response.statusText}`)
     }
+
+    const result = await response.json()
+    console.log('📝 AI Photo analysis result:', result)
+    
+    // Extract features from the AI description
+    const description = Array.isArray(result) ? result[0]?.generated_text || '' : result.generated_text || ''
+    console.log('📝 AI Extracted description:', description)
+    return this.extractFeaturesFromDescription(description)
   }
 
   /**
@@ -319,19 +313,8 @@ export class CartoonGenerator {
       
       return description
     } catch (error) {
-      console.warn('⚠️ Photo description failed:', error)
-      
-      // Smart fallback based on filename
-      const fileName = photoFile.name.toLowerCase()
-      if (fileName.includes('leonardo') || fileName.includes('lightning')) {
-        return 'a detailed portrait of a person with artistic lighting'
-      } else if (fileName.includes('old') || fileName.includes('elderly') || fileName.includes('senior')) {
-        return 'an elderly person with aged features'
-      } else if (fileName.includes('young') || fileName.includes('teen')) {
-        return 'a young person with youthful features'
-      } else {
-        return 'a person in a detailed portrait photo'
-      }
+      console.error('❌ AI photo description failed:', error)
+      throw new Error('AI photo description failed')
     }
   }
 
