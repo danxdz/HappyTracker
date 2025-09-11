@@ -20,6 +20,7 @@ export interface PhotoAnalysis {
   hairStyle: 'short' | 'medium' | 'long' | 'curly' | 'straight' | 'wavy'
   skinTone: string
   dominantEmotion: string
+  gender: 'male' | 'female' | 'non-binary'
   confidence: number
 }
 
