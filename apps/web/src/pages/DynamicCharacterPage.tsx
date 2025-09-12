@@ -10,6 +10,7 @@ import { motion } from 'framer-motion'
 import { Calendar, User, Ruler, Weight, Sparkles, ArrowRight, Check, Image } from 'lucide-react'
 import { CaricatureGenerator } from '../services/cartoonGenerator'
 import { CharacterStorage } from '../services/characterStorage'
+import { UploadService } from '../services/uploadService'
 
 interface CharacterData {
   photo?: File
@@ -49,6 +50,7 @@ export const DynamicCharacterPage: React.FC = () => {
   const [generationCost, setGenerationCost] = useState<number | null>(null)
   const [characterSaved, setCharacterSaved] = useState(false)
   const [showImageModal, setShowImageModal] = useState(false)
+  const [isProcessingPhoto, setIsProcessingPhoto] = useState(false)
   const [rpgClass, setRpgClass] = useState<{
     name: string
     description: string
@@ -155,6 +157,7 @@ export const DynamicCharacterPage: React.FC = () => {
 
   const handlePhotoUpload = async (photo: File) => {
     try {
+      setIsProcessingPhoto(true) // Start loading
       updateCharacterData('photo', photo)
       
       // Analyze photo for AI guesses
@@ -169,7 +172,10 @@ export const DynamicCharacterPage: React.FC = () => {
       updateCharacterData('gender', aiGuesses.gender)
       
       console.log('✅ Character data updated, moving to next step...')
-      setTimeout(nextStep, 1000) // Give time to show AI analysis
+      setTimeout(() => {
+        setIsProcessingPhoto(false) // Stop loading
+        nextStep()
+      }, 1000) // Give time to show AI analysis
     } catch (error) {
       console.error('❌ Error in photo upload:', error)
       // Fallback to default values
@@ -179,7 +185,10 @@ export const DynamicCharacterPage: React.FC = () => {
       updateCharacterData('height', fallbackGuesses.height)
       updateCharacterData('weight', fallbackGuesses.weight)
       updateCharacterData('gender', fallbackGuesses.gender)
-      setTimeout(nextStep, 1000)
+      setTimeout(() => {
+        setIsProcessingPhoto(false) // Stop loading
+        nextStep()
+      }, 1000)
     }
   }
 
@@ -362,7 +371,7 @@ export const DynamicCharacterPage: React.FC = () => {
         caricatureImage,
         generationCost: generationCost || 0,
         style: 'cute',
-        rpgClass: rpgClass || undefined,
+          rpgClass: rpgClass ?? undefined,
         photoAnalysis: photoAnalysis || undefined,
         aiGuesses: characterData.aiGuesses,
         generationPrompt: generationPrompt || undefined,
@@ -372,6 +381,27 @@ export const DynamicCharacterPage: React.FC = () => {
 
       setCharacterSaved(true)
       console.log('💾 Character saved to gallery:', savedCharacter.name)
+      
+      // Try to upload to server (optional, don't block on failure)
+      if (caricatureImage) {
+        UploadService.saveCharacterFromBase64(caricatureImage, {
+          name: characterData.name,
+          class: rpgClass?.name || 'Warrior',
+          stats: rpgClass?.stats,
+          createdAt: new Date().toISOString(),
+          style: 'cute',
+          gender: characterData.gender,
+          age: characterData.age
+        }).then(result => {
+          if (result.success) {
+            console.log('☁️ Character uploaded to server:', result.file?.url)
+          } else {
+            console.log('⚠️ Server upload failed (local save successful):', result.error)
+          }
+        }).catch(err => {
+          console.log('⚠️ Server upload failed (local save successful):', err)
+        })
+      }
       
       // Show success message
       setTimeout(() => {
@@ -638,8 +668,12 @@ export const DynamicCharacterPage: React.FC = () => {
                 </div>
 
                 <div className="text-center">
-                  {/* Photo Preview */}
-                  {characterData.photo ? (
+                  {/* Loading State or Photo Preview */}
+                  {isProcessingPhoto ? (
+                    <div className="w-32 h-32 bg-white/20 rounded-xl mx-auto mb-6 flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-16 w-16 border-4 border-white border-t-transparent"></div>
+                    </div>
+                  ) : characterData.photo ? (
                     <div className="w-32 h-32 bg-white rounded-xl mx-auto mb-6 flex items-center justify-center overflow-hidden">
                       <img 
                         src={URL.createObjectURL(characterData.photo)} 
@@ -653,6 +687,14 @@ export const DynamicCharacterPage: React.FC = () => {
                     </div>
                   )}
                   
+                  {/* Loading Message */}
+                  {isProcessingPhoto && (
+                    <div className="mb-4">
+                      <p className="text-white font-semibold animate-pulse">🤖 Analyzing your photo...</p>
+                      <p className="text-gray-300 text-sm mt-1">AI is detecting features</p>
+                    </div>
+                  )}
+                  
                   {/* File Upload */}
                   <input
                     type="file"
@@ -660,12 +702,13 @@ export const DynamicCharacterPage: React.FC = () => {
                     capture="environment"
                     onChange={(e) => {
                       const file = e.target.files?.[0]
-                      if (file) {
+                      if (file && !isProcessingPhoto) {
                         handlePhotoUpload(file)
                       }
                     }}
                     className="hidden"
                     id="photo-upload"
+                    disabled={isProcessingPhoto}
                   />
                   
                   {/* Camera Capture */}
@@ -675,25 +718,34 @@ export const DynamicCharacterPage: React.FC = () => {
                     capture="user"
                     onChange={(e) => {
                       const file = e.target.files?.[0]
-                      if (file) {
+                      if (file && !isProcessingPhoto) {
                         handlePhotoUpload(file)
                       }
                     }}
                     className="hidden"
                     id="photo-camera"
+                    disabled={isProcessingPhoto}
                   />
                   
                   <div className="space-y-3">
                     <label
                       htmlFor="photo-upload"
-                      className="block w-full py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition-all cursor-pointer"
+                      className={`block w-full py-3 text-white rounded-xl font-semibold transition-all ${
+                        isProcessingPhoto 
+                          ? 'bg-gray-500 cursor-not-allowed opacity-50' 
+                          : 'bg-blue-500 hover:bg-blue-600 cursor-pointer'
+                      }`}
                     >
                       📁 Choose from Gallery
                     </label>
                     
                     <label
                       htmlFor="photo-camera"
-                      className="block w-full py-3 bg-green-500 text-white rounded-xl font-semibold hover:bg-green-600 transition-all cursor-pointer"
+                      className={`block w-full py-3 text-white rounded-xl font-semibold transition-all ${
+                        isProcessingPhoto 
+                          ? 'bg-gray-500 cursor-not-allowed opacity-50' 
+                          : 'bg-green-500 hover:bg-green-600 cursor-pointer'
+                      }`}
                     >
                       📸 Take Photo
                     </label>

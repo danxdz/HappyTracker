@@ -114,20 +114,19 @@ export class CaricatureGenerator {
       // If user selected a specific class, override the suggested one
       if (characterData?.rpgClass) {
         console.log('🎮 Using user-selected class:', characterData.rpgClass.name)
+        // Create a custom prompt with the selected class
+        const classEquipment = this.getClassEquipment(characterData.rpgClass.name)
+        const customPrompt = `toybox collectible figure style, oversized round head, small compact body, ${photoAnalysis.gender} ${characterData.rpgClass.name.toLowerCase()}, ${photoAnalysis.hairColor} ${photoAnalysis.hairStyle} hair, equipped with ${classEquipment.join(', ')}, cute proportions, minimal details, bright solid colors`
+        
         rpgCharacter = {
           ...rpgCharacter,
           suggestedClass: {
+            ...rpgCharacter.suggestedClass,
             name: characterData.rpgClass.name,
-            description: characterData.rpgClass.description,
-            equipment: this.getClassEquipment(characterData.rpgClass.name),
-            bonuses: {}
+            description: characterData.rpgClass.description
           },
           stats: characterData.rpgClass.stats,
-          characterPrompt: rpgGenerator.generateCharacterPromptWithClass(
-            photoAnalysis, 
-            characterData.rpgClass.name,
-            characterData.name || 'Character'
-          )
+          characterPrompt: customPrompt
         }
       }
       
