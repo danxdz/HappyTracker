@@ -38,18 +38,16 @@ export class LocalFaceAnalysis {
    */
   private static async loadModels(): Promise<void> {
     try {
-      // Load models from working CDN (free)
-      const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model'
+      // Load models from local public directory
+      const MODEL_URL = '/models'
       
       await Promise.all([
         faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
         faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-        faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
-        faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL),
         faceapi.nets.ageGenderNet.loadFromUri(MODEL_URL)
       ])
       
-      console.log('📥 All face-api.js models loaded')
+      console.log('📥 All face-api.js models loaded from local directory')
     } catch (error) {
       console.error('❌ Failed to load face-api.js models:', error)
       throw new Error('Failed to load face analysis models')

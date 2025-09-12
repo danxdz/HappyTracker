@@ -4,7 +4,7 @@ import { LocalFaceAnalysis } from './localFaceAnalysis'
 
 // PhotoAnalysis interface is now imported from rpgCharacterGenerator
 
-export interface CartoonGenerationResult {
+export interface CaricatureGenerationResult {
   success: boolean
   imageUrl?: string
   error?: string
@@ -12,18 +12,18 @@ export interface CartoonGenerationResult {
   cost?: number
   breakdown?: {
     imageAnalysis: number
-    cartoonGeneration: number
+    caricatureGeneration: number
     total: number
   }
 }
 
 /**
- * 🎨 AI-Powered Cartoon Generator
+ * 🎨 AI-Powered Caricature Generator
  * 
  * Uses Hugging Face API for real AI analysis and generation
  * NO FALLBACKS - if AI fails, we fail
  */
-export class CartoonGenerator {
+export class CaricatureGenerator {
   private static readonly HF_API_URL = 'https://api-inference.huggingface.co/models'
   private static readonly HF_TOKEN = import.meta.env.VITE_HUGGINGFACE_TOKEN || ''
 
@@ -32,20 +32,20 @@ export class CartoonGenerator {
   }
 
   /**
-   * 🎨 Generate RPG Cartoon from Photo
+   * 🎨 Generate RPG Caricature from Photo
    * 
-   * Creates an RPG character cartoon using REAL AI photo analysis
+   * Creates an RPG character caricature using REAL AI photo analysis
    * Analyzes the photo once with AI, no gender guessing
    */
-  static async generateCartoonFromPhoto(
+  static async generateCaricatureFromPhoto(
     photoFile: File,
     style: 'cute' | 'anime' | 'disney' | 'pixar' = 'cute',
     characterData?: { name: string; age: number; height: number; weight: number; gender: 'male' | 'female' | 'non-binary' | 'unknown' }
-  ): Promise<CartoonGenerationResult> {
+  ): Promise<CaricatureGenerationResult> {
     const startTime = Date.now()
     
     try {
-      console.log('🎨 Starting AI-powered RPG cartoon generation...')
+      console.log('🎨 Starting AI-powered RPG caricature generation...')
       
       // Use filename analysis for now (face-api.js models not available)
       const photoAnalysis = this.createFallbackAnalysis(photoFile)
@@ -69,24 +69,24 @@ export class CartoonGenerator {
       const prompt = rpgCharacter.characterPrompt
       console.log('🎯 RPG Character prompt:', prompt)
       
-      // Generate cartoon with AI
-      const cartoonImage = await this.generateCartoonImage(prompt)
+      // Generate caricature with AI
+      const caricatureImage = await this.generateCaricatureImage(prompt)
       
       const processingTime = Date.now() - startTime
       
-      // Cost estimation - only cartoon generation (analysis is free!)
+      // Cost estimation - only caricature generation (analysis is free!)
       const costBreakdown = {
         imageAnalysis: 0, // FREE - face-api.js runs locally
-        cartoonGeneration: 0.03, // stabilityai/stable-diffusion-xl-base-1.0
+        caricatureGeneration: 0.03, // stabilityai/stable-diffusion-xl-base-1.0
         total: 0.03
       }
       
-      console.log(`✅ AI Cartoon generated in ${processingTime}ms`)
+      console.log(`✅ AI Caricature generated in ${processingTime}ms`)
       console.log(`💰 Estimated cost: $${costBreakdown.total.toFixed(3)}`)
       
       return {
         success: true,
-        imageUrl: cartoonImage,
+        imageUrl: caricatureImage,
         processingTime,
         cost: costBreakdown.total,
         breakdown: costBreakdown
@@ -467,16 +467,50 @@ export class CartoonGenerator {
     }
   }
 
-
-
+  /**
+   * 🔍 Analyze Photo for UI Pre-filling
+   * 
+   * Uses local face-api.js analysis for immediate UI field population
+   * Falls back to filename analysis if face detection fails
+   */
+  static async analyzePhotoForUI(photoFile: File): Promise<PhotoAnalysis> {
+    console.log('🔍 Analyzing photo for UI with local face-api.js or fallback...')
+    try {
+      const faceResult = await LocalFaceAnalysis.analyzeFace(photoFile)
+      if (faceResult.faceDetected) {
+        const photoAnalysis: PhotoAnalysis = {
+          gender: faceResult.gender,
+          age: faceResult.age,
+          height: this.estimateHeightFromAge(faceResult.age),
+          weight: this.estimateWeightFromAge(faceResult.age),
+          glasses: false, // face-api.js doesn't detect glasses
+          facialHair: false, // face-api.js doesn't detect facial hair
+          hairColor: 'brown', // Default
+          hairStyle: 'short', // Default
+          skinTone: 'medium', // Default
+          expression: 'confident', // Default
+          faceShape: 'oval', // Default
+          build: 'average' // Default
+        }
+        console.log('🎯 Local face analysis for UI result:', photoAnalysis)
+        return photoAnalysis
+      } else {
+        console.log('❌ No face detected for UI, using filename analysis')
+        return this.createFallbackAnalysis(photoFile)
+      }
+    } catch (error) {
+      console.error('❌ Local face analysis for UI failed, falling back to filename:', error)
+      return this.createFallbackAnalysis(photoFile)
+    }
+  }
 
   /**
-   * 🎨 Generate Cartoon Image with AI
+   * 🎨 Generate Caricature Image with AI
    * 
    * Uses Stable Diffusion XL for high-quality generation
    */
-  private static async generateCartoonImage(prompt: string): Promise<string> {
-    console.log('🎨 Generating cartoon image with AI...')
+  private static async generateCaricatureImage(prompt: string): Promise<string> {
+    console.log('🎨 Generating caricature image with AI...')
     
     const response = await fetch(`${this.HF_API_URL}/stabilityai/stable-diffusion-xl-base-1.0`, {
       method: 'POST',

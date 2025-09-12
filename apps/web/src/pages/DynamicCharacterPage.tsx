@@ -8,7 +8,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Calendar, User, Ruler, Weight, Sparkles, ArrowRight, Check, Image } from 'lucide-react'
-import { CartoonGenerator } from '../services/cartoonGenerator'
+import { CaricatureGenerator } from '../services/cartoonGenerator'
 import { CharacterStorage } from '../services/characterStorage'
 
 interface CharacterData {
@@ -43,9 +43,9 @@ export const DynamicCharacterPage: React.FC = () => {
       gender: 'unknown'
     }
   })
-  const [hfApiEnabled, setHfApiEnabled] = useState(true) // Always enabled for AI cartoon generation
-  const [cartoonGenerated, setCartoonGenerated] = useState(false)
-  const [cartoonImage, setCartoonImage] = useState<string | null>(null)
+  const [hfApiEnabled, setHfApiEnabled] = useState(true) // Always enabled for AI caricature generation
+  const [caricatureGenerated, setCaricatureGenerated] = useState(false)
+  const [caricatureImage, setCaricatureImage] = useState<string | null>(null)
   const [generationCost, setGenerationCost] = useState<number | null>(null)
   const [characterSaved, setCharacterSaved] = useState(false)
   const [showImageModal, setShowImageModal] = useState(false)
@@ -90,9 +90,9 @@ export const DynamicCharacterPage: React.FC = () => {
     console.log('📸 Photo uploaded, starting AI analysis...')
     
     try {
-      // Use the cartoon generator's analysis method
-      const { CartoonGenerator } = await import('../services/cartoonGenerator')
-      const photoAnalysis = await CartoonGenerator.analyzePhotoForUI(photo)
+           // Use the caricature generator's analysis method
+           const { CaricatureGenerator } = await import('../services/cartoonGenerator')
+           const photoAnalysis = await CaricatureGenerator.analyzePhotoForUI(photo)
       
       console.log('🎯 AI Analysis complete:', photoAnalysis)
       
@@ -175,18 +175,18 @@ export const DynamicCharacterPage: React.FC = () => {
 
   const handleCardComplete = async () => {
     try {
-      console.log('🎨 Starting cartoon generation...')
-      setCartoonGenerated(true)
+      console.log('🎨 Starting caricature generation...')
+      setCaricatureGenerated(true)
       
       if (!characterData.photo) {
-        console.error('❌ No photo available for cartoon generation')
+        console.error('❌ No photo available for caricature generation')
         setTimeout(() => setCurrentStep('complete'), 1000)
         return
       }
       
-      // Use real Hugging Face cartoon generation
-      console.log('🚀 Using Hugging Face API for cartoon generation...')
-      const result = await CartoonGenerator.generateCartoonFromPhoto(
+      // Use real Hugging Face caricature generation
+      console.log('🚀 Using Hugging Face API for caricature generation...')
+      const result = await CaricatureGenerator.generateCaricatureFromPhoto(
         characterData.photo,
         'cute', // You can make this selectable later
         {
@@ -199,33 +199,33 @@ export const DynamicCharacterPage: React.FC = () => {
       )
       
       if (result.success && result.imageUrl) {
-        console.log('🎨 AI Cartoon generated successfully!')
+        console.log('🎨 AI Caricature generated successfully!')
         if (result.breakdown) {
           console.log('💰 Cost breakdown:', result.breakdown)
           console.log(`📊 Total cost: $${result.cost?.toFixed(3)}`)
           setGenerationCost(result.cost || 0)
         }
-        setCartoonImage(result.imageUrl)
+        setCaricatureImage(result.imageUrl)
       } else {
-        console.error('❌ HF Cartoon generation failed:', result.error)
+        console.error('❌ HF Caricature generation failed:', result.error)
         
         // NO FALLBACK - if AI fails, we fail
-        console.error('❌ AI cartoon generation failed - no fallback available')
-        alert('AI cartoon generation failed. Please try again.')
+        console.error('❌ AI caricature generation failed - no fallback available')
+        alert('AI caricature generation failed. Please try again.')
         return
       }
       
       setTimeout(() => setCurrentStep('complete'), 1000)
     } catch (error) {
-      console.error('❌ Error generating cartoon:', error)
+      console.error('❌ Error generating caricature:', error)
       setTimeout(() => setCurrentStep('complete'), 1000)
     }
   }
 
   const saveCharacterToGallery = async () => {
     try {
-      if (!cartoonImage || !characterData.name) {
-        alert('Cannot save character: missing cartoon image or name')
+      if (!caricatureImage || !characterData.name) {
+        alert('Cannot save character: missing caricature image or name')
         return
       }
 
@@ -246,7 +246,7 @@ export const DynamicCharacterPage: React.FC = () => {
         weight: characterData.weight,
         gender: characterData.gender,
         photo: photoBase64,
-        cartoonImage,
+        caricatureImage,
         generationCost: generationCost || 0,
         style: 'cute'
       })
@@ -395,14 +395,14 @@ export const DynamicCharacterPage: React.FC = () => {
                   </div>
                   <p className="text-green-400 font-semibold mb-4">Character Complete!</p>
                   
-                  {/* Show the generated cartoon */}
-                  {cartoonImage && (
+                  {/* Show the generated caricature */}
+                  {caricatureImage && (
                     <div className="bg-white/10 rounded-xl p-4 max-w-sm mx-auto">
-                      <h4 className="text-white font-semibold mb-3 text-center">🎨 Your Cartoon Character</h4>
+                      <h4 className="text-white font-semibold mb-3 text-center">🎨 Your Caricature Character</h4>
                       <div className="w-64 h-64 bg-white rounded-lg mx-auto flex items-center justify-center overflow-hidden mb-4">
                         <img 
-                          src={cartoonImage} 
-                          alt="Your Cartoon Character" 
+                          src={caricatureImage} 
+                          alt="Your Caricature Character" 
                           className="w-full h-full object-contain"
                         />
                       </div>
@@ -469,7 +469,7 @@ export const DynamicCharacterPage: React.FC = () => {
                     <div className="text-center">
                       <h4 className="text-white font-semibold mb-1">🤖 AI-Powered Analysis</h4>
                       <p className="text-gray-300 text-sm">
-                        Real AI analysis and cartoon generation
+                        Real AI analysis and caricature generation
                       </p>
                       <div className="mt-2 text-xs text-green-400">
                         🟢 Using Hugging Face API
@@ -542,8 +542,8 @@ export const DynamicCharacterPage: React.FC = () => {
                   
                   <p className="text-gray-400 text-sm mt-4">
                     {hfApiEnabled 
-                      ? 'Real AI will analyze your photo and create a matching cartoon character' 
-                      : 'Simulated AI will analyze your photo and create a matching cartoon character'
+                      ? 'Real AI will analyze your photo and create a matching caricature character' 
+                      : 'Simulated AI will analyze your photo and create a matching caricature character'
                     }
                   </p>
                   
@@ -854,10 +854,10 @@ export const DynamicCharacterPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Cartoon Preview */}
+                  {/* Caricature Preview */}
                   <div className="text-center">
                     <div className="bg-white/5 rounded-xl p-6">
-                      <h4 className="text-xl font-bold text-white mb-4">Cartoon Preview</h4>
+                      <h4 className="text-xl font-bold text-white mb-4">Caricature Preview</h4>
                       
                       {/* Original Photo */}
                       {characterData.photo && (
@@ -873,18 +873,18 @@ export const DynamicCharacterPage: React.FC = () => {
                         </div>
                       )}
                       
-                      {/* Cartoon Result */}
-                      {cartoonGenerated ? (
+                      {/* Caricature Result */}
+                      {caricatureGenerated ? (
                         <motion.div 
                           className="w-48 h-48 bg-white rounded-xl mx-auto mb-4 flex items-center justify-center overflow-hidden cursor-pointer hover:scale-105 transition-transform"
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                           onClick={() => setShowImageModal(true)}
                         >
-                          {cartoonImage ? (
+                          {caricatureImage ? (
                             <img 
-                              src={cartoonImage} 
-                              alt="Generated Cartoon" 
+                              src={caricatureImage} 
+                              alt="Generated Caricature" 
                               className="w-full h-full object-contain"
                             />
                           ) : (
@@ -898,11 +898,11 @@ export const DynamicCharacterPage: React.FC = () => {
                       )}
                       
                       <p className="text-gray-300 text-sm">
-                        {cartoonGenerated 
-                          ? 'Your cartoon character has been generated!' 
+                        {caricatureGenerated 
+                          ? 'Your caricature character has been generated!' 
                           : hfApiEnabled 
-                            ? 'Real AI will generate your cartoon character matching the photo'
-                            : 'Simulated cartoon will be generated based on this information'
+                            ? 'Real AI will generate your caricature character matching the photo'
+                            : 'Simulated caricature will be generated based on this information'
                         }
                       </p>
                     </div>
@@ -910,21 +910,21 @@ export const DynamicCharacterPage: React.FC = () => {
                 </div>
 
                 <motion.button
-                  whileHover={{ scale: cartoonGenerated ? 1 : 1.05 }}
-                  whileTap={{ scale: cartoonGenerated ? 1 : 0.95 }}
+                  whileHover={{ scale: caricatureGenerated ? 1 : 1.05 }}
+                  whileTap={{ scale: caricatureGenerated ? 1 : 0.95 }}
                   onClick={handleCardComplete}
-                  disabled={cartoonGenerated}
+                  disabled={caricatureGenerated}
                   className={`w-full mt-6 py-3 rounded-xl font-semibold transition-all ${
-                    cartoonGenerated 
+                    caricatureGenerated 
                       ? 'bg-gray-500 text-gray-300 cursor-not-allowed' 
                       : 'bg-gradient-to-r from-green-500 to-blue-500 text-white hover:from-green-600 hover:to-blue-600'
                   }`}
                 >
-                  {cartoonGenerated 
-                    ? '✅ Cartoon Generated!' 
+                  {caricatureGenerated 
+                    ? '✅ Caricature Generated!' 
                     : hfApiEnabled 
-                      ? '🚀 Generate Real AI Cartoon' 
-                      : '🎨 Generate Cartoon Character'
+                      ? '🚀 Generate Real AI Caricature' 
+                      : '🎨 Generate Caricature Character'
                   }
                 </motion.button>
               </div>
@@ -960,7 +960,7 @@ export const DynamicCharacterPage: React.FC = () => {
       </div>
 
       {/* Image Modal */}
-      {showImageModal && cartoonImage && (
+      {showImageModal && caricatureImage && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -986,8 +986,8 @@ export const DynamicCharacterPage: React.FC = () => {
             </div>
             <div className="flex justify-center">
               <img 
-                src={cartoonImage} 
-                alt="Generated Cartoon - Full Size" 
+                src={caricatureImage} 
+                alt="Generated Caricature - Full Size" 
                 className="max-w-full max-h-[70vh] object-contain"
               />
             </div>
