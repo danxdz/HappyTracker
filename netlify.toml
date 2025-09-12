@@ -14,6 +14,9 @@
   
   # Build settings
   NPM_FLAGS = "--production=false"
+  
+  # Disable secrets scanning for ImgBB API key (it's meant to be public)
+  SECRETS_SCAN_OMIT_KEYS = "VITE_IMGBB_API_KEY"
 
 # Auto-deploy settings
 [build.processing]
