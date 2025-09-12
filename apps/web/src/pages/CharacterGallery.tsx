@@ -138,6 +138,12 @@ const CharacterGallery: React.FC = () => {
                       <User className="w-4 h-4 mr-2" />
                       Age: {character.age}, {character.height}cm, {character.weight}kg
                     </div>
+                    {character.rpgClass && (
+                      <div className="flex items-center">
+                        <Sword className="w-4 h-4 mr-2" />
+                        Class: {character.rpgClass.name}
+                      </div>
+                    )}
                     <div className="flex items-center">
                       <Calendar className="w-4 h-4 mr-2" />
                       {new Date(character.createdAt).toLocaleDateString()}
@@ -225,6 +231,10 @@ const CharacterGallery: React.FC = () => {
                   <div className="text-white font-semibold">{selectedCharacter.weight}kg</div>
                 </div>
                 <div>
+                  <div className="text-gray-400">Gender</div>
+                  <div className="text-white font-semibold capitalize">{selectedCharacter.gender}</div>
+                </div>
+                <div>
                   <div className="text-gray-400">Created</div>
                   <div className="text-white font-semibold">
                     {new Date(selectedCharacter.createdAt).toLocaleString()}
@@ -242,6 +252,137 @@ const CharacterGallery: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            {/* RPG Class Information */}
+            {selectedCharacter.rpgClass && (
+              <div className="mt-6 bg-white/5 rounded-xl p-4">
+                <h3 className="text-white font-semibold mb-3 flex items-center">
+                  <Sword className="w-5 h-5 mr-2" />
+                  RPG Class: {selectedCharacter.rpgClass.name}
+                </h3>
+                <p className="text-gray-300 mb-4">{selectedCharacter.rpgClass.description}</p>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                  <div className="text-center">
+                    <div className="text-gray-400 text-sm">Strength</div>
+                    <div className="text-white font-bold text-lg">{selectedCharacter.rpgClass.stats.strength}</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-gray-400 text-sm">Agility</div>
+                    <div className="text-white font-bold text-lg">{selectedCharacter.rpgClass.stats.agility}</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-gray-400 text-sm">Intelligence</div>
+                    <div className="text-white font-bold text-lg">{selectedCharacter.rpgClass.stats.intelligence}</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-gray-400 text-sm">Wisdom</div>
+                    <div className="text-white font-bold text-lg">{selectedCharacter.rpgClass.stats.wisdom}</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-gray-400 text-sm">Charisma</div>
+                    <div className="text-white font-bold text-lg">{selectedCharacter.rpgClass.stats.charisma}</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-gray-400 text-sm">Constitution</div>
+                    <div className="text-white font-bold text-lg">{selectedCharacter.rpgClass.stats.constitution}</div>
+                  </div>
+                </div>
+                <div className="text-center mt-4 pt-4 border-t border-white/10">
+                  <div className="text-gray-400 text-sm">Total Stats</div>
+                  <div className="text-white font-bold text-xl">{selectedCharacter.rpgClass.stats.total}</div>
+                </div>
+              </div>
+            )}
+
+            {/* Photo Analysis */}
+            {selectedCharacter.photoAnalysis && (
+              <div className="mt-6 bg-white/5 rounded-xl p-4">
+                <h3 className="text-white font-semibold mb-3">🤖 AI Photo Analysis</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-sm">
+                  <div>
+                    <div className="text-gray-400">Detected Gender</div>
+                    <div className="text-white font-semibold capitalize">{selectedCharacter.photoAnalysis.gender}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-400">Detected Age</div>
+                    <div className="text-white font-semibold">{selectedCharacter.photoAnalysis.age}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-400">Hair Color</div>
+                    <div className="text-white font-semibold capitalize">{selectedCharacter.photoAnalysis.hairColor}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-400">Hair Style</div>
+                    <div className="text-white font-semibold capitalize">{selectedCharacter.photoAnalysis.hairStyle}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-400">Skin Tone</div>
+                    <div className="text-white font-semibold capitalize">{selectedCharacter.photoAnalysis.skinTone}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-400">Expression</div>
+                    <div className="text-white font-semibold capitalize">{selectedCharacter.photoAnalysis.expression}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-400">Face Shape</div>
+                    <div className="text-white font-semibold capitalize">{selectedCharacter.photoAnalysis.faceShape}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-400">Build</div>
+                    <div className="text-white font-semibold capitalize">{selectedCharacter.photoAnalysis.build}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-400">Glasses</div>
+                    <div className="text-white font-semibold">{selectedCharacter.photoAnalysis.glasses ? 'Yes' : 'No'}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-400">Facial Hair</div>
+                    <div className="text-white font-semibold">{selectedCharacter.photoAnalysis.facialHair ? 'Yes' : 'No'}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Generation Prompt */}
+            {selectedCharacter.generationPrompt && (
+              <div className="mt-6 bg-white/5 rounded-xl p-4">
+                <h3 className="text-white font-semibold mb-3">📝 Generation Prompt</h3>
+                <div className="bg-black/20 rounded-lg p-3 text-sm text-gray-300 font-mono">
+                  {selectedCharacter.generationPrompt}
+                </div>
+              </div>
+            )}
+
+            {/* Processing Info */}
+            {(selectedCharacter.processingTime || selectedCharacter.costBreakdown) && (
+              <div className="mt-6 bg-white/5 rounded-xl p-4">
+                <h3 className="text-white font-semibold mb-3">⚙️ Processing Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  {selectedCharacter.processingTime && (
+                    <div>
+                      <div className="text-gray-400">Processing Time</div>
+                      <div className="text-white font-semibold">{(selectedCharacter.processingTime / 1000).toFixed(2)}s</div>
+                    </div>
+                  )}
+                  {selectedCharacter.costBreakdown && (
+                    <>
+                      <div>
+                        <div className="text-gray-400">Image Analysis Cost</div>
+                        <div className="text-white font-semibold">${selectedCharacter.costBreakdown.imageAnalysis.toFixed(3)}</div>
+                      </div>
+                      <div>
+                        <div className="text-gray-400">Generation Cost</div>
+                        <div className="text-white font-semibold">${selectedCharacter.costBreakdown.caricatureGeneration.toFixed(3)}</div>
+                      </div>
+                      <div>
+                        <div className="text-gray-400">Total Cost</div>
+                        <div className="text-white font-semibold">${selectedCharacter.costBreakdown.total.toFixed(3)}</div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Actions */}
             <div className="flex space-x-4 mt-6">
