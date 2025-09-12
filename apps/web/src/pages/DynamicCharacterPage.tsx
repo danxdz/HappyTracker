@@ -62,6 +62,22 @@ export const DynamicCharacterPage: React.FC = () => {
       total: number
     }
   } | null>(null)
+  const [generationPrompt, setGenerationPrompt] = useState<string | null>(null)
+  const [photoAnalysis, setPhotoAnalysis] = useState<{
+    gender: 'male' | 'female' | 'non-binary' | 'unknown'
+    age: number
+    height: number
+    weight: number
+    glasses: boolean
+    facialHair: boolean
+    hairColor: string
+    hairStyle: string
+    skinTone: 'light' | 'medium' | 'dark'
+    expression: 'serious' | 'smiling' | 'confident' | 'gentle' | 'mysterious'
+    faceShape: 'round' | 'oval' | 'square' | 'heart' | 'long'
+    build: 'slim' | 'average' | 'muscular' | 'heavy'
+  } | null>(null)
+  const [generationResult, setGenerationResult] = useState<any>(null)
 
   // Auto-progress through loading
   useEffect(() => {
@@ -274,7 +290,16 @@ export const DynamicCharacterPage: React.FC = () => {
           console.log('⚔️ RPG Class generated:', result.rpgClass.name)
           setRpgClass(result.rpgClass)
         }
+        if (result.generationPrompt) {
+          console.log('📝 Generation prompt captured')
+          setGenerationPrompt(result.generationPrompt)
+        }
+        if (result.photoAnalysis) {
+          console.log('📸 Photo analysis captured')
+          setPhotoAnalysis(result.photoAnalysis)
+        }
         setCaricatureImage(result.imageUrl)
+        setGenerationResult(result)
       } else {
         console.error('❌ HF Caricature generation failed:', result.error)
         
@@ -322,7 +347,12 @@ export const DynamicCharacterPage: React.FC = () => {
         caricatureImage,
         generationCost: generationCost || 0,
         style: 'cute',
-        rpgClass: rpgClass || undefined
+        rpgClass: rpgClass || undefined,
+        photoAnalysis: photoAnalysis || undefined,
+        aiGuesses: characterData.aiGuesses,
+        generationPrompt: generationPrompt || undefined,
+        processingTime: generationResult?.processingTime,
+        costBreakdown: generationResult?.breakdown
       })
 
       setCharacterSaved(true)

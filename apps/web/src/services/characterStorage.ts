@@ -23,6 +23,37 @@ export interface SavedCharacter {
       total: number
     }
   }
+  // Complete photo analysis details
+  photoAnalysis?: {
+    gender: 'male' | 'female' | 'non-binary' | 'unknown'
+    age: number
+    height: number
+    weight: number
+    glasses: boolean
+    facialHair: boolean
+    hairColor: string
+    hairStyle: string
+    skinTone: 'light' | 'medium' | 'dark'
+    expression: 'serious' | 'smiling' | 'confident' | 'gentle' | 'mysterious'
+    faceShape: 'round' | 'oval' | 'square' | 'heart' | 'long'
+    build: 'slim' | 'average' | 'muscular' | 'heavy'
+  }
+  // AI guesses from photo analysis
+  aiGuesses?: {
+    age: number
+    height: number
+    weight: number
+    gender: 'male' | 'female' | 'non-binary' | 'unknown'
+  }
+  // Generation prompt used for caricature
+  generationPrompt?: string
+  // Processing time and cost breakdown
+  processingTime?: number
+  costBreakdown?: {
+    imageAnalysis: number
+    caricatureGeneration: number
+    total: number
+  }
 }
 
 /**

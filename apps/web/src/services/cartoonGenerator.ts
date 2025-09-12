@@ -28,6 +28,21 @@ export interface CaricatureGenerationResult {
       total: number
     }
   }
+  generationPrompt?: string
+  photoAnalysis?: {
+    gender: 'male' | 'female' | 'non-binary' | 'unknown'
+    age: number
+    height: number
+    weight: number
+    glasses: boolean
+    facialHair: boolean
+    hairColor: string
+    hairStyle: string
+    skinTone: 'light' | 'medium' | 'dark'
+    expression: 'serious' | 'smiling' | 'confident' | 'gentle' | 'mysterious'
+    faceShape: 'round' | 'oval' | 'square' | 'heart' | 'long'
+    build: 'slim' | 'average' | 'muscular' | 'heavy'
+  }
 }
 
 /**
@@ -107,7 +122,9 @@ export class CaricatureGenerator {
           name: rpgCharacter.suggestedClass.name,
           description: rpgCharacter.suggestedClass.description,
           stats: rpgCharacter.stats
-        }
+        },
+        generationPrompt: prompt,
+        photoAnalysis: photoAnalysis
       }
     } catch (error) {
       console.error('❌ AI Cartoon generation failed:', error)
