@@ -278,8 +278,9 @@ export const DynamicCharacterPage: React.FC = () => {
         return
       }
       
-      // Use real Hugging Face caricature generation
+      // Use real Hugging Face caricature generation with class info
       console.log('🚀 Using Hugging Face API for caricature generation...')
+      console.log('🎮 Including RPG class:', rpgClass?.name)
       const result = await CaricatureGenerator.generateCaricatureFromPhoto(
         characterData.photo,
         'cute', // You can make this selectable later
@@ -288,7 +289,8 @@ export const DynamicCharacterPage: React.FC = () => {
           age: characterData.age,
           height: characterData.height,
           weight: characterData.weight,
-          gender: characterData.gender
+          gender: characterData.gender,
+          rpgClass: rpgClass // Pass the selected class
         }
       )
       

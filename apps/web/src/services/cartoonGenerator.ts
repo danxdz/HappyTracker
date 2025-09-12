@@ -68,7 +68,26 @@ export class CaricatureGenerator {
   static async generateCaricatureFromPhoto(
     photoFile: File,
     style: 'cute' | 'anime' | 'disney' | 'pixar' = 'cute',
-    characterData?: { name: string; age: number; height: number; weight: number; gender: 'male' | 'female' | 'non-binary' | 'unknown' }
+    characterData?: { 
+      name: string; 
+      age: number; 
+      height: number; 
+      weight: number; 
+      gender: 'male' | 'female' | 'non-binary' | 'unknown';
+      rpgClass?: {
+        name: string;
+        description: string;
+        stats: {
+          strength: number;
+          agility: number;
+          intelligence: number;
+          wisdom: number;
+          charisma: number;
+          constitution: number;
+          total: number;
+        }
+      }
+    }
   ): Promise<CaricatureGenerationResult> {
     const startTime = Date.now()
     
@@ -88,9 +107,30 @@ export class CaricatureGenerator {
         console.log('🎯 Using user input for age/height/weight/gender:', characterData)
       }
       
-      // Generate RPG character
+      // Generate RPG character with selected class if provided
       const rpgGenerator = new RPGCharacterGenerator()
-      const rpgCharacter = rpgGenerator.generateRPGCharacter(photoAnalysis, characterData?.name || 'Character')
+      let rpgCharacter = rpgGenerator.generateRPGCharacter(photoAnalysis, characterData?.name || 'Character')
+      
+      // If user selected a specific class, override the suggested one
+      if (characterData?.rpgClass) {
+        console.log('🎮 Using user-selected class:', characterData.rpgClass.name)
+        rpgCharacter = {
+          ...rpgCharacter,
+          suggestedClass: {
+            name: characterData.rpgClass.name,
+            description: characterData.rpgClass.description,
+            equipment: this.getClassEquipment(characterData.rpgClass.name),
+            bonuses: {}
+          },
+          stats: characterData.rpgClass.stats,
+          characterPrompt: rpgGenerator.generateCharacterPromptWithClass(
+            photoAnalysis, 
+            characterData.rpgClass.name,
+            characterData.name || 'Character'
+          )
+        }
+      }
+      
       console.log('⚔️ RPG Character:', rpgCharacter.suggestedClass.name, 'Stats:', rpgCharacter.stats)
       
       // Use the RPG-generated prompt
@@ -500,6 +540,21 @@ export class CaricatureGenerator {
       faceShape,
       build
     }
+  }
+
+  /**
+   * 🎮 Get class-specific equipment
+   */
+  private static getClassEquipment(className: string): string[] {
+    const equipment: Record<string, string[]> = {
+      'Warrior': ['sword', 'shield', 'heavy armor'],
+      'Rogue': ['daggers', 'leather armor', 'hood'],
+      'Mage': ['staff', 'robes', 'spell book'],
+      'Cleric': ['mace', 'holy symbol', 'chain mail'],
+      'Bard': ['lute', 'colorful outfit', 'feathered hat'],
+      'Ranger': ['bow', 'arrows', 'leather armor', 'cloak']
+    }
+    return equipment[className] || ['basic equipment']
   }
 
   /**
