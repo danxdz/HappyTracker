@@ -48,8 +48,9 @@ export class CartoonGenerator {
       console.log('🎨 Starting RPG cartoon generation...')
       
       // Create detailed photo analysis from character data and filename
+      // Use USER INPUT data, not AI analysis
       const photoAnalysis = this.createPhotoAnalysisFromData(photoFile, characterData)
-      console.log('📸 Photo analysis:', photoAnalysis)
+      console.log('📸 Photo analysis (using user input):', photoAnalysis)
       
       // Generate RPG character
       const rpgGenerator = new RPGCharacterGenerator()
@@ -108,9 +109,12 @@ export class CartoonGenerator {
     characterData?: { name: string; age: number; height: number; weight: number }
   ): PhotoAnalysis {
     const fileName = photoFile.name.toLowerCase()
+    // ALWAYS use user input data, never defaults
     const age = characterData?.age || 30
     const height = characterData?.height || 170
     const weight = characterData?.weight || 70
+    
+    console.log('🎯 Using user input data:', { age, height, weight })
     
     // Determine gender from filename or default
     let gender: 'male' | 'female' | 'unknown' = 'unknown'
