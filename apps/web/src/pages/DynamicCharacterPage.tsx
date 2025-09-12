@@ -224,7 +224,11 @@ export const DynamicCharacterPage: React.FC = () => {
 
   const saveCharacterToGallery = async () => {
     try {
+      console.log('💾 Attempting to save character to gallery...')
+      console.log('📊 Character data:', { name: characterData.name, caricatureImage: !!caricatureImage })
+      
       if (!caricatureImage || !characterData.name) {
+        console.error('❌ Cannot save: missing caricature image or name')
         alert('Cannot save character: missing caricature image or name')
         return
       }
@@ -427,7 +431,10 @@ export const DynamicCharacterPage: React.FC = () => {
                       {/* Save to Gallery Button */}
                       {!characterSaved && (
                         <button
-                          onClick={saveCharacterToGallery}
+                          onClick={() => {
+                            console.log('🔘 Save button clicked!')
+                            saveCharacterToGallery()
+                          }}
                           className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg"
                         >
                           💾 Save to Gallery

@@ -41,7 +41,7 @@ export class RPGCharacterGenerator {
       description: "Strong melee fighter with high defense",
       primaryStat: "strength",
       bonuses: { strength: 15, constitution: 10 },
-      equipment: ["sword", "shield", "armor"],
+      equipment: ["sword", "shield", "chest armor"],
       abilities: ["Shield Bash", "Power Strike", "Intimidate"]
     },
     
@@ -68,7 +68,7 @@ export class RPGCharacterGenerator {
       description: "Holy healer and support specialist",
       primaryStat: "wisdom",
       bonuses: { wisdom: 15, charisma: 10 },
-      equipment: ["mace", "holy symbol", "chainmail"],
+      equipment: ["mace", "holy symbol", "chainmail vest"],
       abilities: ["Heal", "Bless", "Turn Undead"]
     },
     
@@ -77,7 +77,7 @@ export class RPGCharacterGenerator {
       description: "Charismatic performer with social skills",
       primaryStat: "charisma",
       bonuses: { charisma: 15, intelligence: 10 },
-      equipment: ["lute", "sword", "leather armor"],
+      equipment: ["lute", "sword", "leather vest"],
       abilities: ["Inspire", "Charm", "Song of Power"]
     },
     
@@ -289,7 +289,7 @@ export class RPGCharacterGenerator {
     const physicalTraits = `${analysis.age} years old, ${analysis.build} build`;
     
     // Technical requirements
-    const requirements = "single character only, centered composition, clean white background, RPG character design, fantasy game art style, front-facing heroic pose";
+    const requirements = "single character only, centered composition, clean white background, RPG character design, fantasy game art style, front-facing heroic pose, face clearly visible, no helmets or face-covering equipment";
     
     return [baseStyle, character, equipment, physicalTraits, requirements].join(', ');
   }
