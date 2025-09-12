@@ -1,21 +1,26 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { 
-  Heart, 
-  Trophy, 
-  Users, 
-  Sparkles, 
-  Zap, 
-  Star,
-  ArrowRight,
-  Play,
   Camera,
-  Gamepad2
+  Sparkles, 
+  ArrowRight,
+  Image,
+  Wand2,
+  Users,
+  Star
 } from 'lucide-react'
 
 export const HomePage: React.FC = () => {
+  const handleCreateCharacter = () => {
+    window.location.href = '/character-creation'
+  }
+
+  const handleViewGallery = () => {
+    window.location.href = '/character-gallery'
+  }
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-16 text-center">
         <motion.div
@@ -27,77 +32,84 @@ export const HomePage: React.FC = () => {
           <div className="inline-block mb-6">
             <motion.div
               animate={{ rotate: 360 }}
-              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
             >
-              <Heart className="w-16 h-16 text-green-400" />
+              <Wand2 className="w-16 h-16 text-purple-400" />
             </motion.div>
           </div>
           
           <h1 className="text-6xl md:text-8xl font-bold text-white mb-6">
-            <span className="bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent text-fun">
-              HappyTracker
+            <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+              RPG Character
+            </span>
+            <br />
+            <span className="text-4xl md:text-6xl bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+              Creator
             </span>
           </h1>
           
           <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
-            Transform your health journey into an epic adventure! 🎮🥗✨
+            Upload your photo and watch AI transform you into an epic RPG character! 🎮✨
           </p>
           
           <div className="flex justify-center gap-8 mb-12">
             <motion.div 
-              className="card-fun"
+              className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <Users className="w-8 h-8 text-green-400 mx-auto mb-2" />
-              <div className="text-3xl font-bold text-white">2,847</div>
-              <div className="text-gray-300">Health Heroes</div>
+              <Camera className="w-8 h-8 text-purple-400 mx-auto mb-2" />
+              <div className="text-3xl font-bold text-white">AI Powered</div>
+              <div className="text-gray-300">Real photo analysis</div>
             </motion.div>
             
             <motion.div 
-              className="card-fun"
+              className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <Trophy className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
-              <div className="text-3xl font-bold text-white">15,623</div>
-              <div className="text-gray-300">Achievements</div>
+              <Sparkles className="w-8 h-8 text-blue-400 mx-auto mb-2" />
+              <div className="text-3xl font-bold text-white">RPG Stats</div>
+              <div className="text-gray-300">Classes & abilities</div>
             </motion.div>
             
             <motion.div 
-              className="card-fun"
+              className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <Zap className="w-8 h-8 text-blue-400 mx-auto mb-2" />
-              <div className="text-3xl font-bold text-white">89</div>
-              <div className="text-gray-300">Day Streak</div>
+              <Image className="w-8 h-8 text-indigo-400 mx-auto mb-2" />
+              <div className="text-3xl font-bold text-white">Gallery</div>
+              <div className="text-gray-300">Save & share</div>
             </motion.div>
           </div>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
             <motion.button 
-              className="btn-primary text-lg px-8 py-4 flex items-center gap-2"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Play className="w-5 h-5" />
-              Start Your Adventure!
-            </motion.button>
-            
-            <motion.button 
-              className="btn-secondary text-lg px-8 py-4 flex items-center gap-2"
+              onClick={handleCreateCharacter}
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold text-lg px-8 py-4 rounded-xl flex items-center gap-2 transition-all duration-200 transform hover:scale-105 shadow-lg"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               <Camera className="w-5 h-5" />
-              Create Avatar
+              Create Your Character
+              <ArrowRight className="w-5 h-5" />
+            </motion.button>
+            
+            <motion.button 
+              onClick={handleViewGallery}
+              className="bg-white/10 backdrop-blur-sm border border-white/30 text-white font-semibold text-lg px-8 py-4 rounded-xl flex items-center gap-2 hover:bg-white/20 transition-all duration-200"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Image className="w-5 h-5" />
+              View Gallery
             </motion.button>
           </div>
         </motion.div>
       </section>
 
-      {/* Features Section */}
+      {/* How It Works Section */}
       <section className="container mx-auto px-4 py-16">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -105,52 +117,52 @@ export const HomePage: React.FC = () => {
           transition={{ duration: 0.8, delay: 0.2 }}
         >
           <h2 className="text-4xl font-bold text-white text-center mb-8">
-            Your Health MMO Features 🎮
+            How It Works 🎯
           </h2>
           
           <div className="grid md:grid-cols-3 gap-8 mb-16">
             <motion.div 
-              className="card-glow text-center"
-              whileHover={{ scale: 1.05, rotateY: 5 }}
+              className="bg-white/10 backdrop-blur-sm rounded-xl p-8 border border-white/20 text-center"
+              whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.3 }}
             >
               <div className="mb-4">
-                <Camera className="w-12 h-12 text-green-400 mx-auto animate-float" />
+                <Camera className="w-12 h-12 text-purple-400 mx-auto" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-4">AI Avatar Creation</h3>
+              <h3 className="text-2xl font-bold text-white mb-4">1. Upload Photo</h3>
               <p className="text-gray-300">
-                Generate your unique health companion with AI magic! 
-                Every avatar is special and reflects your personality.
+                Take a selfie or upload any photo. Our AI analyzes your features 
+                to understand your appearance and personality.
               </p>
             </motion.div>
             
             <motion.div 
-              className="card-glow text-center"
-              whileHover={{ scale: 1.05, rotateY: 5 }}
+              className="bg-white/10 backdrop-blur-sm rounded-xl p-8 border border-white/20 text-center"
+              whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.3 }}
             >
               <div className="mb-4">
-                <Heart className="w-12 h-12 text-red-400 mx-auto animate-pulse" />
+                <Sparkles className="w-12 h-12 text-blue-400 mx-auto" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-4">Health Tracking</h3>
+              <h3 className="text-2xl font-bold text-white mb-4">2. AI Analysis</h3>
               <p className="text-gray-300">
-                Photo-based meal logging, water tracking, sleep monitoring, 
-                and movement detection - all gamified!
+                Advanced AI analyzes your photo and generates RPG stats, 
+                suggests character classes, and creates detailed prompts.
               </p>
             </motion.div>
             
             <motion.div 
-              className="card-glow text-center"
-              whileHover={{ scale: 1.05, rotateY: 5 }}
+              className="bg-white/10 backdrop-blur-sm rounded-xl p-8 border border-white/20 text-center"
+              whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.3 }}
             >
               <div className="mb-4">
-                <Users className="w-12 h-12 text-blue-400 mx-auto animate-wiggle" />
+                <Wand2 className="w-12 h-12 text-indigo-400 mx-auto" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-4">Social Adventure</h3>
+              <h3 className="text-2xl font-bold text-white mb-4">3. Generate Character</h3>
               <p className="text-gray-300">
-                Join friends, compete in challenges, share achievements, 
-                and build a healthy community together!
+                Watch as AI creates your unique RPG character with custom 
+                appearance, stats, and class abilities!
               </p>
             </motion.div>
           </div>
@@ -163,34 +175,35 @@ export const HomePage: React.FC = () => {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="card-glow max-w-2xl mx-auto"
+          className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 max-w-2xl mx-auto"
         >
           <h2 className="text-3xl font-bold text-white mb-6">
-            Ready to Level Up Your Health? 🚀
+            Ready to Create Your RPG Character? 🚀
           </h2>
           <p className="text-gray-300 mb-8">
-            Join thousands of health heroes who've transformed their lives 
-            through gamification and community support!
+            Join the adventure! Upload your photo and discover what kind of RPG hero you are. 
+            Each character is unique and powered by real AI analysis.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <motion.button 
-              className="btn-fun text-lg px-8 py-4 flex items-center gap-2"
+              onClick={handleCreateCharacter}
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold text-lg px-8 py-4 rounded-xl flex items-center gap-2 transition-all duration-200 transform hover:scale-105 shadow-lg"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <Gamepad2 className="w-5 h-5" />
-              Start Playing Now!
+              <Camera className="w-5 h-5" />
+              Create Character Now!
               <ArrowRight className="w-5 h-5" />
             </motion.button>
           </div>
           
           <div className="mt-8 flex justify-center gap-4">
-            <Star className="w-6 h-6 text-yellow-400 fill-current animate-bounce-slow" />
-            <Star className="w-6 h-6 text-yellow-400 fill-current animate-bounce-slow" style={{ animationDelay: '0.2s' }} />
-            <Star className="w-6 h-6 text-yellow-400 fill-current animate-bounce-slow" style={{ animationDelay: '0.4s' }} />
-            <Star className="w-6 h-6 text-yellow-400 fill-current animate-bounce-slow" style={{ animationDelay: '0.6s' }} />
-            <Star className="w-6 h-6 text-yellow-400 fill-current animate-bounce-slow" style={{ animationDelay: '0.8s' }} />
+            <Star className="w-6 h-6 text-purple-400 fill-current animate-bounce-slow" />
+            <Star className="w-6 h-6 text-blue-400 fill-current animate-bounce-slow" style={{ animationDelay: '0.2s' }} />
+            <Star className="w-6 h-6 text-indigo-400 fill-current animate-bounce-slow" style={{ animationDelay: '0.4s' }} />
+            <Star className="w-6 h-6 text-blue-400 fill-current animate-bounce-slow" style={{ animationDelay: '0.6s' }} />
+            <Star className="w-6 h-6 text-purple-400 fill-current animate-bounce-slow" style={{ animationDelay: '0.8s' }} />
           </div>
         </motion.div>
       </section>
