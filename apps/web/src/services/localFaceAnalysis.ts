@@ -7,6 +7,10 @@ export interface FaceAnalysisResult {
   gender: 'male' | 'female' | 'unknown'
   confidence: number
   faceDetected: boolean
+  expression?: 'happy' | 'serious' | 'angry' | 'surprised' | 'sad' | 'neutral'
+  mouthOpen?: boolean
+  teethShowing?: boolean
+  eyesSquinting?: boolean
 }
 
 /**
@@ -84,7 +88,11 @@ export class LocalFaceAnalysis {
           age: analysis.estimatedAge,
           gender: analysis.estimatedGender as 'male' | 'female',
           confidence: analysis.confidence,
-          faceDetected: true
+          faceDetected: true,
+          expression: analysis.expression,
+          mouthOpen: analysis.mouthOpen,
+          teethShowing: analysis.teethShowing,
+          eyesSquinting: analysis.eyesSquinting
         }
       }
 
@@ -115,6 +123,10 @@ export class LocalFaceAnalysis {
     estimatedAge: number
     estimatedGender: 'male' | 'female' | 'unknown'
     confidence: number
+    expression?: 'happy' | 'serious' | 'angry' | 'surprised' | 'sad' | 'neutral'
+    mouthOpen?: boolean
+    teethShowing?: boolean
+    eyesSquinting?: boolean
   } {
     const pixels = imageData.data
     const width = imageData.width
@@ -159,6 +171,12 @@ export class LocalFaceAnalysis {
     // Gender estimation (very rough heuristic)
     const estimatedGender = this.estimateGender(avgSaturation, avgBrightness)
     
+    // Expression detection based on brightness patterns
+    const expression = this.detectExpression(pixels, width, height, avgBrightness, avgSaturation)
+    
+    // Detect mouth features
+    const mouthFeatures = this.detectMouthFeatures(pixels, width, height)
+    
     // Confidence based on skin tone detection
     const confidence = Math.min(skinToneRatio * 2, 0.75)
     
@@ -166,7 +184,11 @@ export class LocalFaceAnalysis {
       faceDetected,
       estimatedAge,
       estimatedGender,
-      confidence
+      confidence,
+      expression: expression.type,
+      mouthOpen: mouthFeatures.mouthOpen,
+      teethShowing: mouthFeatures.teethShowing,
+      eyesSquinting: expression.eyesSquinting
     }
   }
 
@@ -247,6 +269,94 @@ export class LocalFaceAnalysis {
       }
       img.src = url
     })
+  }
+
+  /**
+   * 😊 Detect facial expression
+   */
+  private static detectExpression(
+    pixels: Uint8ClampedArray, 
+    width: number, 
+    height: number,
+    avgBrightness: number,
+    avgSaturation: number
+  ): {
+    type: 'happy' | 'serious' | 'angry' | 'surprised' | 'sad' | 'neutral'
+    eyesSquinting: boolean
+  } {
+    // Analyze lower half for mouth region (simplified)
+    const lowerHalfStart = Math.floor(height * 0.6)
+    let lowerBrightness = 0
+    let lowerPixelCount = 0
+    
+    for (let y = lowerHalfStart; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const idx = (y * width + x) * 4
+        lowerBrightness += (pixels[idx] + pixels[idx + 1] + pixels[idx + 2]) / 3
+        lowerPixelCount++
+      }
+    }
+    
+    lowerBrightness /= lowerPixelCount
+    
+    // Expression detection based on brightness patterns
+    const brightnessRatio = lowerBrightness / avgBrightness
+    const eyesSquinting = avgSaturation > 0.5 && avgBrightness < 120
+    
+    let type: 'happy' | 'serious' | 'angry' | 'surprised' | 'sad' | 'neutral' = 'neutral'
+    
+    if (brightnessRatio > 1.2 && avgSaturation > 0.4) {
+      type = 'happy' // Bright lower face = smile
+    } else if (avgBrightness < 100 && avgSaturation < 0.3) {
+      type = 'serious' // Dark, low saturation = serious
+    } else if (avgBrightness < 90 && avgSaturation > 0.5) {
+      type = 'angry' // Dark with high saturation = angry
+    } else if (lowerBrightness > 180) {
+      type = 'surprised' // Very bright mouth area = open mouth
+    } else if (avgBrightness < 110 && brightnessRatio < 0.9) {
+      type = 'sad' // Dark with downturned mouth
+    }
+    
+    return { type, eyesSquinting }
+  }
+
+  /**
+   * 👄 Detect mouth features
+   */
+  private static detectMouthFeatures(
+    pixels: Uint8ClampedArray,
+    width: number,
+    height: number
+  ): {
+    mouthOpen: boolean
+    teethShowing: boolean
+  } {
+    // Check lower third of image for mouth area
+    const mouthAreaStart = Math.floor(height * 0.6)
+    const mouthAreaEnd = Math.floor(height * 0.8)
+    
+    let brightPixels = 0
+    let veryBrightPixels = 0
+    let totalMouthPixels = 0
+    
+    for (let y = mouthAreaStart; y < mouthAreaEnd; y++) {
+      for (let x = Math.floor(width * 0.3); x < Math.floor(width * 0.7); x++) {
+        const idx = (y * width + x) * 4
+        const brightness = (pixels[idx] + pixels[idx + 1] + pixels[idx + 2]) / 3
+        
+        if (brightness > 150) brightPixels++
+        if (brightness > 220) veryBrightPixels++ // Teeth are very bright
+        totalMouthPixels++
+      }
+    }
+    
+    const brightRatio = brightPixels / totalMouthPixels
+    const teethRatio = veryBrightPixels / totalMouthPixels
+    
+    return {
+      mouthOpen: brightRatio > 0.3, // 30% bright = mouth open
+      teethShowing: teethRatio > 0.1 // 10% very bright = teeth showing
+    }
   }
 
   /**

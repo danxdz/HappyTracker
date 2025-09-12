@@ -1,6 +1,7 @@
 import { HuggingFaceService } from './huggingFaceService'
 import { RPGCharacterGenerator, PhotoAnalysis } from './rpgCharacterGenerator'
 import { LocalFaceAnalysis } from './localFaceAnalysis'
+import { ExpressionPromptGenerator } from './expressionPromptGenerator'
 
 // PhotoAnalysis interface is now imported from rpgCharacterGenerator
 
@@ -94,9 +95,14 @@ export class CaricatureGenerator {
     try {
       console.log('🎨 Starting AI-powered RPG caricature generation...')
       
-      // Use filename analysis for now (face-api.js models not available)
+      // Analyze face with expression detection
+      const faceAnalysis = await LocalFaceAnalysis.analyzeFace(photoFile)
       const photoAnalysis = this.createFallbackAnalysis(photoFile)
-      console.log('📸 Filename analysis complete:', photoAnalysis)
+      
+      // Get expression-based style
+      const characterStyle = ExpressionPromptGenerator.getStyleFromExpression(faceAnalysis)
+      console.log('🎭 Expression detected:', faceAnalysis.expression, '→ Style:', characterStyle.name)
+      console.log('📸 Analysis complete:', { ...photoAnalysis, expression: faceAnalysis.expression })
       
       // Override with user input if provided (user input takes priority)
       if (characterData) {
@@ -116,7 +122,17 @@ export class CaricatureGenerator {
         console.log('🎮 Using user-selected class:', characterData.rpgClass.name)
         // Create a custom prompt with the selected class
         const classEquipment = this.getClassEquipment(characterData.rpgClass.name)
-        const customPrompt = `toybox collectible figure style, oversized round head, small compact body, ${photoAnalysis.gender} ${characterData.rpgClass.name.toLowerCase()}, ${photoAnalysis.hairColor} ${photoAnalysis.hairStyle} hair, equipped with ${classEquipment.join(', ')}, cute proportions, minimal details, bright solid colors`
+        
+        // Use expression-based style as base
+        const fullPrompt = ExpressionPromptGenerator.generateFullPrompt(
+          faceAnalysis,
+          characterStyle,
+          {
+            gender: photoAnalysis.gender,
+            age: photoAnalysis.age,
+            additionalDetails: `${characterData.rpgClass.name.toLowerCase()}, equipped with ${classEquipment.join(', ')}`
+          }
+        )
         
         rpgCharacter = {
           ...rpgCharacter,
@@ -126,8 +142,23 @@ export class CaricatureGenerator {
             description: characterData.rpgClass.description
           },
           stats: characterData.rpgClass.stats,
-          characterPrompt: customPrompt
+          characterPrompt: fullPrompt
         }
+      } else {
+        // Use expression to suggest a class
+        const suggestedClass = ExpressionPromptGenerator.getClassFromExpression(faceAnalysis.expression || 'neutral')
+        console.log('🎮 Expression-based class suggestion:', suggestedClass)
+        
+        // Update prompt with expression style
+        rpgCharacter.characterPrompt = ExpressionPromptGenerator.generateFullPrompt(
+          faceAnalysis,
+          characterStyle,
+          {
+            gender: photoAnalysis.gender,
+            age: photoAnalysis.age,
+            additionalDetails: rpgCharacter.suggestedClass.name.toLowerCase()
+          }
+        )
       }
       
       console.log('⚔️ RPG Character:', rpgCharacter.suggestedClass.name, 'Stats:', rpgCharacter.stats)
