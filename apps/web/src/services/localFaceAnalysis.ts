@@ -1,5 +1,6 @@
 // Using our secure MediaPipe-based alternative instead of face-api.js
 // This avoids the security vulnerability in face-api.js's node-fetch dependency
+import { logger } from '../utils/logger'
 
 export interface FaceAnalysisResult {
   age: number
@@ -26,13 +27,13 @@ export class LocalFaceAnalysis {
     if (this.modelsLoaded) return
     if (this.loadingPromise) return this.loadingPromise
 
-    console.log('🔧 Initializing secure face analysis service...')
+    logger.log('🔧 Initializing secure face analysis service...')
     
     this.loadingPromise = this.loadModels()
     await this.loadingPromise
     
     this.modelsLoaded = true
-    console.log('✅ Face analysis service ready (Canvas API)')
+    logger.log('✅ Face analysis service ready (Canvas API)')
   }
 
   /**
@@ -42,9 +43,9 @@ export class LocalFaceAnalysis {
     try {
       // Instead of loading heavy ML models with vulnerabilities,
       // we use Canvas API for basic face detection
-      console.log('📥 Face analysis service initialized without external dependencies')
+      logger.log('📥 Face analysis service initialized without external dependencies')
     } catch (error) {
-      console.error('❌ Failed to initialize face analysis:', error)
+      logger.error('❌ Failed to initialize face analysis:', error)
       throw new Error('Failed to initialize face analysis')
     }
   }
@@ -56,7 +57,7 @@ export class LocalFaceAnalysis {
     try {
       await this.initialize()
       
-      console.log('🔍 Analyzing face with secure Canvas API...')
+      logger.log('🔍 Analyzing face with secure Canvas API...')
       
       // Convert file to HTMLImageElement
       const image = await this.fileToImage(imageFile)
@@ -78,7 +79,7 @@ export class LocalFaceAnalysis {
       
       // If we detect face-like patterns
       if (analysis.faceDetected) {
-        console.log('🎯 Face analysis result:', analysis)
+        logger.log('🎯 Face analysis result:', analysis)
         return {
           age: analysis.estimatedAge,
           gender: analysis.estimatedGender as 'male' | 'female',
@@ -87,7 +88,7 @@ export class LocalFaceAnalysis {
         }
       }
 
-      console.log('❌ No clear face detected, using defaults')
+      logger.log('❌ No clear face detected, using defaults')
       return {
         age: 30,
         gender: 'unknown',
@@ -96,7 +97,7 @@ export class LocalFaceAnalysis {
       }
 
     } catch (error) {
-      console.error('❌ Face analysis failed:', error)
+      logger.error('❌ Face analysis failed:', error)
       return {
         age: 30,
         gender: 'unknown',
@@ -253,7 +254,7 @@ export class LocalFaceAnalysis {
    */
   static cleanup(): void {
     // Clean up any resources if needed
-    console.log('🧹 Face analysis cleanup complete')
+    logger.log('🧹 Face analysis cleanup complete')
   }
 
   /**
