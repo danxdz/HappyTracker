@@ -1,5 +1,6 @@
 import { HuggingFaceService } from './huggingFaceService'
 import { RPGCharacterGenerator, PhotoAnalysis } from './rpgCharacterGenerator'
+import { LocalFaceAnalysis } from './localFaceAnalysis'
 
 // PhotoAnalysis interface is now imported from rpgCharacterGenerator
 
@@ -46,9 +47,9 @@ export class CartoonGenerator {
     try {
       console.log('🎨 Starting AI-powered RPG cartoon generation...')
       
-      // Analyze photo with REAL AI - do it once and do it right
-      const photoAnalysis = await this.analyzePhotoWithAI(photoFile)
-      console.log('📸 AI Photo analysis complete:', photoAnalysis)
+      // Analyze photo with LOCAL face analysis - completely free!
+      const photoAnalysis = await this.analyzePhotoWithLocalAI(photoFile)
+      console.log('📸 Local AI Photo analysis complete:', photoAnalysis)
       
       // Override with user input if provided (user input takes priority)
       if (characterData) {
@@ -73,11 +74,11 @@ export class CartoonGenerator {
       
       const processingTime = Date.now() - startTime
       
-      // Cost estimation - includes both analysis and generation
+      // Cost estimation - only cartoon generation (analysis is free!)
       const costBreakdown = {
-        imageAnalysis: 0.01, // Salesforce/blip-image-captioning-large
+        imageAnalysis: 0, // FREE - face-api.js runs locally
         cartoonGeneration: 0.03, // stabilityai/stable-diffusion-xl-base-1.0
-        total: 0.04
+        total: 0.03
       }
       
       console.log(`✅ AI Cartoon generated in ${processingTime}ms`)
@@ -107,7 +108,69 @@ export class CartoonGenerator {
   }
 
   /**
-   * 📸 Analyze Photo with AI
+   * 📸 Analyze Photo with Local AI
+   * 
+   * Uses face-api.js for completely free, local face analysis
+   * No API keys, no external dependencies
+   */
+  private static async analyzePhotoWithLocalAI(photoFile: File): Promise<PhotoAnalysis> {
+    console.log('🔍 Analyzing photo with local face-api.js...')
+    
+    try {
+      // Use local face analysis
+      const faceResult = await LocalFaceAnalysis.analyzeFace(photoFile)
+      
+      if (!faceResult.faceDetected) {
+        console.log('❌ No face detected, using filename analysis')
+        return this.createFallbackAnalysis(photoFile)
+      }
+
+      // Convert face analysis to PhotoAnalysis
+      const photoAnalysis: PhotoAnalysis = {
+        gender: faceResult.gender,
+        age: faceResult.age,
+        height: this.estimateHeightFromAge(faceResult.age),
+        weight: this.estimateWeightFromAge(faceResult.age),
+        glasses: false, // face-api.js doesn't detect glasses
+        facialHair: false, // face-api.js doesn't detect facial hair
+        hairColor: 'brown', // Default
+        hairStyle: 'short', // Default
+        skinTone: 'medium', // Default
+        expression: 'confident', // Default
+        faceShape: 'oval', // Default
+        build: 'average' // Default
+      }
+
+      console.log('🎯 Local face analysis result:', photoAnalysis)
+      return photoAnalysis
+
+    } catch (error) {
+      console.error('❌ Local face analysis failed:', error)
+      console.log('🔄 Falling back to filename analysis...')
+      return this.createFallbackAnalysis(photoFile)
+    }
+  }
+
+  /**
+   * 📏 Estimate height from age
+   */
+  private static estimateHeightFromAge(age: number): number {
+    if (age < 18) return Math.floor(Math.random() * 20) + 150 // 150-170
+    if (age > 60) return Math.floor(Math.random() * 15) + 165 // 165-180
+    return Math.floor(Math.random() * 25) + 165 // 165-190
+  }
+
+  /**
+   * ⚖️ Estimate weight from age
+   */
+  private static estimateWeightFromAge(age: number): number {
+    if (age < 18) return Math.floor(Math.random() * 25) + 50 // 50-75
+    if (age > 60) return Math.floor(Math.random() * 20) + 60 // 60-80
+    return Math.floor(Math.random() * 30) + 60 // 60-90
+  }
+
+  /**
+   * 📸 Analyze Photo with AI (Legacy - kept as backup)
    * 
    * Uses Hugging Face API to analyze the actual photo content
    * Returns detailed photo analysis without gender guessing
