@@ -11,6 +11,7 @@ import { PhotoToPopPage } from './pages/PhotoToPopPage'
 import { CartoonPage } from './pages/CartoonPage'
 import { Character3DPage } from './pages/Character3DPage'
 import { DynamicCharacterPage } from './pages/DynamicCharacterPage'
+import CharacterGallery from './pages/CharacterGallery'
 import { Navigation } from './components/Navigation'
 import { Footer } from './components/Footer'
 
@@ -122,12 +123,22 @@ function App() {
           path="/dynamic-character" 
           element={<DynamicCharacterPage />}
         />
+        <Route 
+          path="/character-creation" 
+          element={<DynamicCharacterPage />}
+        />
+        <Route 
+          path="/character-gallery" 
+          element={<CharacterGallery />}
+        />
       </Routes>
       
-      {/* Conditional Navigation and Footer - not shown on galaxy and dynamic pages */}
+      {/* Conditional Navigation and Footer - not shown on galaxy and character pages */}
       <Routes>
         <Route path="/galaxy" element={null} />
         <Route path="/dynamic-character" element={null} />
+        <Route path="/character-creation" element={null} />
+        <Route path="/character-gallery" element={null} />
         <Route path="*" element={
           <>
             <Navigation />
