@@ -9,6 +9,7 @@ import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Calendar, User, Ruler, Weight, Sparkles, ArrowRight, Check } from 'lucide-react'
 import { CartoonGenerator } from '../services/cartoonGenerator'
+import { CharacterStorage } from '../services/characterStorage'
 
 interface CharacterData {
   photo?: File
@@ -42,6 +43,7 @@ export const DynamicCharacterPage: React.FC = () => {
   const [cartoonGenerated, setCartoonGenerated] = useState(false)
   const [cartoonImage, setCartoonImage] = useState<string | null>(null)
   const [generationCost, setGenerationCost] = useState<number | null>(null)
+  const [characterSaved, setCharacterSaved] = useState(false)
 
   // Auto-progress through loading
   useEffect(() => {
@@ -245,6 +247,47 @@ export const DynamicCharacterPage: React.FC = () => {
     } catch (error) {
       console.error('❌ Error generating cartoon:', error)
       setTimeout(() => setCurrentStep('complete'), 1000)
+    }
+  }
+
+  const saveCharacterToGallery = async () => {
+    try {
+      if (!cartoonImage || !characterData.name) {
+        alert('Cannot save character: missing cartoon image or name')
+        return
+      }
+
+      // Convert photo to base64 if available
+      let photoBase64: string | undefined
+      if (characterData.photo) {
+        photoBase64 = await new Promise<string>((resolve) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(reader.result as string)
+          reader.readAsDataURL(characterData.photo!)
+        })
+      }
+
+      const savedCharacter = CharacterStorage.saveCharacter({
+        name: characterData.name,
+        age: characterData.age,
+        height: characterData.height,
+        weight: characterData.weight,
+        photo: photoBase64,
+        cartoonImage,
+        generationCost: generationCost || 0,
+        style: 'cute'
+      })
+
+      setCharacterSaved(true)
+      console.log('💾 Character saved to gallery:', savedCharacter.name)
+      
+      // Show success message
+      setTimeout(() => {
+        alert(`Character "${characterData.name}" saved to gallery!`)
+      }, 500)
+    } catch (error) {
+      console.error('❌ Failed to save character:', error)
+      alert('Failed to save character to gallery')
     }
   }
 
