@@ -51,17 +51,15 @@ export class Character3DGenerator {
   private static readonly USE_HF_API = true // Set to true when ready for HF
   private static dynamicHfApiEnabled = false // Dynamic toggle from UI
   
-  // Debug token loading
+  // Debug token loading - removed to avoid duplicate console logs
   static {
-    console.log('🔑 HF Token loaded:', this.HF_TOKEN ? '✅ Yes' : '❌ No')
-    console.log('🌍 Environment:', (import.meta as any).env?.MODE || 'unknown')
-    console.log('🎛️ HF API Mode:', this.USE_HF_API ? '🟢 ENABLED' : '🔴 DISABLED (Canvas Only)')
+    // Token and environment checks moved to HuggingFaceService
   }
 
   // 🎛️ Dynamic HF API Toggle
   static setHfApiEnabled(enabled: boolean) {
     this.dynamicHfApiEnabled = enabled
-    console.log('🎛️ Dynamic HF API Mode:', enabled ? '🟢 ENABLED' : '🔴 DISABLED')
+    // Removed console log to reduce noise
   }
 
   static getHfApiEnabled(): boolean {

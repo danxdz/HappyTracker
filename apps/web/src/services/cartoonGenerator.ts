@@ -27,8 +27,7 @@ export class CartoonGenerator {
   private static readonly HF_TOKEN = import.meta.env.VITE_HUGGINGFACE_TOKEN || ''
 
   static {
-    console.log('🔑 HF Token loaded:', this.HF_TOKEN ? '✅ Yes' : '❌ No')
-    console.log('🌍 Environment:', import.meta.env.MODE)
+    // Token check moved to HuggingFaceService to avoid duplicates
   }
 
   /**
