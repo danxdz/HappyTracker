@@ -53,6 +53,9 @@ export const DynamicCharacterPage: React.FC = () => {
   const [characterSaved, setCharacterSaved] = useState(false)
   const [showImageModal, setShowImageModal] = useState(false)
   const [isProcessingPhoto, setIsProcessingPhoto] = useState(false)
+  const [is3DGenerating, setIs3DGenerating] = useState(false)
+  const [model3DUrl, setModel3DUrl] = useState<string | null>(null)
+  const [model3DProgress, setModel3DProgress] = useState(0)
   const [rpgClass, setRpgClass] = useState<{
     name: string
     description: string
@@ -276,6 +279,74 @@ export const DynamicCharacterPage: React.FC = () => {
       console.log('🔄 Moving to next step from class selection...')
       nextStep()
     }, 500)
+  }
+
+  const generate3DModel = async () => {
+    if (!caricatureImage || is3DGenerating || model3DUrl) return
+    
+    // Check if Meshy is configured
+    if (!Meshy3DService.isConfigured()) {
+      alert('3D generation not configured. Please add Meshy API key to environment variables.')
+      return
+    }
+    
+    try {
+      setIs3DGenerating(true)
+      setModel3DProgress(0)
+      
+      console.log('🎮 Starting 3D model generation...')
+      
+      // First, upload the image to cloud to get a URL
+      let imageUrl = caricatureImage
+      
+      // If it's a data URL, upload to cloud first
+      if (caricatureImage.startsWith('data:')) {
+        const uploadResult = await CloudStorageService.uploadImage(caricatureImage, `3d_${characterData.name}`)
+        if (uploadResult.success && uploadResult.url) {
+          imageUrl = uploadResult.url
+          console.log('📤 Image uploaded for 3D:', imageUrl)
+        } else {
+          throw new Error('Failed to upload image for 3D generation')
+        }
+      }
+      
+      // Start 3D generation
+      const result = await Meshy3DService.imageToModel(imageUrl, {
+        art_style: 'cartoon',
+        target_polycount: 'medium',
+        auto_refine: true
+      })
+      
+      if (!result.success || !result.taskId) {
+        throw new Error(result.error || 'Failed to start 3D generation')
+      }
+      
+      console.log('🎮 3D generation task created:', result.taskId)
+      
+      // Poll for completion
+      const finalResult = await Meshy3DService.waitForModel(result.taskId, {
+        maxWaitTime: 300000, // 5 minutes
+        pollInterval: 3000, // 3 seconds
+        onProgress: (progress) => {
+          setModel3DProgress(progress)
+          console.log(`🔄 3D generation progress: ${progress}%`)
+        }
+      })
+      
+      if (finalResult.success && finalResult.modelUrl) {
+        setModel3DUrl(finalResult.modelUrl)
+        console.log('✅ 3D model ready:', finalResult.modelUrl)
+        alert(`3D model generated successfully! Credits used: ${finalResult.credits_used || 'unknown'}`)
+      } else {
+        throw new Error(finalResult.error || '3D generation failed')
+      }
+      
+    } catch (error) {
+      console.error('❌ 3D generation failed:', error)
+      alert(`Failed to generate 3D model: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setIs3DGenerating(false)
+    }
   }
 
   const handleCardComplete = async () => {
