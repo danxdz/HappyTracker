@@ -17,14 +17,16 @@ interface CharacterData {
   age: number
   height: number
   weight: number
+  gender: 'male' | 'female' | 'non-binary' | 'unknown'
   aiGuesses: {
     age: number
     height: number
     weight: number
+    gender: 'male' | 'female' | 'non-binary' | 'unknown'
   }
 }
 
-type FlowStep = 'loading' | 'photo' | 'name' | 'age' | 'measures' | 'card' | 'complete'
+type FlowStep = 'loading' | 'photo' | 'name' | 'gender' | 'age' | 'measures' | 'card' | 'complete'
 
 export const DynamicCharacterPage: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<FlowStep>('loading')
@@ -33,10 +35,12 @@ export const DynamicCharacterPage: React.FC = () => {
     age: 25,
     height: 170,
     weight: 70,
+    gender: 'unknown',
     aiGuesses: {
       age: 25,
       height: 170,
-      weight: 70
+      weight: 70,
+      gender: 'unknown'
     }
   })
   const [hfApiEnabled, setHfApiEnabled] = useState(true) // Always enabled for AI cartoon generation
@@ -80,16 +84,28 @@ export const DynamicCharacterPage: React.FC = () => {
     }
   }
 
-  // Simple photo analysis - just set defaults, real analysis happens in cartoon generator
-  const analyzePhoto = async (photo: File): Promise<{age: number, height: number, weight: number}> => {
-    console.log('📸 Photo uploaded, setting default values...')
+  // Simple photo analysis - guess gender from filename, real analysis happens in cartoon generator
+  const analyzePhoto = async (photo: File): Promise<{age: number, height: number, weight: number, gender: 'male' | 'female' | 'non-binary' | 'unknown'}> => {
+    console.log('📸 Photo uploaded, guessing gender from filename...')
     console.log('🎯 Real AI analysis will happen during cartoon generation')
     
-    // Just return default values - the real AI analysis happens in cartoonGenerator
+    // Guess gender from filename for pre-selection
+    const fileName = photo.name.toLowerCase()
+    let guessedGender: 'male' | 'female' | 'non-binary' | 'unknown' = 'unknown'
+    
+    if (fileName.includes('man') || fileName.includes('male') || fileName.includes('guy') || fileName.includes('boy')) {
+      guessedGender = 'male'
+    } else if (fileName.includes('woman') || fileName.includes('female') || fileName.includes('lady') || fileName.includes('girl')) {
+      guessedGender = 'female'
+    }
+    
+    console.log('🎯 Gender guess from filename:', guessedGender)
+    
     return {
       age: 30,
       height: 170,
-      weight: 70
+      weight: 70,
+      gender: guessedGender
     }
   }
 
@@ -106,17 +122,19 @@ export const DynamicCharacterPage: React.FC = () => {
       updateCharacterData('age', aiGuesses.age)
       updateCharacterData('height', aiGuesses.height)
       updateCharacterData('weight', aiGuesses.weight)
+      updateCharacterData('gender', aiGuesses.gender)
       
       console.log('✅ Character data updated, moving to next step...')
       setTimeout(nextStep, 1000) // Give time to show AI analysis
     } catch (error) {
       console.error('❌ Error in photo upload:', error)
       // Fallback to default values
-      const fallbackGuesses = { age: 25, height: 170, weight: 70 }
+      const fallbackGuesses = { age: 25, height: 170, weight: 70, gender: 'unknown' as const }
       updateCharacterData('aiGuesses', fallbackGuesses)
       updateCharacterData('age', fallbackGuesses.age)
       updateCharacterData('height', fallbackGuesses.height)
       updateCharacterData('weight', fallbackGuesses.weight)
+      updateCharacterData('gender', fallbackGuesses.gender)
       setTimeout(nextStep, 1000)
     }
   }
