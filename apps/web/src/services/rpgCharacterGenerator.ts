@@ -1,5 +1,5 @@
 export interface PhotoAnalysis {
-  gender: 'male' | 'female' | 'unknown';
+  gender: 'male' | 'female' | 'non-binary' | 'unknown';
   age: number;
   height: number;
   weight: number;

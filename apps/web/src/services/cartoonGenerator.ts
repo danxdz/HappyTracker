@@ -40,7 +40,7 @@ export class CartoonGenerator {
   static async generateCartoonFromPhoto(
     photoFile: File,
     style: 'cute' | 'anime' | 'disney' | 'pixar' = 'cute',
-    characterData?: { name: string; age: number; height: number; weight: number }
+    characterData?: { name: string; age: number; height: number; weight: number; gender: 'male' | 'female' | 'non-binary' | 'unknown' }
   ): Promise<CartoonGenerationResult> {
     const startTime = Date.now()
     
@@ -56,7 +56,8 @@ export class CartoonGenerator {
         photoAnalysis.age = characterData.age
         photoAnalysis.height = characterData.height
         photoAnalysis.weight = characterData.weight
-        console.log('🎯 Using user input for age/height/weight:', characterData)
+        photoAnalysis.gender = characterData.gender
+        console.log('🎯 Using user input for age/height/weight/gender:', characterData)
       }
       
       // Generate RPG character

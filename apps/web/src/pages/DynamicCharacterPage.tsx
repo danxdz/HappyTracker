@@ -145,6 +145,11 @@ export const DynamicCharacterPage: React.FC = () => {
     }
   }
 
+  const handleGenderSelect = (gender: 'male' | 'female' | 'non-binary' | 'unknown') => {
+    updateCharacterData('gender', gender)
+    setTimeout(nextStep, 500)
+  }
+
   const handleAgeAdjust = () => {
     setTimeout(nextStep, 500)
   }
@@ -173,7 +178,8 @@ export const DynamicCharacterPage: React.FC = () => {
           name: characterData.name,
           age: characterData.age,
           height: characterData.height,
-          weight: characterData.weight
+          weight: characterData.weight,
+          gender: characterData.gender
         }
       )
       
@@ -223,6 +229,7 @@ export const DynamicCharacterPage: React.FC = () => {
         age: characterData.age,
         height: characterData.height,
         weight: characterData.weight,
+        gender: characterData.gender,
         photo: photoBase64,
         cartoonImage,
         generationCost: generationCost || 0,
@@ -574,6 +581,49 @@ export const DynamicCharacterPage: React.FC = () => {
             </motion.div>
           )}
 
+          {/* Gender Selection Popup */}
+          {currentStep === 'gender' && (
+            <motion.div
+              key="gender-popup"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-40"
+            >
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 max-w-md w-full mx-4">
+                <h3 className="text-2xl font-bold text-white mb-2 text-center">
+                  Gender Identity
+                </h3>
+                <p className="text-gray-300 text-center mb-6">
+                  AI guessed: <span className="text-blue-400 font-semibold">
+                    {characterData.aiGuesses.gender === 'unknown' ? 'Unknown' : 
+                     characterData.aiGuesses.gender === 'male' ? 'Male' :
+                     characterData.aiGuesses.gender === 'female' ? 'Female' : 'Non-binary'}
+                  </span>
+                </p>
+                <div className="space-y-3">
+                  {(['male', 'female', 'non-binary', 'unknown'] as const).map((gender) => (
+                    <motion.button
+                      key={gender}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => handleGenderSelect(gender)}
+                      className={`w-full py-3 px-4 rounded-xl font-semibold transition-all ${
+                        characterData.gender === gender
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-white/20 text-white hover:bg-white/30'
+                      }`}
+                    >
+                      {gender === 'unknown' ? 'Prefer not to say' : 
+                       gender === 'male' ? 'Male' :
+                       gender === 'female' ? 'Female' : 'Non-binary'}
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           {/* Age Adjustment Popup */}
           {currentStep === 'age' && (
             <motion.div
@@ -767,6 +817,15 @@ export const DynamicCharacterPage: React.FC = () => {
                           <span className="text-white font-medium">Weight:</span>
                           <span className="text-gray-300 ml-2">{characterData.weight} kg</span>
                         </div>
+                        <div className="flex items-center">
+                          <User className="w-5 h-5 text-blue-400 mr-3" />
+                          <span className="text-white font-medium">Gender:</span>
+                          <span className="text-gray-300 ml-2">
+                            {characterData.gender === 'unknown' ? 'Prefer not to say' : 
+                             characterData.gender === 'male' ? 'Male' :
+                             characterData.gender === 'female' ? 'Female' : 'Non-binary'}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
@@ -774,8 +833,8 @@ export const DynamicCharacterPage: React.FC = () => {
                     <div className="bg-blue-500/20 rounded-xl p-4">
                       <h5 className="text-white font-semibold mb-2">🤖 AI Analysis Summary</h5>
                       <div className="text-sm text-gray-300 space-y-1">
-                        <div>Original guesses: {characterData.aiGuesses.age}y, {characterData.aiGuesses.height}cm, {characterData.aiGuesses.weight}kg</div>
-                        <div>Final values: {characterData.age}y, {characterData.height}cm, {characterData.weight}kg</div>
+                        <div>AI guessed: {characterData.aiGuesses.age}y, {characterData.aiGuesses.height}cm, {characterData.aiGuesses.weight}kg, {characterData.aiGuesses.gender}</div>
+                        <div>Final values: {characterData.age}y, {characterData.height}cm, {characterData.weight}kg, {characterData.gender}</div>
                       </div>
                     </div>
                   </div>

@@ -48,7 +48,7 @@ export class Character3DGenerator {
   private static readonly HF_TOKEN = (import.meta as any).env?.VITE_HUGGINGFACE_TOKEN || ''
   
   // 🎛️ HF Toggle System - Easy to turn on/off
-  private static readonly USE_HF_API = false // Set to true when ready for HF
+  private static readonly USE_HF_API = true // Set to true when ready for HF
   private static dynamicHfApiEnabled = false // Dynamic toggle from UI
   
   // Debug token loading
