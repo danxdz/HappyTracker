@@ -6,7 +6,8 @@
  */
 
 // ImgBB - Free image hosting, no account needed for basic usage
-const IMGBB_API_KEY = import.meta.env.VITE_IMGBB_API_KEY || 'YOUR_IMGBB_API_KEY'
+// The API key is safe to expose as it's restricted to your domain
+const IMGBB_API_KEY = import.meta.env.VITE_IMGBB_API_KEY || ''
 const IMGBB_UPLOAD_URL = 'https://api.imgbb.com/1/upload'
 
 // Cloudinary - Free tier available, more features
@@ -31,7 +32,7 @@ export class CloudStorageService {
     name?: string
   ): Promise<CloudUploadResponse> {
     // Try ImgBB first (simplest, no account needed)
-    if (IMGBB_API_KEY && IMGBB_API_KEY !== 'YOUR_IMGBB_API_KEY') {
+    if (IMGBB_API_KEY && IMGBB_API_KEY.length > 0) {
       const imgbbResult = await this.uploadToImgBB(imageData, name)
       if (imgbbResult.success) return imgbbResult
     }
