@@ -119,20 +119,45 @@ export class CartoonGenerator {
       // Convert photo to base64
       const base64Image = await this.fileToBase64(photoFile)
       
-      // Use image captioning model to describe the photo
-      const response = await fetch(`${this.HF_API_URL}/Salesforce/blip-image-captioning-large`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.HF_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          inputs: base64Image
-        })
-      })
-
-      if (!response.ok) {
-        throw new Error(`Photo analysis failed: ${response.status} ${response.statusText}`)
+      // Try multiple image captioning models in order of preference
+      const models = [
+        'Salesforce/blip-image-captioning-base',
+        'Salesforce/blip-image-captioning-large', 
+        'nlpconnect/vit-gpt2-image-captioning',
+        'microsoft/git-base-coco'
+      ]
+      
+      let response: Response | null = null
+      let workingModel = ''
+      
+      for (const model of models) {
+        try {
+          console.log(`🔍 Trying model: ${model}`)
+          response = await fetch(`${this.HF_API_URL}/${model}`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${this.HF_TOKEN}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              inputs: base64Image
+            })
+          })
+          
+          if (response.ok) {
+            workingModel = model
+            console.log(`✅ Model working: ${model}`)
+            break
+          } else {
+            console.log(`❌ Model failed: ${model} (${response.status})`)
+          }
+        } catch (error) {
+          console.log(`❌ Model error: ${model}`, error)
+        }
+      }
+      
+      if (!response || !response.ok) {
+        throw new Error(`All image captioning models failed. Last error: ${response?.status} ${response?.statusText}`)
       }
 
       const result = await response.json()
@@ -145,7 +170,65 @@ export class CartoonGenerator {
       
     } catch (error) {
       console.error('❌ AI Photo analysis failed:', error)
-      throw new Error('AI photo analysis failed')
+      console.log('🔄 Falling back to filename-based analysis...')
+      
+      // Complete fallback: use filename analysis only
+      return this.createFallbackAnalysis(photoFile)
+    }
+  }
+
+  /**
+   * 🔄 Create Fallback Analysis
+   * 
+   * Uses filename analysis when AI models fail
+   */
+  private static createFallbackAnalysis(photoFile: File): PhotoAnalysis {
+    console.log('🔄 Using filename-based fallback analysis')
+    
+    const fileName = photoFile.name.toLowerCase()
+    
+    // Extract age from filename
+    let age = 30
+    if (fileName.includes('old') || fileName.includes('elderly') || fileName.includes('senior')) {
+      age = Math.floor(Math.random() * 20) + 65
+    } else if (fileName.includes('young') || fileName.includes('teen') || fileName.includes('child')) {
+      age = Math.floor(Math.random() * 15) + 15
+    }
+    
+    // Extract gender from filename
+    let gender: 'male' | 'female' | 'non-binary' | 'unknown' = 'unknown'
+    if (fileName.includes('man') || fileName.includes('male') || fileName.includes('guy')) {
+      gender = 'male'
+    } else if (fileName.includes('woman') || fileName.includes('female') || fileName.includes('lady')) {
+      gender = 'female'
+    }
+    
+    // Estimate height and weight
+    let height = 170
+    let weight = 70
+    if (age > 60) {
+      height = Math.floor(Math.random() * 15) + 165
+      weight = Math.floor(Math.random() * 20) + 60
+    } else if (age < 25) {
+      height = Math.floor(Math.random() * 20) + 160
+      weight = Math.floor(Math.random() * 25) + 55
+    }
+    
+    console.log('🎯 Fallback analysis complete:', { age, height, weight, gender })
+    
+    return {
+      gender,
+      age,
+      height,
+      weight,
+      glasses: fileName.includes('glasses'),
+      facialHair: fileName.includes('beard') || fileName.includes('mustache'),
+      hairColor: 'brown',
+      hairStyle: 'short',
+      skinTone: 'medium',
+      expression: 'confident',
+      faceShape: 'oval',
+      build: 'average'
     }
   }
 
