@@ -85,28 +85,42 @@ export const DynamicCharacterPage: React.FC = () => {
     }
   }
 
-  // Simple photo analysis - guess gender from filename, real analysis happens in cartoon generator
+  // Real AI photo analysis - happens immediately after photo upload
   const analyzePhoto = async (photo: File): Promise<{age: number, height: number, weight: number, gender: 'male' | 'female' | 'non-binary' | 'unknown'}> => {
-    console.log('📸 Photo uploaded, guessing gender from filename...')
-    console.log('🎯 Real AI analysis will happen during cartoon generation')
+    console.log('📸 Photo uploaded, starting AI analysis...')
     
-    // Guess gender from filename for pre-selection
-    const fileName = photo.name.toLowerCase()
-    let guessedGender: 'male' | 'female' | 'non-binary' | 'unknown' = 'unknown'
-    
-    if (fileName.includes('man') || fileName.includes('male') || fileName.includes('guy') || fileName.includes('boy')) {
-      guessedGender = 'male'
-    } else if (fileName.includes('woman') || fileName.includes('female') || fileName.includes('lady') || fileName.includes('girl')) {
-      guessedGender = 'female'
-    }
-    
-    console.log('🎯 Gender guess from filename:', guessedGender)
-    
-    return {
-      age: 30,
-      height: 170,
-      weight: 70,
-      gender: guessedGender
+    try {
+      // Use the cartoon generator's analysis method
+      const { CartoonGenerator } = await import('../services/cartoonGenerator')
+      const photoAnalysis = await CartoonGenerator.analyzePhotoForUI(photo)
+      
+      console.log('🎯 AI Analysis complete:', photoAnalysis)
+      
+      return {
+        age: photoAnalysis.age,
+        height: photoAnalysis.height,
+        weight: photoAnalysis.weight,
+        gender: photoAnalysis.gender
+      }
+    } catch (error) {
+      console.error('❌ AI analysis failed, using filename fallback:', error)
+      
+      // Fallback to filename analysis
+      const fileName = photo.name.toLowerCase()
+      let guessedGender: 'male' | 'female' | 'non-binary' | 'unknown' = 'unknown'
+      
+      if (fileName.includes('man') || fileName.includes('male') || fileName.includes('guy') || fileName.includes('boy')) {
+        guessedGender = 'male'
+      } else if (fileName.includes('woman') || fileName.includes('female') || fileName.includes('lady') || fileName.includes('girl')) {
+        guessedGender = 'female'
+      }
+      
+      return {
+        age: 30,
+        height: 170,
+        weight: 70,
+        gender: guessedGender
+      }
     }
   }
 
