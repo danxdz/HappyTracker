@@ -34,8 +34,8 @@ export class CartoonGenerator {
   /**
    * 🎨 Generate RPG Cartoon from Photo
    * 
-   * Creates an RPG character cartoon using photo analysis and RPG stats
-   * Uses detailed photo analysis to generate specific prompts
+   * Creates an RPG character cartoon using REAL AI photo analysis
+   * Analyzes the photo once with AI, no gender guessing
    */
   static async generateCartoonFromPhoto(
     photoFile: File,
@@ -45,12 +45,19 @@ export class CartoonGenerator {
     const startTime = Date.now()
     
     try {
-      console.log('🎨 Starting RPG cartoon generation...')
+      console.log('🎨 Starting AI-powered RPG cartoon generation...')
       
-      // Create detailed photo analysis from character data and filename
-      // Use USER INPUT data, not AI analysis
-      const photoAnalysis = this.createPhotoAnalysisFromData(photoFile, characterData)
-      console.log('📸 Photo analysis (using user input):', photoAnalysis)
+      // Analyze photo with REAL AI - do it once and do it right
+      const photoAnalysis = await this.analyzePhotoWithAI(photoFile)
+      console.log('📸 AI Photo analysis complete:', photoAnalysis)
+      
+      // Override with user input if provided (user input takes priority)
+      if (characterData) {
+        photoAnalysis.age = characterData.age
+        photoAnalysis.height = characterData.height
+        photoAnalysis.weight = characterData.weight
+        console.log('🎯 Using user input for age/height/weight:', characterData)
+      }
       
       // Generate RPG character
       const rpgGenerator = new RPGCharacterGenerator()
@@ -66,14 +73,14 @@ export class CartoonGenerator {
       
       const processingTime = Date.now() - startTime
       
-      // Cost estimation - only cartoon generation
+      // Cost estimation - includes both analysis and generation
       const costBreakdown = {
-        imageAnalysis: 0, // No image analysis
+        imageAnalysis: 0.01, // Salesforce/blip-image-captioning-large
         cartoonGeneration: 0.03, // stabilityai/stable-diffusion-xl-base-1.0
-        total: 0.03
+        total: 0.04
       }
       
-      console.log(`✅ RPG Cartoon generated in ${processingTime}ms`)
+      console.log(`✅ AI Cartoon generated in ${processingTime}ms`)
       console.log(`💰 Estimated cost: $${costBreakdown.total.toFixed(3)}`)
       
       return {
@@ -84,7 +91,7 @@ export class CartoonGenerator {
         breakdown: costBreakdown
       }
     } catch (error) {
-      console.error('❌ RPG Cartoon generation failed:', error)
+      console.error('❌ AI Cartoon generation failed:', error)
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Generation failed',
@@ -100,78 +107,138 @@ export class CartoonGenerator {
   }
 
   /**
-   * 📸 Create Photo Analysis from Data
+   * 📸 Analyze Photo with AI
    * 
-   * Converts character data and filename into detailed photo analysis
+   * Uses Hugging Face API to analyze the actual photo content
+   * Returns detailed photo analysis without gender guessing
    */
-  private static createPhotoAnalysisFromData(
-    photoFile: File,
-    characterData?: { name: string; age: number; height: number; weight: number }
-  ): PhotoAnalysis {
-    const fileName = photoFile.name.toLowerCase()
-    // ALWAYS use user input data, never defaults
-    const age = characterData?.age || 30
-    const height = characterData?.height || 170
-    const weight = characterData?.weight || 70
+  private static async analyzePhotoWithAI(photoFile: File): Promise<PhotoAnalysis> {
+    console.log('🔍 Analyzing photo with AI...')
     
-    console.log('🎯 Using user input data:', { age, height, weight })
+    try {
+      // Convert photo to base64
+      const base64Image = await this.fileToBase64(photoFile)
+      
+      // Use image captioning model to describe the photo
+      const response = await fetch(`${this.HF_API_URL}/Salesforce/blip-image-captioning-large`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.HF_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          inputs: base64Image
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`Photo analysis failed: ${response.status} ${response.statusText}`)
+      }
+
+      const result = await response.json()
+      const description = result[0]?.generated_text || 'a person in a photo'
+      
+      console.log('📝 AI Photo Description:', description)
+      
+      // Extract features from AI description
+      return this.extractFeaturesFromDescription(description, photoFile.name)
+      
+    } catch (error) {
+      console.error('❌ AI Photo analysis failed:', error)
+      throw new Error('AI photo analysis failed')
+    }
+  }
+
+  /**
+   * 🔍 Extract Features from AI Description
+   * 
+   * Converts AI description into structured photo analysis
+   * NO GENDER GUESSING - uses neutral defaults
+   */
+  private static extractFeaturesFromDescription(description: string, fileName: string): PhotoAnalysis {
+    const desc = description.toLowerCase()
+    const file = fileName.toLowerCase()
     
-    // Determine gender from filename or default
-    let gender: 'male' | 'female' | 'unknown' = 'unknown'
-    if (fileName.includes('man') || fileName.includes('male') || fileName.includes('guy')) {
-      gender = 'male'
-    } else if (fileName.includes('woman') || fileName.includes('female') || fileName.includes('lady')) {
-      gender = 'female'
-    } else {
-      gender = 'male' // Default assumption
+    // Extract age from description
+    let age = 30 // Default neutral age
+    if (desc.includes('old') || desc.includes('elderly') || desc.includes('senior') || desc.includes('aged')) {
+      age = Math.floor(Math.random() * 20) + 65 // 65-85
+    } else if (desc.includes('young') || desc.includes('teen') || desc.includes('child') || desc.includes('kid')) {
+      age = Math.floor(Math.random() * 15) + 15 // 15-30
+    } else if (desc.includes('middle') || desc.includes('adult')) {
+      age = Math.floor(Math.random() * 20) + 30 // 30-50
     }
     
-    // Determine build from height/weight
-    const bmi = weight / Math.pow(height / 100, 2)
+    // Estimate height and weight based on age and description
+    let height = 170 // Default neutral height
+    let weight = 70 // Default neutral weight
+    
+    if (age > 60) {
+      height = Math.floor(Math.random() * 15) + 165 // 165-180 (older people tend to be shorter)
+      weight = Math.floor(Math.random() * 20) + 60 // 60-80
+    } else if (age < 25) {
+      height = Math.floor(Math.random() * 20) + 160 // 160-180
+      weight = Math.floor(Math.random() * 25) + 55 // 55-80
+    } else {
+      height = Math.floor(Math.random() * 25) + 165 // 165-190
+      weight = Math.floor(Math.random() * 30) + 60 // 60-90
+    }
+    
+    // Determine build from description
     let build: 'slim' | 'average' | 'muscular' | 'heavy' = 'average'
-    if (bmi < 18.5) build = 'slim'
-    else if (bmi > 25) build = 'heavy'
-    else if (height > 180 && weight > 80) build = 'muscular'
+    if (desc.includes('slim') || desc.includes('thin') || desc.includes('skinny')) build = 'slim'
+    else if (desc.includes('muscular') || desc.includes('strong') || desc.includes('athletic')) build = 'muscular'
+    else if (desc.includes('heavy') || desc.includes('large') || desc.includes('big')) build = 'heavy'
     
-    // Determine hair color from filename
-    let hairColor = 'brown'
-    if (fileName.includes('blonde') || fileName.includes('blond')) hairColor = 'blonde'
-    else if (fileName.includes('black')) hairColor = 'black'
-    else if (fileName.includes('red') || fileName.includes('ginger')) hairColor = 'red'
-    else if (fileName.includes('gray') || fileName.includes('grey') || fileName.includes('white') || fileName.includes('old')) hairColor = 'white'
+    // Extract hair color from description
+    let hairColor = 'brown' // Default neutral
+    if (desc.includes('blonde') || desc.includes('blond') || desc.includes('yellow')) hairColor = 'blonde'
+    else if (desc.includes('black') || desc.includes('dark hair')) hairColor = 'black'
+    else if (desc.includes('red') || desc.includes('ginger') || desc.includes('auburn')) hairColor = 'red'
+    else if (desc.includes('gray') || desc.includes('grey') || desc.includes('white') || desc.includes('silver')) hairColor = 'white'
+    else if (desc.includes('brown') || desc.includes('brunette')) hairColor = 'brown'
     
-    // Determine hair style
-    let hairStyle = 'short'
-    if (fileName.includes('long')) hairStyle = 'long'
-    else if (fileName.includes('curly')) hairStyle = 'curly'
-    else if (fileName.includes('wavy')) hairStyle = 'wavy'
+    // Extract hair style from description
+    let hairStyle = 'short' // Default neutral
+    if (desc.includes('long hair') || desc.includes('long')) hairStyle = 'long'
+    else if (desc.includes('curly') || desc.includes('curls')) hairStyle = 'curly'
+    else if (desc.includes('wavy') || desc.includes('waves')) hairStyle = 'wavy'
+    else if (desc.includes('short') || desc.includes('short hair')) hairStyle = 'short'
     
-    // Determine skin tone
-    let skinTone: 'light' | 'medium' | 'dark' = 'medium'
-    if (fileName.includes('pale') || fileName.includes('fair')) skinTone = 'light'
-    else if (fileName.includes('dark') || fileName.includes('tan')) skinTone = 'dark'
+    // Extract skin tone from description
+    let skinTone: 'light' | 'medium' | 'dark' = 'medium' // Default neutral
+    if (desc.includes('pale') || desc.includes('fair') || desc.includes('light skin')) skinTone = 'light'
+    else if (desc.includes('dark') || desc.includes('tan') || desc.includes('dark skin')) skinTone = 'dark'
     
-    // Determine expression
-    let expression: 'serious' | 'smiling' | 'confident' | 'gentle' | 'mysterious' = 'confident'
-    if (fileName.includes('smile') || fileName.includes('happy')) expression = 'smiling'
-    else if (fileName.includes('serious') || fileName.includes('stern')) expression = 'serious'
-    else if (fileName.includes('mysterious') || fileName.includes('mystic')) expression = 'mysterious'
-    else if (fileName.includes('gentle') || fileName.includes('kind')) expression = 'gentle'
+    // Extract expression from description
+    let expression: 'serious' | 'smiling' | 'confident' | 'gentle' | 'mysterious' = 'confident' // Default neutral
+    if (desc.includes('smile') || desc.includes('happy') || desc.includes('cheerful')) expression = 'smiling'
+    else if (desc.includes('serious') || desc.includes('stern') || desc.includes('frown')) expression = 'serious'
+    else if (desc.includes('mysterious') || desc.includes('mystic') || desc.includes('enigmatic')) expression = 'mysterious'
+    else if (desc.includes('gentle') || desc.includes('kind') || desc.includes('soft')) expression = 'gentle'
     
-    // Determine face shape
-    let faceShape: 'round' | 'oval' | 'square' | 'heart' | 'long' = 'oval'
-    if (fileName.includes('round')) faceShape = 'round'
-    else if (fileName.includes('square')) faceShape = 'square'
-    else if (fileName.includes('heart')) faceShape = 'heart'
-    else if (fileName.includes('long')) faceShape = 'long'
+    // Extract face shape from description
+    let faceShape: 'round' | 'oval' | 'square' | 'heart' | 'long' = 'oval' // Default neutral
+    if (desc.includes('round') || desc.includes('circular')) faceShape = 'round'
+    else if (desc.includes('square') || desc.includes('angular')) faceShape = 'square'
+    else if (desc.includes('heart') || desc.includes('heart-shaped')) faceShape = 'heart'
+    else if (desc.includes('long') || desc.includes('elongated')) faceShape = 'long'
+    
+    // Extract glasses from description
+    const glasses = desc.includes('glasses') || desc.includes('spectacles') || desc.includes('eyewear')
+    
+    // Extract facial hair from description
+    const facialHair = desc.includes('beard') || desc.includes('mustache') || desc.includes('facial hair') || desc.includes('goatee')
+    
+    console.log('🎯 AI Analysis Results:', { age, height, weight, build, hairColor, hairStyle, skinTone, expression, faceShape, glasses, facialHair })
     
     return {
-      gender,
+      gender: 'unknown', // NO GENDER GUESSING
       age,
       height,
       weight,
-      glasses: fileName.includes('glasses') || fileName.includes('spectacles'),
-      facialHair: fileName.includes('beard') || fileName.includes('mustache') || fileName.includes('facial') || (gender === 'male' && age > 30),
+      glasses,
+      facialHair,
       hairColor,
       hairStyle,
       skinTone,
