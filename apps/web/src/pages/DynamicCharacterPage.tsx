@@ -202,6 +202,8 @@ export const DynamicCharacterPage: React.FC = () => {
     // Generate RPG class suggestion before moving to class selection
     try {
       console.log('⚔️ Generating RPG class suggestion...')
+      console.log('📊 Current character data:', characterData)
+      
       const { RPGCharacterGenerator } = await import('../services/rpgCharacterGenerator')
       const rpgGenerator = new RPGCharacterGenerator()
       
@@ -221,6 +223,7 @@ export const DynamicCharacterPage: React.FC = () => {
         build: 'average' as const
       }
       
+      console.log('📸 Photo analysis for RPG generation:', photoAnalysis)
       const rpgCharacter = rpgGenerator.generateRPGCharacter(photoAnalysis, characterData.name)
       const suggestedClass = {
         name: rpgCharacter.suggestedClass.name,
@@ -229,12 +232,17 @@ export const DynamicCharacterPage: React.FC = () => {
       }
       
       console.log('🎯 AI suggested class:', suggestedClass.name)
+      console.log('📊 Class stats:', suggestedClass.stats)
       setRpgClass(suggestedClass)
+      console.log('✅ RPG class set, moving to class selection step...')
     } catch (error) {
       console.error('❌ Failed to generate RPG class:', error)
     }
     
-    setTimeout(nextStep, 500)
+    setTimeout(() => {
+      console.log('🔄 Moving to next step from measures...')
+      nextStep()
+    }, 500)
   }
 
   const handleClassSelect = (selectedClass: {
@@ -250,8 +258,13 @@ export const DynamicCharacterPage: React.FC = () => {
       total: number
     }
   }) => {
+    console.log('🎯 Class selected:', selectedClass.name)
+    console.log('📊 Selected class stats:', selectedClass.stats)
     setRpgClass(selectedClass)
-    setTimeout(nextStep, 500)
+    setTimeout(() => {
+      console.log('🔄 Moving to next step from class selection...')
+      nextStep()
+    }, 500)
   }
 
   const handleCardComplete = async () => {

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Trash2, Download, Eye, Calendar, DollarSign, User, Sword } from 'lucide-react'
 import { CharacterStorage, SavedCharacter } from '../services/characterStorage'
 
 const CharacterGallery: React.FC = () => {
+  const navigate = useNavigate()
   const [characters, setCharacters] = useState<SavedCharacter[]>([])
   const [selectedCharacter, setSelectedCharacter] = useState<SavedCharacter | null>(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null)
@@ -11,6 +13,18 @@ const CharacterGallery: React.FC = () => {
   useEffect(() => {
     loadCharacters()
   }, [])
+
+  // Auto-redirect to character creation if no characters exist
+  useEffect(() => {
+    if (characters.length === 0) {
+      const timer = setTimeout(() => {
+        console.log('🔄 No characters found, redirecting to character creation...')
+        navigate('/dynamic-character')
+      }, 2000) // Wait 2 seconds to show the empty state message
+      
+      return () => clearTimeout(timer)
+    }
+  }, [characters.length, navigate])
 
   const loadCharacters = () => {
     const savedCharacters = CharacterStorage.getAllCharacters()
