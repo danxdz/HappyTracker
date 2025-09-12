@@ -10,6 +10,19 @@ export interface SavedCharacter {
   createdAt: Date
   generationCost?: number
   style: string
+  rpgClass?: {
+    name: string
+    description: string
+    stats: {
+      strength: number
+      agility: number
+      intelligence: number
+      wisdom: number
+      charisma: number
+      constitution: number
+      total: number
+    }
+  }
 }
 
 /**

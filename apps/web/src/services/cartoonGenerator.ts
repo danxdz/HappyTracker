@@ -15,6 +15,19 @@ export interface CaricatureGenerationResult {
     caricatureGeneration: number
     total: number
   }
+  rpgClass?: {
+    name: string
+    description: string
+    stats: {
+      strength: number
+      agility: number
+      intelligence: number
+      wisdom: number
+      charisma: number
+      constitution: number
+      total: number
+    }
+  }
 }
 
 /**
@@ -89,7 +102,12 @@ export class CaricatureGenerator {
         imageUrl: caricatureImage,
         processingTime,
         cost: costBreakdown.total,
-        breakdown: costBreakdown
+        breakdown: costBreakdown,
+        rpgClass: {
+          name: rpgCharacter.suggestedClass.name,
+          description: rpgCharacter.suggestedClass.description,
+          stats: rpgCharacter.stats
+        }
       }
     } catch (error) {
       console.error('❌ AI Cartoon generation failed:', error)

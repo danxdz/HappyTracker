@@ -49,6 +49,19 @@ export const DynamicCharacterPage: React.FC = () => {
   const [generationCost, setGenerationCost] = useState<number | null>(null)
   const [characterSaved, setCharacterSaved] = useState(false)
   const [showImageModal, setShowImageModal] = useState(false)
+  const [rpgClass, setRpgClass] = useState<{
+    name: string
+    description: string
+    stats: {
+      strength: number
+      agility: number
+      intelligence: number
+      wisdom: number
+      charisma: number
+      constitution: number
+      total: number
+    }
+  } | null>(null)
 
   // Auto-progress through loading
   useEffect(() => {
@@ -205,6 +218,10 @@ export const DynamicCharacterPage: React.FC = () => {
           console.log(`📊 Total cost: $${result.cost?.toFixed(3)}`)
           setGenerationCost(result.cost || 0)
         }
+        if (result.rpgClass) {
+          console.log('⚔️ RPG Class generated:', result.rpgClass.name)
+          setRpgClass(result.rpgClass)
+        }
         setCaricatureImage(result.imageUrl)
       } else {
         console.error('❌ HF Caricature generation failed:', result.error)
@@ -252,7 +269,8 @@ export const DynamicCharacterPage: React.FC = () => {
         photo: photoBase64,
         caricatureImage,
         generationCost: generationCost || 0,
-        style: 'cute'
+        style: 'cute',
+        rpgClass: rpgClass || undefined
       })
 
       setCharacterSaved(true)
@@ -427,6 +445,43 @@ export const DynamicCharacterPage: React.FC = () => {
                       <p className="text-gray-300 text-sm text-center mb-4">
                         {characterData.name} - Age: {characterData.age}, Height: {characterData.height}cm, Weight: {characterData.weight}kg
                       </p>
+                      
+                      {/* RPG Class Information */}
+                      {rpgClass && (
+                        <div className="bg-purple-500/20 border border-purple-500/30 rounded-lg p-4 mb-4">
+                          <h5 className="text-purple-400 font-semibold mb-2 text-center">⚔️ RPG Class: {rpgClass.name}</h5>
+                          <p className="text-gray-300 text-sm text-center mb-3">{rpgClass.description}</p>
+                          <div className="grid grid-cols-3 gap-2 text-xs">
+                            <div className="text-center">
+                              <div className="text-red-400 font-semibold">STR</div>
+                              <div className="text-white">{rpgClass.stats.strength}</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-green-400 font-semibold">AGI</div>
+                              <div className="text-white">{rpgClass.stats.agility}</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-blue-400 font-semibold">INT</div>
+                              <div className="text-white">{rpgClass.stats.intelligence}</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-yellow-400 font-semibold">WIS</div>
+                              <div className="text-white">{rpgClass.stats.wisdom}</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-pink-400 font-semibold">CHA</div>
+                              <div className="text-white">{rpgClass.stats.charisma}</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-orange-400 font-semibold">CON</div>
+                              <div className="text-white">{rpgClass.stats.constitution}</div>
+                            </div>
+                          </div>
+                          <div className="text-center mt-2">
+                            <div className="text-purple-300 text-xs">Total: {rpgClass.stats.total}</div>
+                          </div>
+                        </div>
+                      )}
                       
                       {/* Save to Gallery Button */}
                       {!characterSaved && (

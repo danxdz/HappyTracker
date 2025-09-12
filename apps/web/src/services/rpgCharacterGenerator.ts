@@ -289,7 +289,7 @@ export class RPGCharacterGenerator {
     const physicalTraits = `${analysis.age} years old, ${analysis.build} build`;
     
     // Technical requirements
-    const requirements = "single character only, centered composition, clean white background, RPG character design, fantasy game art style, front-facing heroic pose, face clearly visible, no helmets or face-covering equipment";
+    const requirements = "single character only, centered composition, clean white background, RPG character design, fantasy game art style, front-facing heroic pose, face clearly visible, no helmets, no headgear, no face-covering equipment";
     
     return [baseStyle, character, equipment, physicalTraits, requirements].join(', ');
   }
