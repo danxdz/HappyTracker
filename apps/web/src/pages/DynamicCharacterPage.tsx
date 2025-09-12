@@ -11,6 +11,7 @@ import { Calendar, User, Ruler, Weight, Sparkles, ArrowRight, Check, Image } fro
 import { CaricatureGenerator } from '../services/cartoonGenerator'
 import { CharacterStorage } from '../services/characterStorage'
 import { UploadService } from '../services/uploadService'
+import { CloudStorageService } from '../services/cloudStorageService'
 
 interface CharacterData {
   photo?: File
@@ -63,7 +64,7 @@ export const DynamicCharacterPage: React.FC = () => {
       constitution: number
       total: number
     }
-  } | null>(null)
+  } | undefined>(undefined)
   const [generationPrompt, setGenerationPrompt] = useState<string | null>(null)
   const [photoAnalysis, setPhotoAnalysis] = useState<{
     gender: 'male' | 'female' | 'non-binary' | 'unknown'
@@ -382,8 +383,23 @@ export const DynamicCharacterPage: React.FC = () => {
       setCharacterSaved(true)
       console.log('💾 Character saved to gallery:', savedCharacter.name)
       
-      // Try to upload to server (optional, don't block on failure)
+      // Try to upload to cloud storage (works with Netlify!)
       if (caricatureImage) {
+        // First try cloud storage (ImgBB or Cloudinary)
+        CloudStorageService.uploadImage(caricatureImage, characterData.name)
+          .then(result => {
+            if (result.success) {
+              console.log('☁️ Character uploaded to cloud:', result.url)
+              console.log('📦 Storage provider:', result.provider)
+            } else {
+              console.log('⚠️ Cloud upload failed, saved locally:', result.error)
+            }
+          })
+          .catch(err => {
+            console.log('⚠️ Cloud upload error, saved locally:', err)
+          })
+        
+        // Also try backend server if available (for local development)
         UploadService.saveCharacterFromBase64(caricatureImage, {
           name: characterData.name,
           class: rpgClass?.name || 'Warrior',
@@ -392,14 +408,8 @@ export const DynamicCharacterPage: React.FC = () => {
           style: 'cute',
           gender: characterData.gender,
           age: characterData.age
-        }).then(result => {
-          if (result.success) {
-            console.log('☁️ Character uploaded to server:', result.file?.url)
-          } else {
-            console.log('⚠️ Server upload failed (local save successful):', result.error)
-          }
-        }).catch(err => {
-          console.log('⚠️ Server upload failed (local save successful):', err)
+        }).catch(() => {
+          // Silently fail - cloud storage is the primary method
         })
       }
       
