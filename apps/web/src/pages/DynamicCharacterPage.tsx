@@ -12,6 +12,7 @@ import { CaricatureGenerator } from '../services/cartoonGenerator'
 import { CharacterStorage } from '../services/characterStorage'
 import { UploadService } from '../services/uploadService'
 import { CloudStorageService } from '../services/cloudStorageService'
+import { Meshy3DService } from '../services/meshy3DService'
 
 interface CharacterData {
   photo?: File
