@@ -7,7 +7,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Calendar, User, Ruler, Weight, Sparkles, ArrowRight, Check } from 'lucide-react'
+import { Calendar, User, Ruler, Weight, Sparkles, ArrowRight, Check, Image } from 'lucide-react'
 import { CartoonGenerator } from '../services/cartoonGenerator'
 import { CharacterStorage } from '../services/characterStorage'
 
@@ -294,6 +294,17 @@ export const DynamicCharacterPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 overflow-hidden">
       
+      {/* Header with Gallery Link */}
+      <div className="absolute top-4 right-4 z-10">
+        <button
+          onClick={() => window.location.href = '/character-gallery'}
+          className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2 text-white hover:bg-white/20 transition-colors"
+        >
+          <Image className="w-5 h-5" />
+          <span>Gallery</span>
+        </button>
+      </div>
+      
       {/* Loading Screen */}
       {currentStep === 'loading' && (
         <motion.div
@@ -436,9 +447,25 @@ export const DynamicCharacterPage: React.FC = () => {
                         </div>
                       )}
                       
-                      <p className="text-gray-300 text-sm text-center">
+                      <p className="text-gray-300 text-sm text-center mb-4">
                         {characterData.name} - Age: {characterData.age}, Height: {characterData.height}cm, Weight: {characterData.weight}kg
                       </p>
+                      
+                      {/* Save to Gallery Button */}
+                      {!characterSaved && (
+                        <button
+                          onClick={saveCharacterToGallery}
+                          className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg"
+                        >
+                          💾 Save to Gallery
+                        </button>
+                      )}
+                      
+                      {characterSaved && (
+                        <div className="w-full bg-green-500/20 border border-green-500/30 text-green-400 font-semibold py-3 px-6 rounded-xl text-center">
+                          ✅ Saved to Gallery!
+                        </div>
+                      )}
                     </div>
                   )}
                 </motion.div>
