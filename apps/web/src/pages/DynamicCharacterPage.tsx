@@ -73,7 +73,7 @@ export const DynamicCharacterPage: React.FC = () => {
   }
 
   const nextStep = () => {
-    const steps: FlowStep[] = ['loading', 'photo', 'name', 'age', 'measures', 'card', 'complete']
+    const steps: FlowStep[] = ['loading', 'photo', 'name', 'gender', 'age', 'measures', 'card', 'complete']
     const currentIndex = steps.indexOf(currentStep)
     console.log(`🔄 Current step: ${currentStep} (index: ${currentIndex})`)
     if (currentIndex < steps.length - 1) {

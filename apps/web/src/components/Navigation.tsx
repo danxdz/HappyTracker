@@ -12,7 +12,7 @@ export const Navigation: React.FC = () => {
     { path: '/health', label: 'Health', icon: Heart },
     { path: '/dynamic-character', label: 'Dynamic', icon: Zap },
     { path: '/character-3d', label: '3D Character', icon: Box },
-    { path: '/cartoon', label: 'Cartoon', icon: Palette },
+    { path: '/cartoon', label: 'Caricature', icon: Palette },
     { path: '/photo-to-pop', label: 'Photo to Pop', icon: Camera },
     { path: '/character-world', label: 'Character World', icon: Globe },
     { path: '/galaxy', label: 'Galaxy', icon: Sparkles },
