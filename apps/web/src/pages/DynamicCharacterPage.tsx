@@ -26,7 +26,7 @@ interface CharacterData {
   }
 }
 
-type FlowStep = 'loading' | 'photo' | 'name' | 'gender' | 'age' | 'measures' | 'card' | 'complete'
+type FlowStep = 'loading' | 'photo' | 'name' | 'gender' | 'age' | 'measures' | 'class' | 'card' | 'complete'
 
 export const DynamicCharacterPage: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<FlowStep>('loading')
@@ -86,7 +86,7 @@ export const DynamicCharacterPage: React.FC = () => {
   }
 
   const nextStep = () => {
-    const steps: FlowStep[] = ['loading', 'photo', 'name', 'gender', 'age', 'measures', 'card', 'complete']
+    const steps: FlowStep[] = ['loading', 'photo', 'name', 'gender', 'age', 'measures', 'class', 'card', 'complete']
     const currentIndex = steps.indexOf(currentStep)
     console.log(`🔄 Current step: ${currentStep} (index: ${currentIndex})`)
     if (currentIndex < steps.length - 1) {
@@ -182,8 +182,60 @@ export const DynamicCharacterPage: React.FC = () => {
     setTimeout(nextStep, 500)
   }
 
-  const handleMeasuresComplete = () => {
-    setTimeout(() => setCurrentStep('card'), 500)
+  const handleMeasuresComplete = async () => {
+    // Generate RPG class suggestion before moving to class selection
+    try {
+      console.log('⚔️ Generating RPG class suggestion...')
+      const { RPGCharacterGenerator } = await import('../services/rpgCharacterGenerator')
+      const rpgGenerator = new RPGCharacterGenerator()
+      
+      // Create photo analysis from current character data
+      const photoAnalysis = {
+        gender: characterData.gender,
+        age: characterData.age,
+        height: characterData.height,
+        weight: characterData.weight,
+        glasses: false,
+        facialHair: false,
+        hairColor: 'brown',
+        hairStyle: 'short',
+        skinTone: 'medium' as const,
+        expression: 'confident' as const,
+        faceShape: 'oval' as const,
+        build: 'average' as const
+      }
+      
+      const rpgCharacter = rpgGenerator.generateRPGCharacter(photoAnalysis, characterData.name)
+      const suggestedClass = {
+        name: rpgCharacter.suggestedClass.name,
+        description: rpgCharacter.suggestedClass.description,
+        stats: rpgCharacter.stats
+      }
+      
+      console.log('🎯 AI suggested class:', suggestedClass.name)
+      setRpgClass(suggestedClass)
+    } catch (error) {
+      console.error('❌ Failed to generate RPG class:', error)
+    }
+    
+    setTimeout(nextStep, 500)
+  }
+
+  const handleClassSelect = (selectedClass: {
+    name: string
+    description: string
+    stats: {
+      strength: number
+      agility: number
+      intelligence: number
+      wisdom: number
+      charisma: number
+      constitution: number
+      total: number
+    }
+  }) => {
+    setRpgClass(selectedClass)
+    setTimeout(nextStep, 500)
   }
 
   const handleCardComplete = async () => {
@@ -854,6 +906,120 @@ export const DynamicCharacterPage: React.FC = () => {
             </motion.div>
           )}
 
+          {/* RPG Class Selection Popup */}
+          {currentStep === 'class' && (
+            <motion.div
+              key="class-popup"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+            >
+              <div className="bg-gradient-to-br from-purple-900 to-blue-900 rounded-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <h3 className="text-2xl font-bold text-white mb-6 text-center">
+                  ⚔️ Choose Your RPG Class
+                </h3>
+                
+                {rpgClass && (
+                  <div className="mb-6">
+                    <p className="text-gray-300 text-center mb-4">
+                      AI Suggested: <span className="text-blue-400 font-semibold">{rpgClass.name}</span>
+                    </p>
+                    <div className="bg-blue-500/20 border border-blue-500/30 rounded-xl p-4 mb-4">
+                      <h4 className="text-blue-400 font-semibold mb-2">{rpgClass.name}</h4>
+                      <p className="text-gray-300 text-sm mb-3">{rpgClass.description}</p>
+                      <div className="grid grid-cols-3 gap-2 text-xs">
+                        <div className="text-center">
+                          <div className="text-red-400 font-semibold">STR</div>
+                          <div className="text-white">{rpgClass.stats.strength}</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-green-400 font-semibold">AGI</div>
+                          <div className="text-white">{rpgClass.stats.agility}</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-blue-400 font-semibold">INT</div>
+                          <div className="text-white">{rpgClass.stats.intelligence}</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-yellow-400 font-semibold">WIS</div>
+                          <div className="text-white">{rpgClass.stats.wisdom}</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-pink-400 font-semibold">CHA</div>
+                          <div className="text-white">{rpgClass.stats.charisma}</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-orange-400 font-semibold">CON</div>
+                          <div className="text-white">{rpgClass.stats.constitution}</div>
+                        </div>
+                      </div>
+                      <div className="text-center mt-2">
+                        <div className="text-blue-300 text-xs">Total: {rpgClass.stats.total}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="space-y-3">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => rpgClass && handleClassSelect(rpgClass)}
+                    className="w-full py-3 px-4 rounded-xl font-semibold transition-all bg-blue-500 text-white hover:bg-blue-600"
+                  >
+                    ✅ Accept AI Suggestion: {rpgClass?.name || 'Warrior'}
+                  </motion.button>
+                  
+                  <div className="text-center text-gray-400 text-sm">
+                    Or choose a different class:
+                  </div>
+                  
+                  {['Warrior', 'Rogue', 'Mage', 'Cleric', 'Bard', 'Ranger'].map((className) => {
+                    if (className === rpgClass?.name) return null // Don't show the suggested class again
+                    
+                    return (
+                      <motion.button
+                        key={className}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => {
+                          // Generate stats for the selected class
+                          const classStats = {
+                            Warrior: { strength: 80, agility: 60, intelligence: 50, wisdom: 50, charisma: 60, constitution: 70, total: 370 },
+                            Rogue: { strength: 60, agility: 80, intelligence: 70, wisdom: 60, charisma: 70, constitution: 60, total: 400 },
+                            Mage: { strength: 40, agility: 50, intelligence: 90, wisdom: 80, charisma: 60, constitution: 50, total: 370 },
+                            Cleric: { strength: 60, agility: 50, intelligence: 60, wisdom: 90, charisma: 70, constitution: 70, total: 400 },
+                            Bard: { strength: 50, agility: 70, intelligence: 70, wisdom: 60, charisma: 90, constitution: 60, total: 400 },
+                            Ranger: { strength: 70, agility: 80, intelligence: 60, wisdom: 70, charisma: 60, constitution: 70, total: 410 }
+                          }
+                          
+                          const classDescriptions = {
+                            Warrior: "Strong melee fighter with high defense",
+                            Rogue: "Quick and sneaky with high dexterity", 
+                            Mage: "Master of arcane magic and spells",
+                            Cleric: "Holy healer and support specialist",
+                            Bard: "Charismatic performer with social skills",
+                            Ranger: "Nature expert with bow skills"
+                          }
+                          
+                          handleClassSelect({
+                            name: className,
+                            description: classDescriptions[className as keyof typeof classDescriptions],
+                            stats: classStats[className as keyof typeof classStats]
+                          })
+                        }}
+                        className="w-full py-3 px-4 rounded-xl font-semibold transition-all bg-white/20 text-white hover:bg-white/30"
+                      >
+                        {className}
+                      </motion.button>
+                    )
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           {/* Character Card Display */}
           {currentStep === 'card' && (
             <motion.div
@@ -1001,15 +1167,17 @@ export const DynamicCharacterPage: React.FC = () => {
           className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
         >
           <div className="flex space-x-2">
-            {['photo', 'name', 'age', 'measures', 'card', 'complete'].map((step, index) => (
+            {['photo', 'name', 'gender', 'age', 'measures', 'class', 'card', 'complete'].map((step, index) => (
               <div
                 key={step}
                 className={`w-3 h-3 rounded-full transition-all ${
                   currentStep === step || 
                   (step === 'photo' && currentStep === 'photo') ||
-                  (step === 'name' && ['name', 'age', 'measures', 'card', 'complete'].includes(currentStep)) ||
-                  (step === 'age' && ['age', 'measures', 'card', 'complete'].includes(currentStep)) ||
-                  (step === 'measures' && ['measures', 'card', 'complete'].includes(currentStep)) ||
+                  (step === 'name' && ['name', 'gender', 'age', 'measures', 'class', 'card', 'complete'].includes(currentStep)) ||
+                  (step === 'gender' && ['gender', 'age', 'measures', 'class', 'card', 'complete'].includes(currentStep)) ||
+                  (step === 'age' && ['age', 'measures', 'class', 'card', 'complete'].includes(currentStep)) ||
+                  (step === 'measures' && ['measures', 'class', 'card', 'complete'].includes(currentStep)) ||
+                  (step === 'class' && ['class', 'card', 'complete'].includes(currentStep)) ||
                   (step === 'card' && ['card', 'complete'].includes(currentStep)) ||
                   (step === 'complete' && currentStep === 'complete')
                     ? 'bg-blue-500'
