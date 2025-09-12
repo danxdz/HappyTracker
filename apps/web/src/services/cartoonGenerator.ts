@@ -100,7 +100,7 @@ export class CaricatureGenerator {
         cost: 0,
         breakdown: {
           imageAnalysis: 0,
-          cartoonGeneration: 0,
+          caricatureGeneration: 0,
           total: 0
         }
       }

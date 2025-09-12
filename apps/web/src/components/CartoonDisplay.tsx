@@ -1,22 +1,22 @@
 /**
- * 🎨 Cartoon Display Component
+ * 🎨 Caricature Display Component
  * 
- * Beautiful display for generated cartoon characters
+ * Beautiful display for generated caricature characters
  */
 
 import React from 'react'
 import { motion } from 'framer-motion'
 import { Download, Share2, RefreshCw, Heart, Sparkles, X, Check } from 'lucide-react'
-import { CartoonGenerationResult } from '../services/cartoonGenerator'
+import { CaricatureGenerationResult } from '../services/cartoonGenerator'
 
-export interface CartoonDisplayProps {
-  result: CartoonGenerationResult
+export interface CaricatureDisplayProps {
+  result: CaricatureGenerationResult
   onRegenerate?: () => void
   onDownload?: () => void
   onShare?: () => void
 }
 
-export const CartoonDisplay: React.FC<CartoonDisplayProps> = ({
+export const CaricatureDisplay: React.FC<CaricatureDisplayProps> = ({
   result,
   onRegenerate,
   onDownload,

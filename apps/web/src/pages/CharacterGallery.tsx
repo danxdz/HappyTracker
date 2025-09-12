@@ -36,10 +36,10 @@ const CharacterGallery: React.FC = () => {
   }
 
   const downloadCharacter = (character: SavedCharacter) => {
-    // Create a data URL for the cartoon image
+    // Create a data URL for the caricature image
     const link = document.createElement('a')
-    link.href = character.cartoonImage
-    link.download = `${character.name}_cartoon.png`
+    link.href = character.caricatureImage
+    link.download = `${character.name}_caricature.png`
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -124,7 +124,7 @@ const CharacterGallery: React.FC = () => {
                 {/* Character Image */}
                 <div className="aspect-square bg-white rounded-t-xl overflow-hidden">
                   <img
-                    src={character.cartoonImage}
+                    src={character.caricatureImage}
                     alt={character.name}
                     className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-200"
                   />
@@ -192,12 +192,12 @@ const CharacterGallery: React.FC = () => {
               {/* Generated Cartoon */}
               <div>
                 <h3 className="text-white font-semibold mb-3 flex items-center">
-                  🎨 Generated Cartoon
+                  🎨 Generated Caricature
                 </h3>
                 <div className="bg-white rounded-xl p-4">
                   <img
-                    src={selectedCharacter.cartoonImage}
-                    alt="Generated cartoon"
+                    src={selectedCharacter.caricatureImage}
+                    alt="Generated caricature"
                     className="w-full h-64 object-contain rounded-lg"
                   />
                 </div>

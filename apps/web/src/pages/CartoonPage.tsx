@@ -7,13 +7,13 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { PhotoUpload } from '../components/PhotoUpload'
-import { CartoonDisplay } from '../components/CartoonDisplay'
-import { CartoonGenerator, CartoonGenerationResult } from '../services/cartoonGenerator'
+import { CaricatureDisplay } from '../components/CartoonDisplay'
+import { CaricatureGenerator, CaricatureGenerationResult } from '../services/cartoonGenerator'
 
 export const CartoonPage: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
-  const [result, setResult] = useState<CartoonGenerationResult | null>(null)
+  const [result, setResult] = useState<CaricatureGenerationResult | null>(null)
   const [selectedStyle, setSelectedStyle] = useState<'cute' | 'anime' | 'disney' | 'pixar'>('cute')
 
   const handlePhotoSelect = async (file: File) => {
@@ -37,7 +37,7 @@ export const CartoonPage: React.FC = () => {
     setResult(null)
 
     try {
-      const cartoonResult = await CartoonGenerator.generateCartoonFromPhoto(photoFile, selectedStyle)
+      const cartoonResult = await CaricatureGenerator.generateCaricatureFromPhoto(photoFile, selectedStyle)
       setResult(cartoonResult)
     } catch (error) {
       console.error('Cartoon generation failed:', error)
@@ -167,11 +167,11 @@ export const CartoonPage: React.FC = () => {
             >
               <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6">
                 <h2 className="text-2xl font-bold text-white mb-4">
-                  🎨 Your Cartoon Character
+                  🎨 Your Caricature Character
                 </h2>
                 
                 {result ? (
-                  <CartoonDisplay
+                  <CaricatureDisplay
                     result={result}
                     onRegenerate={handleRegenerate}
                     onDownload={handleDownload}

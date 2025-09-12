@@ -6,7 +6,7 @@ export interface SavedCharacter {
   weight: number
   gender: 'male' | 'female' | 'non-binary' | 'unknown'
   photo?: string // Base64 or URL
-  cartoonImage: string // Base64 or URL
+  caricatureImage: string // Base64 or URL
   createdAt: Date
   generationCost?: number
   style: string
