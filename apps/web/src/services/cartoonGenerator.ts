@@ -563,7 +563,7 @@ export class CaricatureGenerator {
    * Falls back to filename analysis if face detection fails
    */
   static async analyzePhotoForUI(photoFile: File): Promise<PhotoAnalysis> {
-    console.log('🔍 Analyzing photo for UI with local face-api.js or fallback...')
+    console.log('🔍 Analyzing photo for UI with secure Canvas API...')
     try {
       const faceResult = await LocalFaceAnalysis.analyzeFace(photoFile)
       if (faceResult.faceDetected) {
