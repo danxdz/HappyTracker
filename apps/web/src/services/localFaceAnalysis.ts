@@ -38,8 +38,8 @@ export class LocalFaceAnalysis {
    */
   private static async loadModels(): Promise<void> {
     try {
-      // Load models from CDN (free)
-      const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models'
+      // Load models from working CDN (free)
+      const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model'
       
       await Promise.all([
         faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),

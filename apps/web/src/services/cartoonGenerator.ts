@@ -47,9 +47,9 @@ export class CartoonGenerator {
     try {
       console.log('🎨 Starting AI-powered RPG cartoon generation...')
       
-      // Analyze photo with LOCAL face analysis - completely free!
-      const photoAnalysis = await this.analyzePhotoWithLocalAI(photoFile)
-      console.log('📸 Local AI Photo analysis complete:', photoAnalysis)
+      // Use filename analysis for now (face-api.js models not available)
+      const photoAnalysis = this.createFallbackAnalysis(photoFile)
+      console.log('📸 Filename analysis complete:', photoAnalysis)
       
       // Override with user input if provided (user input takes priority)
       if (characterData) {

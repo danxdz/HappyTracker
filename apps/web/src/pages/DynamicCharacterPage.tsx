@@ -48,6 +48,7 @@ export const DynamicCharacterPage: React.FC = () => {
   const [cartoonImage, setCartoonImage] = useState<string | null>(null)
   const [generationCost, setGenerationCost] = useState<number | null>(null)
   const [characterSaved, setCharacterSaved] = useState(false)
+  const [showImageModal, setShowImageModal] = useState(false)
 
   // Auto-progress through loading
   useEffect(() => {
@@ -860,7 +861,12 @@ export const DynamicCharacterPage: React.FC = () => {
                       
                       {/* Cartoon Result */}
                       {cartoonGenerated ? (
-                        <div className="w-48 h-48 bg-white rounded-xl mx-auto mb-4 flex items-center justify-center overflow-hidden">
+                        <motion.div 
+                          className="w-48 h-48 bg-white rounded-xl mx-auto mb-4 flex items-center justify-center overflow-hidden cursor-pointer hover:scale-105 transition-transform"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => setShowImageModal(true)}
+                        >
                           {cartoonImage ? (
                             <img 
                               src={cartoonImage} 
@@ -870,7 +876,7 @@ export const DynamicCharacterPage: React.FC = () => {
                           ) : (
                             <div className="text-6xl animate-spin">🎨</div>
                           )}
-                        </div>
+                        </motion.div>
                       ) : (
                         <div className="w-48 h-48 bg-gradient-to-br from-blue-400 to-purple-500 rounded-xl mx-auto flex items-center justify-center mb-4">
                           <div className="text-6xl">🎨</div>
@@ -938,6 +944,45 @@ export const DynamicCharacterPage: React.FC = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Image Modal */}
+      {showImageModal && cartoonImage && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50"
+          onClick={() => setShowImageModal(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1 }}
+            exit={{ scale: 0.8 }}
+            className="bg-white rounded-2xl p-4 max-w-4xl max-h-[90vh] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-2xl font-bold text-gray-800">Generated Character</h3>
+              <button
+                onClick={() => setShowImageModal(false)}
+                className="text-gray-500 hover:text-gray-700 text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            <div className="flex justify-center">
+              <img 
+                src={cartoonImage} 
+                alt="Generated Cartoon - Full Size" 
+                className="max-w-full max-h-[70vh] object-contain"
+              />
+            </div>
+            <div className="text-center mt-4">
+              <p className="text-gray-600">Click outside to close</p>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   )
 }
