@@ -153,25 +153,44 @@ export class CartoonGenerator {
    * 🔍 Extract Features from AI Description
    * 
    * Converts AI description into structured photo analysis
-   * NO GENDER GUESSING - uses neutral defaults
+   * GUESSES ALL FEATURES from the photo description
    */
   private static extractFeaturesFromDescription(description: string, fileName: string): PhotoAnalysis {
     const desc = description.toLowerCase()
     const file = fileName.toLowerCase()
     
-    // Extract age from description
-    let age = 30 // Default neutral age
-    if (desc.includes('old') || desc.includes('elderly') || desc.includes('senior') || desc.includes('aged')) {
+    // Extract age from description - GUESS EVERYTHING
+    let age = 30 // Default
+    if (desc.includes('old') || desc.includes('elderly') || desc.includes('senior') || desc.includes('aged') || desc.includes('wrinkled')) {
       age = Math.floor(Math.random() * 20) + 65 // 65-85
-    } else if (desc.includes('young') || desc.includes('teen') || desc.includes('child') || desc.includes('kid')) {
+    } else if (desc.includes('young') || desc.includes('teen') || desc.includes('child') || desc.includes('kid') || desc.includes('baby')) {
       age = Math.floor(Math.random() * 15) + 15 // 15-30
-    } else if (desc.includes('middle') || desc.includes('adult')) {
+    } else if (desc.includes('middle') || desc.includes('adult') || desc.includes('mature')) {
       age = Math.floor(Math.random() * 20) + 30 // 30-50
+    } else if (desc.includes('teenager') || desc.includes('teen')) {
+      age = Math.floor(Math.random() * 5) + 15 // 15-20
+    } else if (desc.includes('toddler') || desc.includes('baby')) {
+      age = Math.floor(Math.random() * 3) + 2 // 2-5
     }
     
-    // Estimate height and weight based on age and description
-    let height = 170 // Default neutral height
-    let weight = 70 // Default neutral weight
+    // GUESS gender from description
+    let gender: 'male' | 'female' | 'unknown' = 'unknown'
+    if (desc.includes('man') || desc.includes('male') || desc.includes('guy') || desc.includes('boy') || desc.includes('gentleman')) {
+      gender = 'male'
+    } else if (desc.includes('woman') || desc.includes('female') || desc.includes('lady') || desc.includes('girl') || desc.includes('lady')) {
+      gender = 'female'
+    } else if (desc.includes('person') || desc.includes('individual') || desc.includes('human')) {
+      // Try to guess from other features
+      if (desc.includes('beard') || desc.includes('mustache') || desc.includes('facial hair')) {
+        gender = 'male'
+      } else if (desc.includes('long hair') || desc.includes('makeup') || desc.includes('lipstick')) {
+        gender = 'female'
+      }
+    }
+    
+    // Estimate height and weight based on age, gender, and description
+    let height = 170 // Default
+    let weight = 70 // Default
     
     if (age > 60) {
       height = Math.floor(Math.random() * 15) + 165 // 165-180 (older people tend to be shorter)
@@ -184,56 +203,110 @@ export class CartoonGenerator {
       weight = Math.floor(Math.random() * 30) + 60 // 60-90
     }
     
-    // Determine build from description
+    // Adjust for gender
+    if (gender === 'male') {
+      height += Math.floor(Math.random() * 10) + 5 // Males tend to be taller
+      weight += Math.floor(Math.random() * 15) + 10 // Males tend to be heavier
+    } else if (gender === 'female') {
+      height -= Math.floor(Math.random() * 5) + 2 // Females tend to be shorter
+      weight -= Math.floor(Math.random() * 10) + 5 // Females tend to be lighter
+    }
+    
+    // Determine build from description - GUESS EVERYTHING
     let build: 'slim' | 'average' | 'muscular' | 'heavy' = 'average'
-    if (desc.includes('slim') || desc.includes('thin') || desc.includes('skinny')) build = 'slim'
-    else if (desc.includes('muscular') || desc.includes('strong') || desc.includes('athletic')) build = 'muscular'
-    else if (desc.includes('heavy') || desc.includes('large') || desc.includes('big')) build = 'heavy'
+    if (desc.includes('slim') || desc.includes('thin') || desc.includes('skinny') || desc.includes('lean') || desc.includes('slender')) {
+      build = 'slim'
+    } else if (desc.includes('muscular') || desc.includes('strong') || desc.includes('athletic') || desc.includes('buff') || desc.includes('built')) {
+      build = 'muscular'
+    } else if (desc.includes('heavy') || desc.includes('large') || desc.includes('big') || desc.includes('overweight') || desc.includes('chubby')) {
+      build = 'heavy'
+    } else if (desc.includes('average') || desc.includes('normal') || desc.includes('medium')) {
+      build = 'average'
+    }
     
-    // Extract hair color from description
-    let hairColor = 'brown' // Default neutral
-    if (desc.includes('blonde') || desc.includes('blond') || desc.includes('yellow')) hairColor = 'blonde'
-    else if (desc.includes('black') || desc.includes('dark hair')) hairColor = 'black'
-    else if (desc.includes('red') || desc.includes('ginger') || desc.includes('auburn')) hairColor = 'red'
-    else if (desc.includes('gray') || desc.includes('grey') || desc.includes('white') || desc.includes('silver')) hairColor = 'white'
-    else if (desc.includes('brown') || desc.includes('brunette')) hairColor = 'brown'
+    // Extract hair color from description - GUESS EVERYTHING
+    let hairColor = 'brown' // Default
+    if (desc.includes('blonde') || desc.includes('blond') || desc.includes('yellow') || desc.includes('golden')) {
+      hairColor = 'blonde'
+    } else if (desc.includes('black') || desc.includes('dark hair') || desc.includes('ebony')) {
+      hairColor = 'black'
+    } else if (desc.includes('red') || desc.includes('ginger') || desc.includes('auburn') || desc.includes('redhead')) {
+      hairColor = 'red'
+    } else if (desc.includes('gray') || desc.includes('grey') || desc.includes('white') || desc.includes('silver') || desc.includes('salt and pepper')) {
+      hairColor = 'white'
+    } else if (desc.includes('brown') || desc.includes('brunette') || desc.includes('chestnut')) {
+      hairColor = 'brown'
+    } else if (desc.includes('bald') || desc.includes('balding') || desc.includes('hairless')) {
+      hairColor = 'bald'
+    }
     
-    // Extract hair style from description
-    let hairStyle = 'short' // Default neutral
-    if (desc.includes('long hair') || desc.includes('long')) hairStyle = 'long'
-    else if (desc.includes('curly') || desc.includes('curls')) hairStyle = 'curly'
-    else if (desc.includes('wavy') || desc.includes('waves')) hairStyle = 'wavy'
-    else if (desc.includes('short') || desc.includes('short hair')) hairStyle = 'short'
+    // Extract hair style from description - GUESS EVERYTHING
+    let hairStyle = 'short' // Default
+    if (desc.includes('long hair') || desc.includes('long') || desc.includes('lengthy')) {
+      hairStyle = 'long'
+    } else if (desc.includes('curly') || desc.includes('curls') || desc.includes('curled')) {
+      hairStyle = 'curly'
+    } else if (desc.includes('wavy') || desc.includes('waves') || desc.includes('waved')) {
+      hairStyle = 'wavy'
+    } else if (desc.includes('short') || desc.includes('short hair') || desc.includes('cropped')) {
+      hairStyle = 'short'
+    } else if (desc.includes('bald') || desc.includes('balding') || desc.includes('hairless')) {
+      hairStyle = 'bald'
+    } else if (desc.includes('ponytail') || desc.includes('bun') || desc.includes('braid')) {
+      hairStyle = 'long'
+    }
     
-    // Extract skin tone from description
-    let skinTone: 'light' | 'medium' | 'dark' = 'medium' // Default neutral
-    if (desc.includes('pale') || desc.includes('fair') || desc.includes('light skin')) skinTone = 'light'
-    else if (desc.includes('dark') || desc.includes('tan') || desc.includes('dark skin')) skinTone = 'dark'
+    // Extract skin tone from description - GUESS EVERYTHING
+    let skinTone: 'light' | 'medium' | 'dark' = 'medium' // Default
+    if (desc.includes('pale') || desc.includes('fair') || desc.includes('light skin') || desc.includes('white skin') || desc.includes('caucasian')) {
+      skinTone = 'light'
+    } else if (desc.includes('dark') || desc.includes('tan') || desc.includes('dark skin') || desc.includes('brown skin') || desc.includes('african') || desc.includes('black skin')) {
+      skinTone = 'dark'
+    } else if (desc.includes('medium') || desc.includes('olive') || desc.includes('bronze') || desc.includes('hispanic') || desc.includes('latino')) {
+      skinTone = 'medium'
+    }
     
-    // Extract expression from description
-    let expression: 'serious' | 'smiling' | 'confident' | 'gentle' | 'mysterious' = 'confident' // Default neutral
-    if (desc.includes('smile') || desc.includes('happy') || desc.includes('cheerful')) expression = 'smiling'
-    else if (desc.includes('serious') || desc.includes('stern') || desc.includes('frown')) expression = 'serious'
-    else if (desc.includes('mysterious') || desc.includes('mystic') || desc.includes('enigmatic')) expression = 'mysterious'
-    else if (desc.includes('gentle') || desc.includes('kind') || desc.includes('soft')) expression = 'gentle'
+    // Extract expression from description - GUESS EVERYTHING
+    let expression: 'serious' | 'smiling' | 'confident' | 'gentle' | 'mysterious' = 'confident' // Default
+    if (desc.includes('smile') || desc.includes('happy') || desc.includes('cheerful') || desc.includes('grinning') || desc.includes('laughing')) {
+      expression = 'smiling'
+    } else if (desc.includes('serious') || desc.includes('stern') || desc.includes('frown') || desc.includes('grim') || desc.includes('stoic')) {
+      expression = 'serious'
+    } else if (desc.includes('mysterious') || desc.includes('mystic') || desc.includes('enigmatic') || desc.includes('mysterious')) {
+      expression = 'mysterious'
+    } else if (desc.includes('gentle') || desc.includes('kind') || desc.includes('soft') || desc.includes('warm') || desc.includes('friendly')) {
+      expression = 'gentle'
+    } else if (desc.includes('confident') || desc.includes('proud') || desc.includes('strong') || desc.includes('determined')) {
+      expression = 'confident'
+    }
     
-    // Extract face shape from description
-    let faceShape: 'round' | 'oval' | 'square' | 'heart' | 'long' = 'oval' // Default neutral
-    if (desc.includes('round') || desc.includes('circular')) faceShape = 'round'
-    else if (desc.includes('square') || desc.includes('angular')) faceShape = 'square'
-    else if (desc.includes('heart') || desc.includes('heart-shaped')) faceShape = 'heart'
-    else if (desc.includes('long') || desc.includes('elongated')) faceShape = 'long'
+    // Extract face shape from description - GUESS EVERYTHING
+    let faceShape: 'round' | 'oval' | 'square' | 'heart' | 'long' = 'oval' // Default
+    if (desc.includes('round') || desc.includes('circular') || desc.includes('chubby face')) {
+      faceShape = 'round'
+    } else if (desc.includes('square') || desc.includes('angular') || desc.includes('strong jaw')) {
+      faceShape = 'square'
+    } else if (desc.includes('heart') || desc.includes('heart-shaped') || desc.includes('pointed chin')) {
+      faceShape = 'heart'
+    } else if (desc.includes('long') || desc.includes('elongated') || desc.includes('narrow')) {
+      faceShape = 'long'
+    } else if (desc.includes('oval') || desc.includes('balanced') || desc.includes('symmetrical')) {
+      faceShape = 'oval'
+    }
     
-    // Extract glasses from description
-    const glasses = desc.includes('glasses') || desc.includes('spectacles') || desc.includes('eyewear')
+    // Extract glasses from description - GUESS EVERYTHING
+    const glasses = desc.includes('glasses') || desc.includes('spectacles') || desc.includes('eyewear') || desc.includes('sunglasses') || desc.includes('reading glasses')
     
-    // Extract facial hair from description
-    const facialHair = desc.includes('beard') || desc.includes('mustache') || desc.includes('facial hair') || desc.includes('goatee')
+    // Extract facial hair from description - GUESS EVERYTHING
+    const facialHair = desc.includes('beard') || desc.includes('mustache') || desc.includes('facial hair') || desc.includes('goatee') || desc.includes('stubble') || desc.includes('whiskers')
     
-    console.log('🎯 AI Analysis Results:', { age, height, weight, build, hairColor, hairStyle, skinTone, expression, faceShape, glasses, facialHair })
+    console.log('🎯 AI GUESSED ALL FEATURES:', { 
+      gender, age, height, weight, build, hairColor, hairStyle, 
+      skinTone, expression, faceShape, glasses, facialHair 
+    })
     
     return {
-      gender: 'unknown', // NO GENDER GUESSING
+      gender, // GUESS GENDER TOO
       age,
       height,
       weight,

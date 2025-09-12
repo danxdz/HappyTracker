@@ -80,83 +80,16 @@ export const DynamicCharacterPage: React.FC = () => {
     }
   }
 
-  // AI Photo Analysis (with HF API toggle)
+  // Simple photo analysis - just set defaults, real analysis happens in cartoon generator
   const analyzePhoto = async (photo: File): Promise<{age: number, height: number, weight: number}> => {
-    console.log('🤖 Analyzing photo for age and measures...')
-    console.log('🎛️ HF API Mode:', hfApiEnabled ? '🟢 ENABLED' : '🔴 DISABLED (Simulated)')
+    console.log('📸 Photo uploaded, setting default values...')
+    console.log('🎯 Real AI analysis will happen during cartoon generation')
     
-    if (hfApiEnabled) {
-      // TODO: Integrate real Hugging Face API here
-      console.log('🚀 Using Hugging Face API for real analysis...')
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 3000))
-      
-      // Simulate more intelligent analysis based on photo characteristics
-      // This would normally use real AI models like age estimation, face analysis, etc.
-      const fileName = photo.name.toLowerCase()
-      let estimatedAge = 30
-      let estimatedHeight = 175
-      let estimatedWeight = 70
-      
-      // Basic filename analysis (in real implementation, this would be image analysis)
-      if (fileName.includes('old') || fileName.includes('elderly') || fileName.includes('senior')) {
-        estimatedAge = Math.floor(Math.random() * 20) + 65 // 65-85
-        estimatedHeight = Math.floor(Math.random() * 15) + 165 // 165-180 (older people tend to be shorter)
-        estimatedWeight = Math.floor(Math.random() * 20) + 60 // 60-80
-      } else if (fileName.includes('young') || fileName.includes('teen') || fileName.includes('child')) {
-        estimatedAge = Math.floor(Math.random() * 15) + 15 // 15-30
-        estimatedHeight = Math.floor(Math.random() * 20) + 160 // 160-180
-        estimatedWeight = Math.floor(Math.random() * 25) + 55 // 55-80
-      } else {
-        // Default adult range
-        estimatedAge = Math.floor(Math.random() * 30) + 25 // 25-55
-        estimatedHeight = Math.floor(Math.random() * 25) + 165 // 165-190
-        estimatedWeight = Math.floor(Math.random() * 30) + 60 // 60-90
-      }
-      
-      console.log('🎯 HF API Analysis complete:', { age: estimatedAge, height: estimatedHeight, weight: estimatedWeight })
-      console.log(`📸 Photo analysis: Detected ${fileName.includes('old') ? 'elderly person' : fileName.includes('young') ? 'young person' : 'adult person'}`)
-      
-      return {
-        age: estimatedAge,
-        height: estimatedHeight,
-        weight: estimatedWeight
-      }
-    } else {
-      // Simulated analysis with better logic
-      console.log('🎭 Using simulated analysis...')
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      // Simulate basic photo analysis
-      const fileName = photo.name.toLowerCase()
-      let simulatedAge = 35
-      let simulatedHeight = 175
-      let simulatedWeight = 70
-      
-      // Basic filename-based simulation
-      if (fileName.includes('old') || fileName.includes('elderly') || fileName.includes('senior')) {
-        simulatedAge = Math.floor(Math.random() * 25) + 60 // 60-85
-        simulatedHeight = Math.floor(Math.random() * 15) + 165 // 165-180
-        simulatedWeight = Math.floor(Math.random() * 20) + 60 // 60-80
-      } else if (fileName.includes('young') || fileName.includes('teen') || fileName.includes('child')) {
-        simulatedAge = Math.floor(Math.random() * 15) + 18 // 18-33
-        simulatedHeight = Math.floor(Math.random() * 20) + 160 // 160-180
-        simulatedWeight = Math.floor(Math.random() * 25) + 55 // 55-80
-      } else {
-        // Default adult range
-        simulatedAge = Math.floor(Math.random() * 25) + 25 // 25-50
-        simulatedHeight = Math.floor(Math.random() * 25) + 165 // 165-190
-        simulatedWeight = Math.floor(Math.random() * 30) + 60 // 60-90
-      }
-      
-      console.log('🎯 Simulated AI guesses:', { age: simulatedAge, height: simulatedHeight, weight: simulatedWeight })
-      console.log(`📸 Photo analysis: Detected ${fileName.includes('old') ? 'elderly person' : fileName.includes('young') ? 'young person' : 'adult person'}`)
-      
-      return {
-        age: simulatedAge,
-        height: simulatedHeight,
-        weight: simulatedWeight
-      }
+    // Just return default values - the real AI analysis happens in cartoonGenerator
+    return {
+      age: 30,
+      height: 170,
+      weight: 70
     }
   }
 
