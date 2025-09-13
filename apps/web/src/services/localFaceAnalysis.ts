@@ -61,18 +61,10 @@ export class LocalFaceAnalysis {
     try {
       console.log('🔧 Initializing TensorFlow.js backend...')
       
-      // Try to initialize WebGL backend first
-      try {
-        await tf.ready()
-        console.log('✅ TensorFlow.js WebGL backend ready')
-      } catch (webglError) {
-        console.warn('⚠️ WebGL backend failed, trying CPU backend:', webglError)
-        
-        // Fallback to CPU backend
-        await tf.setBackend('cpu')
-        await tf.ready()
-        console.log('✅ TensorFlow.js CPU backend ready')
-      }
+      // Force CPU backend to avoid WebGL issues
+      await tf.setBackend('cpu')
+      await tf.ready()
+      console.log('✅ TensorFlow.js CPU backend ready')
       
       this.tfInitialized = true
     } catch (error) {

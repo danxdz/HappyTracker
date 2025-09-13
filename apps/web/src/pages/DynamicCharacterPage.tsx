@@ -205,45 +205,23 @@ const DynamicCharacterPage: React.FC = () => {
   }
 
   const generateCaricature = async () => {
-    logger.log('🎯 Starting InstantID character generation...')
+    logger.log('🎨 Starting caricature generation...')
     setIsGeneratingCaricature(true)
     
     try {
       const { CaricatureGenerator } = await import('../services/cartoonGenerator')
-      
-      // Try InstantID first for better similarity
-      let result
-      try {
-        result = await CaricatureGenerator.generateCharacterWithInstantID(
-          characterData.photo!,
-          {
-            name: characterData.name,
-            age: characterData.age,
-            height: characterData.height,
-            weight: characterData.weight,
-            gender: characterData.gender
-          },
-          rpgClass
-        )
-        logger.log('✅ InstantID generation successful')
-      } catch (instantIDError) {
-        logger.warn('⚠️ InstantID failed, falling back to legacy method:', instantIDError)
-        
-        // Fallback to legacy method
-        result = await CaricatureGenerator.generateCaricatureFromPhoto(
-          characterData.photo!,
-          'cute',
-          {
-            name: characterData.name,
-            age: characterData.age,
-            height: characterData.height,
-            weight: characterData.weight,
-            gender: characterData.gender
-          },
-          rpgClass
-        )
-        logger.log('✅ Legacy generation successful')
-      }
+      const result = await CaricatureGenerator.generateCaricatureFromPhoto(
+        characterData.photo!,
+        'cute',
+        {
+          name: characterData.name,
+          age: characterData.age,
+          height: characterData.height,
+          weight: characterData.weight,
+          gender: characterData.gender
+        },
+        rpgClass
+      )
       
       if (result.success && result.imageUrl) {
         logger.log('🎨 AI Caricature generated successfully!')

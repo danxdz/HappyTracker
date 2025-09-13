@@ -2,7 +2,6 @@ import { HuggingFaceService } from './huggingFaceService'
 import { RPGCharacterGenerator, PhotoAnalysis } from './rpgCharacterGenerator'
 import { LocalFaceAnalysis } from './localFaceAnalysis'
 import { ImageCompression } from './imageCompression'
-import { InstantIDService } from './instantIDService'
 
 // PhotoAnalysis interface is now imported from rpgCharacterGenerator
 
@@ -62,93 +61,10 @@ export class CaricatureGenerator {
   }
 
   /**
-   * 🎯 Generate Character with InstantID (High Similarity)
+   * 🎨 Generate RPG Caricature from Photo
    * 
-   * Uses InstantID for identity-preserving character generation
-   * Much better photo similarity than traditional methods
-   */
-  static async generateCharacterWithInstantID(
-    photoFile: File,
-    characterData?: { name: string; age: number; height: number; weight: number; gender: 'male' | 'female' | 'non-binary' | 'unknown' },
-    selectedRpgClass?: { name: string; description: string; stats: { strength: number; agility: number; intelligence: number; wisdom: number; charisma: number; constitution: number; total: number } }
-  ): Promise<CaricatureGenerationResult> {
-    const startTime = Date.now()
-    
-    try {
-      console.log('🎯 Starting InstantID character generation...')
-      
-      // Analyze photo for character details
-      const photoAnalysis = await this.analyzePhotoForUI(photoFile)
-      console.log('📸 Photo analysis complete:', photoAnalysis)
-      
-      // Override with user input if provided
-      if (characterData) {
-        photoAnalysis.age = characterData.age
-        photoAnalysis.height = characterData.height
-        photoAnalysis.weight = characterData.weight
-        photoAnalysis.gender = characterData.gender
-        console.log('🎯 Using user input for character data:', characterData)
-      }
-      
-      // Generate character prompt
-      const characterPrompt = this.generateInstantIDPrompt(photoAnalysis, characterData?.name || 'Character', selectedRpgClass)
-      console.log('🎯 InstantID Character prompt:', characterPrompt)
-      
-      // Generate character with InstantID
-      const instantIDResult = await InstantIDService.analyzePhotoForCharacter(
-        photoFile,
-        characterPrompt,
-        'realistic'
-      )
-      
-      const processingTime = Date.now() - startTime
-      
-      // Cost estimation for InstantID
-      const costBreakdown = {
-        imageAnalysis: 0, // FREE - local analysis
-        caricatureGeneration: instantIDResult.cost,
-        total: instantIDResult.cost
-      }
-      
-      console.log(`✅ InstantID Character generated in ${processingTime}ms`)
-      console.log(`💰 Cost: $${costBreakdown.total.toFixed(3)}`)
-      console.log(`🎯 Similarity: ${(instantIDResult.similarity * 100).toFixed(1)}%`)
-      
-      return {
-        success: true,
-        imageUrl: instantIDResult.imageUrl,
-        processingTime,
-        cost: costBreakdown.total,
-        breakdown: costBreakdown,
-        rpgClass: selectedRpgClass ? {
-          name: selectedRpgClass.name,
-          description: selectedRpgClass.description,
-          stats: selectedRpgClass.stats
-        } : undefined,
-        generationPrompt: characterPrompt,
-        photoAnalysis: photoAnalysis
-      }
-    } catch (error) {
-      console.error('❌ InstantID generation failed:', error)
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'InstantID generation failed',
-        processingTime: Date.now() - startTime,
-        cost: 0,
-        breakdown: {
-          imageAnalysis: 0,
-          caricatureGeneration: 0,
-          total: 0
-        }
-      }
-    }
-  }
-
-  /**
-   * 🎨 Generate RPG Caricature from Photo (Legacy Method)
-   * 
-   * Creates an RPG character caricature using traditional methods
-   * Kept for fallback when InstantID is not available
+   * Creates an RPG character caricature using REAL AI photo analysis
+   * Analyzes the photo once with AI, no gender guessing
    */
   static async generateCaricatureFromPhoto(
     photoFile: File,
@@ -241,32 +157,48 @@ export class CaricatureGenerator {
   }
 
   /**
-   * 📸 Analyze Photo with InstantID (Disabled Face.js)
+   * 📸 Analyze Photo with Local AI
    * 
-   * Uses InstantID for better analysis, avoids TensorFlow.js errors
-   * Falls back to filename analysis if InstantID fails
+   * Uses face-api.js for completely free, local face analysis
+   * No API keys, no external dependencies
    */
   private static async analyzePhotoWithLocalAI(photoFile: File): Promise<PhotoAnalysis> {
-    console.log('🔍 Analyzing photo with InstantID (Face.js disabled)...')
+    console.log('🔍 Analyzing photo with local face-api.js...')
     
     try {
-      // Use InstantID analysis instead of Face.js to avoid TensorFlow.js errors
-      const instantIDResult = await InstantIDService.analyzePhotoForCharacter(
-        photoFile,
-        'A person for character analysis',
-        'realistic'
-      )
+      // Initialize face-api.js models first
+      await LocalFaceAnalysis.initialize()
       
-      if (instantIDResult && instantIDResult.similarity > 0.8) {
-        console.log('✅ InstantID analysis successful')
-        return this.createInstantIDAnalysis(photoFile, instantIDResult)
-      } else {
-        console.log('⚠️ InstantID analysis failed, using fallback analysis')
+      // Use local face analysis
+      const faceResult = await LocalFaceAnalysis.analyzeFace(photoFile)
+      
+      if (!faceResult.faceDetected) {
+        console.log('❌ No face detected, using filename analysis')
         return this.createFallbackAnalysis(photoFile)
       }
+
+      // Convert face analysis to PhotoAnalysis
+      const photoAnalysis: PhotoAnalysis = {
+        gender: faceResult.gender,
+        age: faceResult.age,
+        height: this.estimateHeightFromAge(faceResult.age),
+        weight: this.estimateWeightFromAge(faceResult.age),
+        glasses: false, // face-api.js doesn't detect glasses
+        facialHair: false, // face-api.js doesn't detect facial hair
+        hairColor: 'brown', // Default
+        hairStyle: 'short', // Default
+        skinTone: 'medium', // Default
+        expression: 'confident', // Default
+        faceShape: 'oval', // Default
+        build: 'average' // Default
+      }
+
+      console.log('🎯 Local face analysis result:', photoAnalysis)
+      return photoAnalysis
+
     } catch (error) {
-      console.error('❌ InstantID analysis failed:', error)
-      console.log('🔄 Using fallback analysis to avoid TensorFlow.js errors')
+      console.error('❌ Local face analysis failed:', error)
+      console.log('🔄 Falling back to filename analysis...')
       return this.createFallbackAnalysis(photoFile)
     }
   }
@@ -590,77 +522,40 @@ export class CaricatureGenerator {
   /**
    * 🔍 Analyze Photo for UI Pre-filling
    * 
-   * Uses InstantID for better photo analysis and character generation
-   * Falls back to filename analysis if InstantID fails
+   * Uses local face-api.js analysis for immediate UI field population
+   * Falls back to filename analysis if face detection fails
    */
   static async analyzePhotoForUI(photoFile: File): Promise<PhotoAnalysis> {
-    console.log('🔍 Analyzing photo for UI with InstantID or fallback...')
+    console.log('🔍 Analyzing photo for UI with local face-api.js or fallback...')
     try {
-      // Try InstantID analysis first
-      const instantIDResult = await InstantIDService.analyzePhotoForCharacter(
-        photoFile,
-        'A person for character analysis',
-        'realistic'
-      )
-      
-      if (instantIDResult && instantIDResult.similarity > 0.8) {
-        console.log('✅ InstantID analysis successful, using enhanced analysis')
-        return this.createInstantIDAnalysis(photoFile, instantIDResult)
+      const faceResult = await LocalFaceAnalysis.analyzeFace(photoFile)
+      if (faceResult.faceDetected) {
+        const photoAnalysis: PhotoAnalysis = {
+          gender: faceResult.gender,
+          age: faceResult.age,
+          height: this.estimateHeightFromAge(faceResult.age),
+          weight: this.estimateWeightFromAge(faceResult.age),
+          glasses: false, // face-api.js doesn't detect glasses
+          facialHair: false, // face-api.js doesn't detect facial hair
+          hairColor: 'brown', // Default
+          hairStyle: 'short', // Default
+          skinTone: 'medium', // Default
+          expression: 'confident', // Default
+          faceShape: 'oval', // Default
+          build: 'average' // Default
+        }
+        console.log('🎯 Local face analysis for UI result:', photoAnalysis)
+        return photoAnalysis
       } else {
-        console.log('⚠️ InstantID analysis failed, using filename analysis')
+        console.log('❌ No face detected for UI, using filename analysis')
         return this.createFallbackAnalysis(photoFile)
       }
     } catch (error) {
-      console.error('❌ InstantID analysis failed for UI:', error)
-      console.log('🔄 Falling back to filename analysis')
+      console.error('❌ Local face analysis for UI failed, falling back to filename:', error)
       return this.createFallbackAnalysis(photoFile)
     }
   }
 
-  /**
-   * 🎯 Create InstantID-based photo analysis
-   */
-  private static createInstantIDAnalysis(photoFile: File, instantIDResult: any): PhotoAnalysis {
-    console.log('🎯 Creating InstantID-based photo analysis...')
-    
-    // Extract basic info from filename as fallback
-    const filename = photoFile.name.toLowerCase()
-    
-    // Basic age estimation from filename patterns
-    let estimatedAge = 30
-    if (filename.includes('young') || filename.includes('teen')) {
-      estimatedAge = 20
-    } else if (filename.includes('old') || filename.includes('senior')) {
-      estimatedAge = 50
-    }
-    
-    // Basic gender estimation from filename
-    let estimatedGender: 'male' | 'female' | 'non-binary' | 'unknown' = 'unknown'
-    if (filename.includes('male') || filename.includes('man') || filename.includes('boy')) {
-      estimatedGender = 'male'
-    } else if (filename.includes('female') || filename.includes('woman') || filename.includes('girl')) {
-      estimatedGender = 'female'
-    }
-    
-    // Enhanced analysis based on InstantID success
-    const photoAnalysis: PhotoAnalysis = {
-      gender: estimatedGender,
-      age: estimatedAge,
-      height: this.estimateHeightFromAge(estimatedAge),
-      weight: this.estimateWeightFromAge(estimatedAge),
-      glasses: false,
-      facialHair: false,
-      hairColor: 'brown',
-      hairStyle: 'short',
-      skinTone: 'medium',
-      expression: 'confident',
-      faceShape: 'oval',
-      build: 'average'
-    }
-    
-    console.log('🎯 InstantID-based analysis result:', photoAnalysis)
-    return photoAnalysis
-  }
 
   /**
    * 🎨 Generate Caricature Image with AI
@@ -777,55 +672,6 @@ RESTRICTIONS: No weapons, no equipment, no helmets, no headgear, no face-coverin
 QUALITY: High quality, detailed, professional, photo-realistic facial features, detailed eyes and expression, crisp edges, vibrant colors, studio lighting, perfect composition.`
   }
 
-  /**
-   * Generate InstantID-optimized character prompt
-   */
-  private static generateInstantIDPrompt(
-    photoAnalysis: PhotoAnalysis, 
-    characterName: string, 
-    rpgClass?: { name: string; description: string; stats: any }
-  ): string {
-    const genderText = photoAnalysis.gender === 'male' ? 'male' : 
-                      photoAnalysis.gender === 'female' ? 'female' : 'person'
-    
-    const hairColor = photoAnalysis.hairColor || 'brown'
-    const hairStyle = photoAnalysis.hairStyle || 'short'
-    const skinTone = photoAnalysis.skinTone || 'medium'
-    const expression = photoAnalysis.expression || 'confident'
-    const build = photoAnalysis.build || 'average'
-    const faceShape = photoAnalysis.faceShape || 'oval'
-    
-    // Age-appropriate styling
-    const ageGroup = photoAnalysis.age < 18 ? 'young' : 
-                    photoAnalysis.age < 30 ? 'young adult' :
-                    photoAnalysis.age < 50 ? 'adult' :
-                    photoAnalysis.age < 70 ? 'mature' : 'elderly'
-    
-    // InstantID works best with simple, clear descriptions
-    const clothing = 'casual modern clothing, simple outfit'
-    
-    // Height and weight descriptions
-    const heightDesc = photoAnalysis.height < 150 ? 'short' :
-                      photoAnalysis.height < 170 ? 'average height' :
-                      photoAnalysis.height < 190 ? 'tall' : 'very tall'
-    
-    const weightDesc = photoAnalysis.weight < 50 ? 'slender' :
-                      photoAnalysis.weight < 70 ? 'average build' :
-                      photoAnalysis.weight < 90 ? 'solid build' : 'sturdy build'
-    
-    // InstantID prompt - simpler and more focused on identity preservation
-    let prompt = `A ${ageGroup} ${genderText} with ${hairColor} ${hairStyle} hair, ${skinTone} skin tone, ${faceShape} face shape, ${expression} expression. ${heightDesc} (${photoAnalysis.height}cm), ${weightDesc} (${photoAnalysis.weight}kg). ${clothing}.`
-    
-    // Add RPG class context if provided
-    if (rpgClass) {
-      prompt += ` Character has ${rpgClass.name.toLowerCase()} class traits: ${rpgClass.description.toLowerCase()}.`
-    }
-    
-    // InstantID-specific quality and style instructions
-    prompt += ` Professional portrait, high quality, detailed facial features, natural lighting, clean background, identity-preserving, realistic style.`
-    
-    return prompt
-  }
 
   /**
    * Generate character variant with different expression/mood and clothing
