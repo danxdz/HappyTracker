@@ -7,6 +7,7 @@ import { logger } from '../utils/logger'
 
 interface CharacterData {
   photo?: File
+  photoUrl?: string
   name: string
   age: number
   height: number
@@ -86,6 +87,9 @@ const DynamicCharacterPage: React.FC = () => {
     setIsProcessingPhoto(true)
     
     try {
+      // Create preview URL
+      const photoUrl = URL.createObjectURL(file)
+      
       // Simulate photo analysis
       await new Promise(resolve => setTimeout(resolve, 2000))
       
@@ -98,7 +102,7 @@ const DynamicCharacterPage: React.FC = () => {
       }
       
       logger.log('🎯 AI Analysis complete:', aiGuesses)
-      updateCharacterData({ photo: file, aiGuesses })
+      updateCharacterData({ photo: file, photoUrl, aiGuesses })
       
       setTimeout(() => {
         setIsProcessingPhoto(false)
@@ -241,6 +245,19 @@ const DynamicCharacterPage: React.FC = () => {
                 <p className="text-sm text-gray-500 mt-2">PNG, JPG up to 10MB</p>
               </label>
             </div>
+            
+            {characterData.photoUrl && (
+              <div className="mt-6">
+                <h3 className="text-white font-semibold mb-3 text-center">📸 Your Photo</h3>
+                <div className="max-w-xs mx-auto">
+                  <img 
+                    src={characterData.photoUrl} 
+                    alt="Uploaded photo" 
+                    className="w-full h-auto rounded-xl border-2 border-purple-500/30"
+                  />
+                </div>
+              </div>
+            )}
             
             {isProcessingPhoto && (
               <div className="mt-6 flex items-center justify-center gap-3">
@@ -474,6 +491,20 @@ const DynamicCharacterPage: React.FC = () => {
             
             <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-8 max-w-md mx-auto mb-8">
               <h3 className="text-xl font-semibold text-white mb-4">Character Summary</h3>
+              
+              {characterData.photoUrl && (
+                <div className="mb-4">
+                  <h4 className="text-white font-medium mb-2">📸 Your Photo</h4>
+                  <div className="w-24 h-24 mx-auto rounded-xl overflow-hidden border-2 border-purple-500/30">
+                    <img 
+                      src={characterData.photoUrl} 
+                      alt="Your photo" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+              )}
+              
               <div className="space-y-2 text-gray-300">
                 <div><strong>Name:</strong> {characterData.name}</div>
                 <div><strong>Age:</strong> {characterData.age}</div>
@@ -519,9 +550,23 @@ const DynamicCharacterPage: React.FC = () => {
             </div>
             <h2 className="text-2xl font-bold text-white mb-4">Character Created!</h2>
             
+            {/* Original Photo */}
+            {characterData.photoUrl && (
+              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 max-w-xs mx-auto mb-4">
+                <h3 className="text-lg font-semibold text-white mb-3">📸 Original Photo</h3>
+                <div className="w-32 h-32 bg-white rounded-xl mx-auto overflow-hidden">
+                  <img 
+                    src={characterData.photoUrl} 
+                    alt="Original photo" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+            )}
+            
             {caricatureImage && (
               <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 max-w-sm mx-auto mb-6">
-                <h3 className="text-lg font-semibold text-white mb-4">Your Character</h3>
+                <h3 className="text-lg font-semibold text-white mb-4">🎨 Your Character</h3>
                 <div 
                   className="w-48 h-48 bg-white rounded-xl mx-auto flex items-center justify-center overflow-hidden mb-4 cursor-pointer hover:scale-105 transition-transform"
                   onClick={() => setShowImageModal(true)}
