@@ -11,6 +11,7 @@ import { Calendar, User, Ruler, Weight, Sparkles, ArrowRight, Check, Image, Box,
 import { CaricatureGenerator } from '../services/cartoonGenerator'
 import { CharacterStorage } from '../services/characterStorage'
 import { ThreeDCharacterGenerator } from '../services/threeDCharacterGenerator'
+import { Meshy3DService } from '../services/meshy3DService'
 import { ThreeDViewer } from '../components/ThreeDViewer'
 
 interface CharacterData {
@@ -85,6 +86,8 @@ export const DynamicCharacterPage: React.FC = () => {
   const [isGenerating3D, setIsGenerating3D] = useState(false)
   const [threeDModelUrl, setThreeDModelUrl] = useState<string | null>(null)
   const [threeDGenerationResult, setThreeDGenerationResult] = useState<any>(null)
+  const [isGeneratingMeshy3D, setIsGeneratingMeshy3D] = useState(false)
+  const [meshy3DResult, setMeshy3DResult] = useState<any>(null)
 
   // Auto-progress through loading
   useEffect(() => {
@@ -394,6 +397,41 @@ export const DynamicCharacterPage: React.FC = () => {
     }
   }
 
+  const generateMeshy3DCharacter = async () => {
+    try {
+      console.log('🎮 Starting Meshy 3D character generation...')
+      setIsGeneratingMeshy3D(true)
+      
+      if (!caricatureImage) {
+        console.error('❌ No caricature image available for Meshy 3D generation')
+        alert('No caricature image available for Meshy 3D generation')
+        return
+      }
+      
+      const result = await Meshy3DService.imageToModel(caricatureImage, {
+        art_style: 'cartoon',
+        target_polycount: 'medium',
+        auto_refine: true
+      })
+      
+      if (result.success && result.modelUrl) {
+        console.log('🎮 Meshy 3D Character generated successfully!')
+        setMeshy3DResult(result)
+        // Also set as the main 3D model URL for viewing
+        setThreeDModelUrl(result.modelUrl)
+      } else {
+        console.error('❌ Meshy 3D Character generation failed:', result.error)
+        alert(`Meshy 3D generation failed: ${result.error}`)
+      }
+      
+      setIsGeneratingMeshy3D(false)
+    } catch (error) {
+      console.error('❌ Error generating Meshy 3D character:', error)
+      setIsGeneratingMeshy3D(false)
+      alert('Error generating Meshy 3D character')
+    }
+  }
+
   const saveCharacterToGallery = async () => {
     try {
       console.log('💾 Attempting to save character to gallery...')
@@ -665,6 +703,47 @@ export const DynamicCharacterPage: React.FC = () => {
                           ✅ Saved to Gallery!
                         </div>
                       )}
+                      
+                      {/* 3D Generation Options */}
+                      <div className="mt-4 space-y-3">
+                        <h5 className="text-white font-semibold text-center mb-3">🎮 Create 3D Model</h5>
+                        
+                        {/* Free 3D Generation */}
+                        <button
+                          onClick={generateThreeDCharacter}
+                          disabled={isGenerating3D}
+                          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg disabled:scale-100 disabled:cursor-not-allowed"
+                        >
+                          {isGenerating3D ? (
+                            <div className="flex items-center justify-center">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                              Generating 3D Model...
+                            </div>
+                          ) : (
+                            '🎮 Generate Free 3D Model'
+                          )}
+                        </button>
+                        
+                        {/* Meshy 3D Generation */}
+                        <button
+                          onClick={generateMeshy3DCharacter}
+                          disabled={isGeneratingMeshy3D}
+                          className="w-full bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg disabled:scale-100 disabled:cursor-not-allowed"
+                        >
+                          {isGeneratingMeshy3D ? (
+                            <div className="flex items-center justify-center">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                              Generating Meshy 3D...
+                            </div>
+                          ) : (
+                            '🎨 Generate Premium 3D (Meshy)'
+                          )}
+                        </button>
+                        
+                        <p className="text-gray-400 text-xs text-center">
+                          Free: Basic 3D model | Premium: High-quality Meshy 3D
+                        </p>
+                      </div>
                     </div>
                   )}
                 </motion.div>
