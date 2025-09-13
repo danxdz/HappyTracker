@@ -23,13 +23,31 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom'],
-          redux: ['@reduxjs/toolkit', 'react-redux'],
-          router: ['react-router-dom'],
-          ui: ['framer-motion', 'lucide-react']
+          // Core React
+          'react-vendor': ['react', 'react-dom'],
+          
+          // State management
+          'redux-vendor': ['@reduxjs/toolkit', 'react-redux'],
+          
+          // Routing
+          'router-vendor': ['react-router-dom'],
+          
+          // UI libraries
+          'ui-vendor': ['framer-motion', 'lucide-react'],
+          
+          // 3D libraries
+          'three-vendor': ['three', '@react-three/fiber', '@react-three/drei', '@react-three/postprocessing'],
+          
+          // AI/ML libraries
+          'ai-vendor': ['face-api.js', '@tensorflow/tfjs-core', '@tensorflow/tfjs-backend-webgl'],
+          
+          // Utility libraries
+          'utils-vendor': ['clsx', 'class-variance-authority']
         }
       }
-    }
+    },
+    // Increase chunk size warning limit
+    chunkSizeWarningLimit: 1000
   },
   define: {
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version)

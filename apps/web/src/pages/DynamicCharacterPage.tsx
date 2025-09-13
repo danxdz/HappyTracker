@@ -2,9 +2,8 @@ import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Camera, ArrowRight, ArrowLeft, Check, Upload, User, Calendar, Ruler, Weight, Sparkles, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { CaricatureGenerator } from '../services/cartoonGenerator'
-import { CharacterStorage } from '../services/characterStorage'
-import { ThreeDCharacterGenerator } from '../services/threeDCharacterGenerator'
+// Dynamic imports for code splitting
+import { logger } from '../utils/logger'
 
 interface CharacterData {
   photo?: File
@@ -64,14 +63,14 @@ const DynamicCharacterPage: React.FC = () => {
   const currentStepIndex = steps.indexOf(currentStep)
 
   const updateCharacterData = (updates: Partial<CharacterData>) => {
-    console.log('📝 Updating character data:', updates)
+    logger.log('📝 Updating character data:', updates)
     setCharacterData(prev => ({ ...prev, ...updates }))
   }
 
   const moveToNextStep = () => {
     const nextIndex = currentStepIndex + 1
     if (nextIndex < steps.length) {
-      console.log('➡️ Moving to next step:', steps[nextIndex])
+      logger.log('➡️ Moving to next step:', steps[nextIndex])
       setCurrentStep(steps[nextIndex])
     }
   }
@@ -79,13 +78,13 @@ const DynamicCharacterPage: React.FC = () => {
   const moveToPreviousStep = () => {
     const prevIndex = currentStepIndex - 1
     if (prevIndex >= 0) {
-      console.log('⬅️ Moving to previous step:', steps[prevIndex])
+      logger.log('⬅️ Moving to previous step:', steps[prevIndex])
       setCurrentStep(steps[prevIndex])
     }
   }
 
   const handlePhotoUpload = async (file: File) => {
-    console.log('📸 Starting photo analysis...')
+    logger.log('📸 Starting photo analysis...')
     setIsProcessingPhoto(true)
     
     try {
@@ -100,7 +99,7 @@ const DynamicCharacterPage: React.FC = () => {
         gender: ['male', 'female'][Math.floor(Math.random() * 2)] as 'male' | 'female'
       }
       
-      console.log('🎯 AI Analysis complete:', aiGuesses)
+      logger.log('🎯 AI Analysis complete:', aiGuesses)
       updateCharacterData({ photo: file, aiGuesses })
       
       setTimeout(() => {
@@ -108,16 +107,17 @@ const DynamicCharacterPage: React.FC = () => {
         moveToNextStep()
       }, 1000)
     } catch (error) {
-      console.error('❌ Photo analysis failed:', error)
+      logger.error('❌ Photo analysis failed:', error)
       setIsProcessingPhoto(false)
     }
   }
 
   const generateCaricature = async () => {
-    console.log('🎨 Starting caricature generation...')
+    logger.log('🎨 Starting caricature generation...')
     setIsGeneratingCaricature(true)
     
     try {
+      const { CaricatureGenerator } = await import('../services/cartoonGenerator')
       const result = await CaricatureGenerator.generateCaricatureFromPhoto(
         characterData.photo!,
         'cute',
@@ -132,7 +132,7 @@ const DynamicCharacterPage: React.FC = () => {
       )
       
       if (result.success && result.imageUrl) {
-        console.log('🎨 AI Caricature generated successfully!')
+        logger.log('🎨 AI Caricature generated successfully!')
         setCaricatureImage(result.imageUrl)
         setGenerationCost(result.cost || 0)
         setGenerationResult(result)
@@ -152,31 +152,32 @@ const DynamicCharacterPage: React.FC = () => {
           setCurrentStep('complete')
         }, 1000)
       } else {
-        console.error('❌ Caricature generation failed:', result.error)
+        logger.error('❌ Caricature generation failed:', result.error)
         setIsGeneratingCaricature(false)
         alert('Caricature generation failed. Please try again.')
       }
     } catch (error) {
-      console.error('❌ Error generating caricature:', error)
+      logger.error('❌ Error generating caricature:', error)
       setIsGeneratingCaricature(false)
       alert('Error generating caricature. Please try again.')
     }
   }
 
   const generateThreeDCharacter = async () => {
-    console.log('🎮 Starting 3D character generation...')
+    logger.log('🎮 Starting 3D character generation...')
     setIsGenerating3D(true)
     
     try {
+      const { ThreeDCharacterGenerator } = await import('../services/threeDCharacterGenerator')
       const result = await ThreeDCharacterGenerator.generateThreeDCharacter(
         caricatureImage!,
         characterData,
         rpgClass
       )
-      console.log('🎮 3D Character generated successfully!')
+      logger.log('🎮 3D Character generated successfully!')
       setThreeDModelUrl(result.modelUrl || null)
     } catch (error) {
-      console.error('❌ 3D Character generation failed:', error)
+      logger.error('❌ 3D Character generation failed:', error)
     } finally {
       setIsGenerating3D(false)
     }
@@ -184,21 +185,22 @@ const DynamicCharacterPage: React.FC = () => {
 
   const saveCharacterToGallery = async () => {
     if (isSavingCharacter || characterSaved) {
-      console.log('⏳ Already saving or saved, ignoring duplicate request')
+      logger.log('⏳ Already saving or saved, ignoring duplicate request')
       return
     }
 
     try {
       setIsSavingCharacter(true)
-      console.log('💾 Attempting to save character to gallery...')
+      logger.log('💾 Attempting to save character to gallery...')
       
       if (!caricatureImage || !characterData.name) {
-        console.error('❌ Cannot save: missing caricature image or name')
+        logger.error('❌ Cannot save: missing caricature image or name')
         alert('Cannot save character: missing caricature image or name')
         setIsSavingCharacter(false)
         return
       }
 
+      const { CharacterStorage } = await import('../services/characterStorage')
       const savedCharacter = CharacterStorage.saveCharacter({
         name: characterData.name,
         age: characterData.age,
@@ -217,13 +219,13 @@ const DynamicCharacterPage: React.FC = () => {
       })
 
       setCharacterSaved(true)
-      console.log('💾 Character saved to gallery:', savedCharacter.name)
+      logger.log('💾 Character saved to gallery:', savedCharacter.name)
       
       setTimeout(() => {
         alert(`Character "${characterData.name}" saved to gallery!`)
       }, 500)
     } catch (error) {
-      console.error('❌ Failed to save character:', error)
+      logger.error('❌ Failed to save character:', error)
       alert('Failed to save character to gallery')
     } finally {
       setIsSavingCharacter(false)
