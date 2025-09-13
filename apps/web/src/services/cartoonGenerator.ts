@@ -2,6 +2,7 @@ import { HuggingFaceService } from './huggingFaceService'
 import { RPGCharacterGenerator, PhotoAnalysis } from './rpgCharacterGenerator'
 import { LocalFaceAnalysis } from './localFaceAnalysis'
 import { ImageCompression } from './imageCompression'
+import { InstantIDService } from './instantIDService'
 
 // PhotoAnalysis interface is now imported from rpgCharacterGenerator
 
@@ -61,10 +62,93 @@ export class CaricatureGenerator {
   }
 
   /**
-   * 🎨 Generate RPG Caricature from Photo
+   * 🎯 Generate Character with InstantID (High Similarity)
    * 
-   * Creates an RPG character caricature using REAL AI photo analysis
-   * Analyzes the photo once with AI, no gender guessing
+   * Uses InstantID for identity-preserving character generation
+   * Much better photo similarity than traditional methods
+   */
+  static async generateCharacterWithInstantID(
+    photoFile: File,
+    characterData?: { name: string; age: number; height: number; weight: number; gender: 'male' | 'female' | 'non-binary' | 'unknown' },
+    selectedRpgClass?: { name: string; description: string; stats: { strength: number; agility: number; intelligence: number; wisdom: number; charisma: number; constitution: number; total: number } }
+  ): Promise<CaricatureGenerationResult> {
+    const startTime = Date.now()
+    
+    try {
+      console.log('🎯 Starting InstantID character generation...')
+      
+      // Analyze photo for character details
+      const photoAnalysis = await this.analyzePhotoForUI(photoFile)
+      console.log('📸 Photo analysis complete:', photoAnalysis)
+      
+      // Override with user input if provided
+      if (characterData) {
+        photoAnalysis.age = characterData.age
+        photoAnalysis.height = characterData.height
+        photoAnalysis.weight = characterData.weight
+        photoAnalysis.gender = characterData.gender
+        console.log('🎯 Using user input for character data:', characterData)
+      }
+      
+      // Generate character prompt
+      const characterPrompt = this.generateInstantIDPrompt(photoAnalysis, characterData?.name || 'Character', selectedRpgClass)
+      console.log('🎯 InstantID Character prompt:', characterPrompt)
+      
+      // Generate character with InstantID
+      const instantIDResult = await InstantIDService.analyzePhotoForCharacter(
+        photoFile,
+        characterPrompt,
+        'realistic'
+      )
+      
+      const processingTime = Date.now() - startTime
+      
+      // Cost estimation for InstantID
+      const costBreakdown = {
+        imageAnalysis: 0, // FREE - local analysis
+        caricatureGeneration: instantIDResult.cost,
+        total: instantIDResult.cost
+      }
+      
+      console.log(`✅ InstantID Character generated in ${processingTime}ms`)
+      console.log(`💰 Cost: $${costBreakdown.total.toFixed(3)}`)
+      console.log(`🎯 Similarity: ${(instantIDResult.similarity * 100).toFixed(1)}%`)
+      
+      return {
+        success: true,
+        imageUrl: instantIDResult.imageUrl,
+        processingTime,
+        cost: costBreakdown.total,
+        breakdown: costBreakdown,
+        rpgClass: selectedRpgClass ? {
+          name: selectedRpgClass.name,
+          description: selectedRpgClass.description,
+          stats: selectedRpgClass.stats
+        } : undefined,
+        generationPrompt: characterPrompt,
+        photoAnalysis: photoAnalysis
+      }
+    } catch (error) {
+      console.error('❌ InstantID generation failed:', error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'InstantID generation failed',
+        processingTime: Date.now() - startTime,
+        cost: 0,
+        breakdown: {
+          imageAnalysis: 0,
+          caricatureGeneration: 0,
+          total: 0
+        }
+      }
+    }
+  }
+
+  /**
+   * 🎨 Generate RPG Caricature from Photo (Legacy Method)
+   * 
+   * Creates an RPG character caricature using traditional methods
+   * Kept for fallback when InstantID is not available
    */
   static async generateCaricatureFromPhoto(
     photoFile: File,
@@ -669,6 +753,56 @@ COMPOSITION: ONE SINGLE CHARACTER ONLY, NO DUPLICATES, NO MULTIPLE CHARACTERS, c
 RESTRICTIONS: No weapons, no equipment, no helmets, no headgear, no face-covering equipment, no armor, no accessories, no props, no background elements.
 
 QUALITY: High quality, detailed, professional, photo-realistic facial features, detailed eyes and expression, crisp edges, vibrant colors, studio lighting, perfect composition.`
+  }
+
+  /**
+   * Generate InstantID-optimized character prompt
+   */
+  private static generateInstantIDPrompt(
+    photoAnalysis: PhotoAnalysis, 
+    characterName: string, 
+    rpgClass?: { name: string; description: string; stats: any }
+  ): string {
+    const genderText = photoAnalysis.gender === 'male' ? 'male' : 
+                      photoAnalysis.gender === 'female' ? 'female' : 'person'
+    
+    const hairColor = photoAnalysis.hairColor || 'brown'
+    const hairStyle = photoAnalysis.hairStyle || 'short'
+    const skinTone = photoAnalysis.skinTone || 'medium'
+    const expression = photoAnalysis.expression || 'confident'
+    const build = photoAnalysis.build || 'average'
+    const faceShape = photoAnalysis.faceShape || 'oval'
+    
+    // Age-appropriate styling
+    const ageGroup = photoAnalysis.age < 18 ? 'young' : 
+                    photoAnalysis.age < 30 ? 'young adult' :
+                    photoAnalysis.age < 50 ? 'adult' :
+                    photoAnalysis.age < 70 ? 'mature' : 'elderly'
+    
+    // InstantID works best with simple, clear descriptions
+    const clothing = 'casual modern clothing, simple outfit'
+    
+    // Height and weight descriptions
+    const heightDesc = photoAnalysis.height < 150 ? 'short' :
+                      photoAnalysis.height < 170 ? 'average height' :
+                      photoAnalysis.height < 190 ? 'tall' : 'very tall'
+    
+    const weightDesc = photoAnalysis.weight < 50 ? 'slender' :
+                      photoAnalysis.weight < 70 ? 'average build' :
+                      photoAnalysis.weight < 90 ? 'solid build' : 'sturdy build'
+    
+    // InstantID prompt - simpler and more focused on identity preservation
+    let prompt = `A ${ageGroup} ${genderText} with ${hairColor} ${hairStyle} hair, ${skinTone} skin tone, ${faceShape} face shape, ${expression} expression. ${heightDesc} (${photoAnalysis.height}cm), ${weightDesc} (${photoAnalysis.weight}kg). ${clothing}.`
+    
+    // Add RPG class context if provided
+    if (rpgClass) {
+      prompt += ` Character has ${rpgClass.name.toLowerCase()} class traits: ${rpgClass.description.toLowerCase()}.`
+    }
+    
+    // InstantID-specific quality and style instructions
+    prompt += ` Professional portrait, high quality, detailed facial features, natural lighting, clean background, identity-preserving, realistic style.`
+    
+    return prompt
   }
 
   /**
