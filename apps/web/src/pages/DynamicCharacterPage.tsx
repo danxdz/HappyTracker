@@ -12,6 +12,8 @@ import { CaricatureGenerator } from '../services/cartoonGenerator'
 import { CharacterStorage } from '../services/characterStorage'
 import { ThreeDCharacterGenerator } from '../services/threeDCharacterGenerator'
 import { Meshy3DService } from '../services/meshy3DService'
+import { Luma3DService } from '../services/luma3DService'
+import { ShapEService } from '../services/shape3DService'
 import { ThreeDViewer } from '../components/ThreeDViewer'
 
 interface CharacterData {
@@ -89,6 +91,10 @@ export const DynamicCharacterPage: React.FC = () => {
   const [threeDGenerationResult, setThreeDGenerationResult] = useState<any>(null)
   const [isGeneratingMeshy3D, setIsGeneratingMeshy3D] = useState(false)
   const [meshy3DResult, setMeshy3DResult] = useState<any>(null)
+  const [isGeneratingLuma3D, setIsGeneratingLuma3D] = useState(false)
+  const [luma3DResult, setLuma3DResult] = useState<any>(null)
+  const [isGeneratingShapE3D, setIsGeneratingShapE3D] = useState(false)
+  const [shapE3DResult, setShapE3DResult] = useState<any>(null)
 
   // Auto-progress through loading
   useEffect(() => {
@@ -430,6 +436,74 @@ export const DynamicCharacterPage: React.FC = () => {
       console.error('❌ Error generating Meshy 3D character:', error)
       setIsGeneratingMeshy3D(false)
       alert('Error generating Meshy 3D character')
+    }
+  }
+
+  const generateLuma3DCharacter = async () => {
+    try {
+      console.log('🎮 Starting Luma AI Genie 3D character generation...')
+      setIsGeneratingLuma3D(true)
+      
+      if (!characterData.name) {
+        console.error('❌ No character name available for Luma 3D generation')
+        alert('No character name available for Luma 3D generation')
+        return
+      }
+      
+      const result = await Luma3DService.generateCharacterModel({
+        name: characterData.name,
+        age: characterData.age,
+        gender: characterData.gender,
+        rpgClass: rpgClass || undefined
+      })
+      
+      if (result.success && result.modelUrl) {
+        console.log('🎮 Luma 3D Character generated successfully!')
+        setLuma3DResult(result)
+        setThreeDModelUrl(result.modelUrl)
+      } else {
+        console.error('❌ Luma 3D Character generation failed:', result.error)
+        alert(`Luma 3D generation failed: ${result.error}`)
+      }
+      
+      setIsGeneratingLuma3D(false)
+    } catch (error) {
+      console.error('❌ Error generating Luma 3D character:', error)
+      setIsGeneratingLuma3D(false)
+      alert('Error generating Luma 3D character')
+    }
+  }
+
+  const generateShapE3DCharacter = async () => {
+    try {
+      console.log('🎮 Starting Shap-E 3D character generation...')
+      setIsGeneratingShapE3D(true)
+      
+      if (!caricatureImage) {
+        console.error('❌ No caricature image available for Shap-E 3D generation')
+        alert('No caricature image available for Shap-E 3D generation')
+        return
+      }
+      
+      const result = await ShapEService.generateCharacterModel(caricatureImage, {
+        name: characterData.name,
+        rpgClass: rpgClass || undefined
+      })
+      
+      if (result.success && result.modelUrl) {
+        console.log('🎮 Shap-E 3D Character generated successfully!')
+        setShapE3DResult(result)
+        setThreeDModelUrl(result.modelUrl)
+      } else {
+        console.error('❌ Shap-E 3D Character generation failed:', result.error)
+        alert(`Shap-E 3D generation failed: ${result.error}`)
+      }
+      
+      setIsGeneratingShapE3D(false)
+    } catch (error) {
+      console.error('❌ Error generating Shap-E 3D character:', error)
+      setIsGeneratingShapE3D(false)
+      alert('Error generating Shap-E 3D character')
     }
   }
 
