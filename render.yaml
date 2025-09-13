@@ -11,7 +11,6 @@ services:
     envVars:
       NODE_ENV: production
       VITE_HUGGINGFACE_TOKEN: your_huggingface_token_here
-      VITE_REPLICATE_TOKEN: your_replicate_token_here
       REACT_APP_API_URL: https://happytracker-api.onrender.com/api
     
   # Backend API Service
