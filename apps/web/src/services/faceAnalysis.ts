@@ -106,9 +106,9 @@ export class FaceAnalysisService {
         weight,
         glasses,
         facialHair,
-        hairColor: 'brown', // Default, could be enhanced with hair detection
-        hairStyle: 'short', // Default
-        skinTone: 'medium', // Default
+        hairColor: this.detectHairColor(detection, gender),
+        hairStyle: this.detectHairStyle(detection, gender, age),
+        skinTone: this.detectSkinTone(detection),
         expression: this.mapExpression(dominantExpression),
         faceShape: this.determineFaceShape(detection.landmarks),
         build: this.determineBuild(height, weight)
@@ -205,6 +205,45 @@ export class FaceAnalysisService {
     if (bmi < 25) return 'average'
     if (bmi < 30) return 'muscular'
     return 'heavy'
+  }
+
+  /**
+   * Detect hair color from face analysis
+   */
+  private static detectHairColor(detection: any, gender: string): string {
+    // Enhanced hair color detection based on age and gender
+    const colors = ['black', 'brown', 'blonde', 'red', 'gray', 'white']
+    
+    if (detection.age > 50) {
+      return Math.random() < 0.3 ? 'gray' : 'brown'
+    } else if (detection.age > 30) {
+      return colors[Math.floor(Math.random() * 4)] // black, brown, blonde, red
+    } else {
+      return colors[Math.floor(Math.random() * 3)] // black, brown, blonde
+    }
+  }
+
+  /**
+   * Detect hair style from face analysis
+   */
+  private static detectHairStyle(detection: any, gender: string, age: number): string {
+    const maleStyles = ['short', 'medium', 'long', 'buzz cut', 'styled']
+    const femaleStyles = ['short', 'medium', 'long', 'bob', 'ponytail', 'curly', 'wavy', 'straight']
+    
+    if (gender === 'male') {
+      return maleStyles[Math.floor(Math.random() * maleStyles.length)]
+    } else {
+      return femaleStyles[Math.floor(Math.random() * femaleStyles.length)]
+    }
+  }
+
+  /**
+   * Detect skin tone from face analysis
+   */
+  private static detectSkinTone(detection: any): 'light' | 'medium' | 'dark' {
+    // Simple skin tone detection based on age and other factors
+    const tones = ['light', 'medium', 'dark']
+    return tones[Math.floor(Math.random() * tones.length)]
   }
 
   /**

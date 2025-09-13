@@ -628,9 +628,6 @@ export class CaricatureGenerator {
                     photoAnalysis.age < 50 ? 'adult' :
                     photoAnalysis.age < 70 ? 'mature' : 'elderly'
     
-    // Start with basic/naked clothing - no class-specific gear
-    const clothing = 'wearing basic simple clothes, minimal clothing, casual outfit'
-    
     // Height and weight descriptions
     const heightDesc = photoAnalysis.height < 150 ? 'short stature' :
                       photoAnalysis.height < 170 ? 'average height' :
@@ -640,15 +637,81 @@ export class CaricatureGenerator {
                       photoAnalysis.weight < 70 ? 'average build' :
                       photoAnalysis.weight < 90 ? 'solid build' : 'sturdy build'
     
-    return `A realistic ${genderText} character with ${hairColor} ${hairStyle} hair and ${skinTone} skin tone. The character has a ${faceShape} face shape with ${expression} expression and ${ageGroup} appearance, ${photoAnalysis.age} years old. Body proportions: ${heightDesc} (${photoAnalysis.height}cm), ${weightDesc} (${photoAnalysis.weight}kg), ${build} build. Clothing: ${clothing}. 
+    // Choose a unique art style based on character traits
+    const artStyle = this.selectArtStyle(photoAnalysis, rpgClass)
+    const clothingStyle = this.selectClothingStyle(photoAnalysis, rpgClass)
+    
+    return `A ${artStyle} ${genderText} character with ${hairColor} ${hairStyle} hair and ${skinTone} skin tone. The character has a ${faceShape} face shape with ${expression} expression and ${ageGroup} appearance, ${photoAnalysis.age} years old. Body proportions: ${heightDesc} (${photoAnalysis.height}cm), ${weightDesc} (${photoAnalysis.weight}kg), ${build} build. Clothing: ${clothingStyle}. 
 
-STYLE: Photo-realistic character design, detailed facial features, natural proportions, realistic skin texture, detailed eyes and expression, professional character art, high-quality digital art.
+STYLE: ${artStyle}, detailed facial features that match the original photo, ${this.getStyleDescription(artStyle)}, professional character art, high-quality digital art.
 
 COMPOSITION: ONE SINGLE CHARACTER ONLY, NO DUPLICATES, NO MULTIPLE CHARACTERS, centered composition, clean white background, front-facing pose, face clearly visible, isolated character, no background characters, no reflections, no shadows of other characters.
 
 RESTRICTIONS: No weapons, no equipment, no helmets, no headgear, no face-covering equipment, no armor, no accessories, no props, no background elements.
 
-QUALITY: High quality, detailed, professional, photo-realistic facial features, detailed eyes and expression, crisp edges, vibrant colors, studio lighting, perfect composition.`
+QUALITY: High quality, detailed, professional character art, detailed eyes and expression that match the original photo, crisp edges, vibrant colors, studio lighting, perfect composition.`
+  }
+
+  /**
+   * Select unique art style based on character traits
+   */
+  private static selectArtStyle(photoAnalysis: PhotoAnalysis, rpgClass: any): string {
+    const styles = [
+      'chibi-style',
+      'Animal Crossing-inspired',
+      'Funko Pop-style',
+      'anime-inspired',
+      'Disney-style',
+      'Pixar-inspired',
+      'Studio Ghibli-style',
+      'cartoon-style',
+      'stylized realistic'
+    ]
+    
+    // Choose style based on age and class
+    if (photoAnalysis.age < 25) {
+      return styles[Math.floor(Math.random() * 4)] // chibi, Animal Crossing, Funko, anime
+    } else if (photoAnalysis.age < 40) {
+      return styles[Math.floor(Math.random() * 3) + 3] // Disney, Pixar, Studio Ghibli
+    } else {
+      return styles[Math.floor(Math.random() * 2) + 7] // cartoon, stylized realistic
+    }
+  }
+
+  /**
+   * Select clothing style based on character traits
+   */
+  private static selectClothingStyle(photoAnalysis: PhotoAnalysis, rpgClass: any): string {
+    const clothingStyles = [
+      'casual modern outfit with cute accessories',
+      'stylish contemporary fashion with colorful details',
+      'cozy comfortable clothes with fun patterns',
+      'trendy streetwear with playful elements',
+      'elegant casual wear with charming accessories',
+      'relaxed contemporary style with cute touches',
+      'fashionable everyday outfit with whimsical details'
+    ]
+    
+    return clothingStyles[Math.floor(Math.random() * clothingStyles.length)]
+  }
+
+  /**
+   * Get detailed style description
+   */
+  private static getStyleDescription(artStyle: string): string {
+    const descriptions = {
+      'chibi-style': 'large expressive eyes, cute proportions, adorable features, kawaii aesthetic',
+      'Animal Crossing-inspired': 'soft rounded features, friendly expression, charming simplicity, cozy aesthetic',
+      'Funko Pop-style': 'oversized head, large eyes, simplified features, collectible figure aesthetic',
+      'anime-inspired': 'large expressive eyes, stylized proportions, vibrant colors, manga aesthetic',
+      'Disney-style': 'classic animation proportions, expressive features, timeless appeal, magical aesthetic',
+      'Pixar-inspired': 'modern 3D animation style, expressive features, vibrant colors, cinematic quality',
+      'Studio Ghibli-style': 'soft watercolor-like features, gentle expression, artistic beauty, hand-drawn aesthetic',
+      'cartoon-style': 'simplified features, bold colors, playful proportions, animated aesthetic',
+      'stylized realistic': 'realistic proportions with artistic flair, detailed features, professional quality'
+    }
+    
+    return descriptions[artStyle] || 'detailed facial features, natural proportions, realistic skin texture'
   }
 
 
