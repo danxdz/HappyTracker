@@ -10,6 +10,7 @@
    - **Name**: `happytracker-backend`
    - **Root Directory**: `backend`
    - **Environment**: `Node`
+   - **Plan**: `Free` (not Starter!)
    - **Build Command**: `npm install`
    - **Start Command**: `npm start`
 
@@ -45,6 +46,12 @@ REACT_APP_API_URL=https://happytracker-backend.onrender.com/api
 ## Option 3: Netlify + Render
 - **Backend**: Deploy to Render (manual)
 - **Frontend**: Deploy to Netlify (automatic)
+
+## Render Free Tier Limitations
+- **Sleep after 15 minutes** of inactivity
+- **750 hours/month** free (enough for development)
+- **No custom domains** on free tier
+- **Limited to 1 service** per account
 
 ## Why Manual Deployment?
 Render Blueprints have strict requirements and can be finicky. Manual deployment gives you full control and is more reliable.
