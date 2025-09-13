@@ -51,6 +51,7 @@ export const DynamicCharacterPage: React.FC = () => {
   const [caricatureImage, setCaricatureImage] = useState<string | null>(null)
   const [generationCost, setGenerationCost] = useState<number | null>(null)
   const [characterSaved, setCharacterSaved] = useState(false)
+  const [isSavingCharacter, setIsSavingCharacter] = useState(false)
   const [showImageModal, setShowImageModal] = useState(false)
   const [rpgClass, setRpgClass] = useState<{
     name: string
@@ -433,13 +434,20 @@ export const DynamicCharacterPage: React.FC = () => {
   }
 
   const saveCharacterToGallery = async () => {
+    if (isSavingCharacter || characterSaved) {
+      console.log('⏳ Already saving or saved, ignoring duplicate request')
+      return
+    }
+
     try {
+      setIsSavingCharacter(true)
       console.log('💾 Attempting to save character to gallery...')
       console.log('📊 Character data:', { name: characterData.name, caricatureImage: !!caricatureImage })
       
       if (!caricatureImage || !characterData.name) {
         console.error('❌ Cannot save: missing caricature image or name')
         alert('Cannot save character: missing caricature image or name')
+        setIsSavingCharacter(false)
         return
       }
 
@@ -481,6 +489,8 @@ export const DynamicCharacterPage: React.FC = () => {
     } catch (error) {
       console.error('❌ Failed to save character:', error)
       alert('Failed to save character to gallery')
+    } finally {
+      setIsSavingCharacter(false)
     }
   }
 
@@ -692,9 +702,17 @@ export const DynamicCharacterPage: React.FC = () => {
                             console.log('🔘 Save button clicked!')
                             saveCharacterToGallery()
                           }}
-                          className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg"
+                          disabled={isSavingCharacter}
+                          className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg disabled:scale-100 disabled:cursor-not-allowed"
                         >
-                          💾 Save to Gallery
+                          {isSavingCharacter ? (
+                            <div className="flex items-center justify-center">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                              Saving...
+                            </div>
+                          ) : (
+                            '💾 Save to Gallery'
+                          )}
                         </button>
                       )}
                       
