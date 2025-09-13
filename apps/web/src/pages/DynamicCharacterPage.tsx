@@ -184,8 +184,8 @@ const DynamicCharacterPage: React.FC = () => {
       
       setIsProcessingPhoto(false)
       
-      // Don't auto-advance - let user enter name first
-      // moveToNextStep() will be called when name is entered
+      // Move to name step immediately - face analysis is complete
+      moveToNextStep()
     } catch (error) {
       logger.error('❌ Photo analysis failed:', error)
       
@@ -212,6 +212,8 @@ const DynamicCharacterPage: React.FC = () => {
       
       logger.log('🔄 Using fallback values:', fallbackGuesses)
       setIsProcessingPhoto(false)
+      
+      // Move to name step even with fallback values
       moveToNextStep()
     }
   }
@@ -458,6 +460,30 @@ const DynamicCharacterPage: React.FC = () => {
             </div>
             <h2 className="text-2xl font-bold text-white mb-4">What's Your Name?</h2>
             <p className="text-gray-300 mb-8">Give your character a unique name</p>
+            
+            {isProcessingPhoto && (
+              <div className="mb-6 p-4 bg-blue-500/20 border border-blue-500/30 rounded-xl">
+                <div className="flex items-center justify-center gap-3">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    className="w-5 h-5 border-2 border-blue-400 border-t-transparent rounded-full"
+                  />
+                  <span className="text-blue-300 text-sm">Analyzing your photo...</span>
+                </div>
+              </div>
+            )}
+            
+            {!isProcessingPhoto && characterData.aiGuesses && (
+              <div className="mb-6 p-4 bg-green-500/20 border border-green-500/30 rounded-xl">
+                <div className="flex items-center justify-center gap-3">
+                  <Check className="w-5 h-5 text-green-400" />
+                  <span className="text-green-300 text-sm">
+                    Photo analyzed! Detected: {characterData.aiGuesses.gender}, {characterData.aiGuesses.age} years old
+                  </span>
+                </div>
+              </div>
+            )}
             
             <input
               type="text"
