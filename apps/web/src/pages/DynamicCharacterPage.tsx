@@ -11,12 +11,12 @@ interface CharacterData {
   age: number
   height: number
   weight: number
-  gender: 'male' | 'female' | 'non-binary' | 'unknown'
+  gender: 'male' | 'female' | 'unknown'
   aiGuesses?: {
     age: number
     height: number
     weight: number
-    gender: 'male' | 'female' | 'non-binary' | 'unknown'
+    gender: 'male' | 'female' | 'unknown'
   }
 }
 
@@ -359,8 +359,8 @@ const DynamicCharacterPage: React.FC = () => {
             <div className="max-w-md mx-auto">
               <input
                 type="range"
-                min="18"
-                max="80"
+                min="0"
+                max="120"
                 value={characterData.age}
                 onChange={(e) => updateCharacterData({ age: parseInt(e.target.value) })}
                 className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
@@ -396,8 +396,8 @@ const DynamicCharacterPage: React.FC = () => {
                 </div>
                 <input
                   type="range"
-                  min="140"
-                  max="200"
+                  min="100"
+                  max="250"
                   value={characterData.height}
                   onChange={(e) => updateCharacterData({ height: parseInt(e.target.value) })}
                   className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"

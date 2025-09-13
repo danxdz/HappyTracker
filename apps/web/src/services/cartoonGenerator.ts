@@ -637,6 +637,13 @@ export class CaricatureGenerator {
     const skinTone = photoAnalysis.skinTone || 'medium'
     const expression = photoAnalysis.expression || 'confident'
     const build = photoAnalysis.build || 'average'
+    const faceShape = photoAnalysis.faceShape || 'oval'
+    
+    // Age-appropriate styling
+    const ageGroup = photoAnalysis.age < 18 ? 'young' : 
+                    photoAnalysis.age < 30 ? 'young adult' :
+                    photoAnalysis.age < 50 ? 'adult' :
+                    photoAnalysis.age < 70 ? 'mature' : 'elderly'
     
     // Generate class-specific equipment and style
     const classEquipment = {
@@ -650,6 +657,15 @@ export class CaricatureGenerator {
     
     const equipment = classEquipment[rpgClass.name as keyof typeof classEquipment] || 'equipped with basic gear'
     
-    return `toybox collectible figure style, oversized round head, small compact body, smooth plastic-like surface, simplified facial features, bright solid colors, cute proportions, minimal details, ${genderText} ${rpgClass.name.toLowerCase()}, ${hairColor} ${hairStyle} hair, ${skinTone} skin tone, ${expression} expression, ${equipment}, ${photoAnalysis.age} years old, ${build} build, single character only, centered composition, clean white background, RPG character design, fantasy game art style, front-facing heroic pose, face clearly visible, no helmets, no headgear, no face-covering equipment`
+    // Height and weight descriptions
+    const heightDesc = photoAnalysis.height < 150 ? 'short stature' :
+                      photoAnalysis.height < 170 ? 'average height' :
+                      photoAnalysis.height < 190 ? 'tall stature' : 'very tall'
+    
+    const weightDesc = photoAnalysis.weight < 50 ? 'slender build' :
+                      photoAnalysis.weight < 70 ? 'average build' :
+                      photoAnalysis.weight < 90 ? 'solid build' : 'sturdy build'
+    
+    return `toybox collectible figure style, oversized round head, small compact body, smooth plastic-like surface, simplified facial features, bright solid colors, cute proportions, minimal details, ${genderText} ${rpgClass.name.toLowerCase()}, ${hairColor} ${hairStyle} hair, ${skinTone} skin tone, ${expression} expression, ${faceShape} face shape, ${equipment}, ${ageGroup} appearance, ${photoAnalysis.age} years old, ${heightDesc}, ${weightDesc}, ${build} build, single character only, centered composition, clean white background, RPG character design, fantasy game art style, front-facing heroic pose, face clearly visible, no helmets, no headgear, no face-covering equipment, photo-realistic facial features, detailed eyes and expression, ${photoAnalysis.height}cm tall, ${photoAnalysis.weight}kg weight`
   }
 }
