@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Home, Palette, Image } from 'lucide-react'
+import { Home, Palette, Image, Gamepad2 } from 'lucide-react'
 
 export const Navigation: React.FC = () => {
   const location = useLocation()
@@ -9,7 +9,7 @@ export const Navigation: React.FC = () => {
   const navItems = [
     { path: '/', label: 'Home', icon: Home },
     { path: '/dynamic-character', label: 'Create Character', icon: Palette },
-    { path: '/gallery', label: 'Gallery', icon: Image },
+    { path: '/character-gallery', label: 'Gallery', icon: Image },
   ]
   
   return (
@@ -26,9 +26,9 @@ export const Navigation: React.FC = () => {
             whileHover={{ scale: 1.05 }}
           >
             <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-              <Palette className="w-5 h-5 text-white" />
+              <Gamepad2 className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-white">AI Caricature Creator</span>
+            <span className="text-xl font-bold text-white">HappyTracker</span>
           </motion.div>
           
           <div className="flex items-center gap-4">

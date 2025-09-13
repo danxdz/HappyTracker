@@ -639,16 +639,6 @@ export const DynamicCharacterPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 overflow-hidden">
       
-      {/* Header with Gallery Link */}
-      <div className="absolute top-4 right-4 z-10">
-        <button
-          onClick={() => window.location.href = '/character-gallery'}
-          className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2 text-white hover:bg-white/20 transition-colors"
-        >
-          <Image className="w-5 h-5" />
-          <span>Gallery</span>
-        </button>
-      </div>
       
       {/* Loading Screen */}
       {currentStep === 'loading' && (
