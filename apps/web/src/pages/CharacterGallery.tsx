@@ -732,24 +732,61 @@ const CharacterGallery: React.FC = () => {
                     {/* Variant Generation Panel */}
                     <div className="bg-white/5 rounded-xl p-4">
                       <h4 className="font-semibold text-white mb-3">Generate Variants</h4>
-                      <div className="grid grid-cols-2 gap-3">
-                        {['happy', 'sleepy', 'hungry', 'excited'].map((variant) => (
-                          <button
-                            key={variant}
-                            onClick={() => generateVariant(selectedCharacter.id, variant as any, 'casual')}
-                            disabled={generatingVariant?.includes(`${selectedCharacter.id}-${variant}`)}
-                            className="bg-purple-500/20 hover:bg-purple-500/30 disabled:bg-gray-500/20 text-purple-300 disabled:text-gray-400 font-semibold py-2 px-3 rounded-lg transition-colors text-sm"
-                          >
-                            {generatingVariant?.includes(`${selectedCharacter.id}-${variant}`) ? (
-                              <div className="flex items-center justify-center gap-1">
-                                <div className="animate-spin rounded-full h-3 w-3 border-b border-white"></div>
-                                <span>...</span>
-                              </div>
-                            ) : (
-                              `😊 ${variant.charAt(0).toUpperCase() + variant.slice(1)}`
-                            )}
-                          </button>
-                        ))}
+                      <div className="space-y-4">
+                        {/* Expression Variants */}
+                        <div>
+                          <h5 className="text-sm font-semibold text-white mb-2">Expressions</h5>
+                          <div className="grid grid-cols-2 gap-2">
+                            {['happy', 'sleepy', 'hungry', 'excited'].map((variant) => (
+                              <button
+                                key={variant}
+                                onClick={() => generateVariant(selectedCharacter.id, variant as any, 'white')}
+                                disabled={generatingVariant?.includes(`${selectedCharacter.id}-${variant}`)}
+                                className="bg-purple-500/20 hover:bg-purple-500/30 disabled:bg-gray-500/20 text-purple-300 disabled:text-gray-400 font-semibold py-2 px-3 rounded-lg transition-colors text-sm"
+                              >
+                                {generatingVariant?.includes(`${selectedCharacter.id}-${variant}`) ? (
+                                  <div className="flex items-center justify-center gap-1">
+                                    <div className="animate-spin rounded-full h-3 w-3 border-b border-white"></div>
+                                    <span>...</span>
+                                  </div>
+                                ) : (
+                                  `😊 ${variant.charAt(0).toUpperCase() + variant.slice(1)}`
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Equipment Tiers */}
+                        <div>
+                          <h5 className="text-sm font-semibold text-white mb-2">Equipment Tiers</h5>
+                          <div className="grid grid-cols-3 gap-2">
+                            {[
+                              { tier: 'gray', name: 'Starter', color: 'gray', icon: '⚪' },
+                              { tier: 'white', name: 'Common', color: 'white', icon: '⚪' },
+                              { tier: 'green', name: 'Uncommon', color: 'green', icon: '🟢' },
+                              { tier: 'blue', name: 'Rare', color: 'blue', icon: '🔵' },
+                              { tier: 'purple', name: 'Epic', color: 'purple', icon: '🟣' },
+                              { tier: 'orange', name: 'Legendary', color: 'orange', icon: '🟠' }
+                            ].map(({ tier, name, color, icon }) => (
+                              <button
+                                key={tier}
+                                onClick={() => generateVariant(selectedCharacter.id, 'happy', tier)}
+                                disabled={generatingVariant?.includes(`${selectedCharacter.id}-happy-${tier}`)}
+                                className={`bg-${color}-500/20 hover:bg-${color}-500/30 disabled:bg-gray-500/20 text-${color}-300 disabled:text-gray-400 font-semibold py-2 px-2 rounded-lg transition-colors text-xs`}
+                              >
+                                {generatingVariant?.includes(`${selectedCharacter.id}-happy-${tier}`) ? (
+                                  <div className="animate-spin rounded-full h-3 w-3 border-b border-white mx-auto"></div>
+                                ) : (
+                                  <div className="flex flex-col items-center gap-1">
+                                    <span>{icon}</span>
+                                    <span>{name}</span>
+                                  </div>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                       <div className="mt-3 text-xs text-gray-400">
                         Each variant costs $0.03 and uses the original character as reference for better similarity.
@@ -814,15 +851,15 @@ const CharacterGallery: React.FC = () => {
                         </button>
                         <button
                           onClick={async () => {
-                            // Generate multiple variants at once
+                            // Generate multiple variants at once with different equipment tiers
                             const variants = [
-                              { type: 'sleepy', clothing: 'basic' },
-                              { type: 'excited', clothing: 'adventure' },
-                              { type: 'hungry', clothing: 'casual' }
+                              { type: 'sleepy', equipment: 'gray' },
+                              { type: 'excited', equipment: 'green' },
+                              { type: 'hungry', equipment: 'blue' }
                             ]
                             
                             for (const variant of variants) {
-                              await generateVariant(selectedCharacter.id, variant.type as any, variant.clothing as any)
+                              await generateVariant(selectedCharacter.id, variant.type as any, variant.equipment as any)
                             }
                           }}
                           disabled={generatingVariant?.includes(selectedCharacter.id)}
@@ -907,7 +944,15 @@ const CharacterGallery: React.FC = () => {
                                     {variantType === 'surprised' && '😲'}
                                     {variantType}
                                   </div>
-                                  <div className="text-xs text-gray-400 capitalize">{clothingLevel}</div>
+                                  <div className="text-xs text-gray-400 capitalize flex items-center justify-center gap-1">
+                                    {clothingLevel === 'gray' && '⚪ Starter'}
+                                    {clothingLevel === 'white' && '⚪ Common'}
+                                    {clothingLevel === 'green' && '🟢 Uncommon'}
+                                    {clothingLevel === 'blue' && '🔵 Rare'}
+                                    {clothingLevel === 'purple' && '🟣 Epic'}
+                                    {clothingLevel === 'orange' && '🟠 Legendary'}
+                                    {!['gray', 'white', 'green', 'blue', 'purple', 'orange'].includes(clothingLevel) && clothingLevel}
+                                  </div>
                                   <div className="text-xs text-gray-500 mt-1">${variantData.cost.toFixed(3)}</div>
                                   <div className="text-xs text-gray-600 mt-1">
                                     {new Date(variantData.createdAt).toLocaleDateString()}

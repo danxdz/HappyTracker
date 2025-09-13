@@ -767,19 +767,31 @@ QUALITY: High quality, detailed, professional, photo-realistic facial features, 
       surprised: 'surprised expression, wide eyes, open mouth, shocked pose, amazed, astonished'
     }
     
-    // Clothing progression system
-    const clothingStyles = {
-      basic: 'wearing basic simple clothes, minimal clothing, casual outfit, plain white t-shirt and simple pants, clean and simple',
-      casual: 'wearing casual comfortable clothes, everyday outfit, relaxed style, colorful t-shirt and jeans, modern casual wear',
-      formal: 'wearing formal elegant clothes, dress shirt and dress pants, professional attire, smart casual, business casual style',
-      adventure: 'wearing adventure gear, practical clothing, outdoor outfit, durable clothes, explorer style, hiking gear, outdoor clothing',
-      magical: 'wearing mystical robes, magical clothing, enchanted garments, fantasy attire, wizard robes, flowing magical garments, mystical outfit'
+    // WoW-style Equipment Progression System (visual tiers only)
+    const equipmentTiers = {
+      // Gray tier - basic starter gear
+      gray: 'wearing basic starter equipment, simple cloth robes, basic leather boots, simple belt, minimal gear, beginner adventurer outfit',
+      
+      // White tier - common dungeon gear
+      white: 'wearing common equipment, leather armor pieces, basic chainmail, simple weapons, standard adventurer gear, dungeon-tier equipment',
+      
+      // Green tier - improved gear
+      green: 'wearing uncommon equipment, reinforced leather armor, iron chainmail, quality weapons, improved adventurer gear, enhanced equipment',
+      
+      // Blue tier - rare boss drops
+      blue: 'wearing rare equipment, masterwork armor, steel chainmail, enchanted weapons, high-quality gear, boss-tier equipment with magical properties',
+      
+      // Purple tier - epic raid gear
+      purple: 'wearing epic equipment, legendary armor pieces, mithril chainmail, powerful enchanted weapons, raid-tier gear, epic magical equipment with glowing effects',
+      
+      // Orange tier - legendary endgame gear
+      orange: 'wearing legendary equipment, mythic armor pieces, adamantine chainmail, legendary weapons, endgame-tier gear, legendary magical equipment with powerful auras and glowing effects'
     }
     
     const variantExpression = variantExpressions[variantType as keyof typeof variantExpressions] || 'neutral expression'
-    const clothingStyle = clothingStyles[clothingLevel as keyof typeof clothingStyles] || clothingStyles.casual
+    const equipmentStyle = equipmentTiers[clothingLevel as keyof typeof equipmentTiers] || equipmentTiers.white
     
-    return `Transform this character to have ${variantExpression} and ${clothingStyle}. Keep the same face, head shape, body proportions, hair color, hair style, skin tone, and overall character design. Only change the expression and clothing. Maintain the same character identity and appearance. Same character, different mood and outfit.`
+    return `Transform this character to have ${variantExpression} and ${equipmentStyle}. Keep the same face, head shape, body proportions, hair color, hair style, skin tone, and overall character design. Only change the expression and equipment. Maintain the same character identity and appearance. Same character, different mood and gear.`
   }
 
   /**
