@@ -173,7 +173,9 @@ const DynamicCharacterPage: React.FC = () => {
       logger.log('✅ Form auto-filled with:', aiGuesses)
       
       setIsProcessingPhoto(false)
-      moveToNextStep()
+      
+      // Don't auto-advance - let user enter name first
+      // moveToNextStep() will be called when name is entered
     } catch (error) {
       logger.error('❌ Photo analysis failed:', error)
       
@@ -373,6 +375,42 @@ const DynamicCharacterPage: React.FC = () => {
                   <span className="text-white font-medium">🤖 Face.js Analyzing...</span>
                   <p className="text-sm text-gray-400 mt-1">Detecting age, gender, and features</p>
                 </div>
+              </motion.div>
+            )}
+
+            {/* Name input while photo is being analyzed */}
+            {(characterData.photo || isProcessingPhoto) && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-6 bg-white/5 border border-white/10 rounded-xl p-6"
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <User className="w-6 h-6 text-green-400" />
+                  <h3 className="text-lg font-semibold text-white">What's Your Name?</h3>
+                </div>
+                <p className="text-gray-400 text-sm mb-4">Type your name while we analyze your photo</p>
+                
+                <input
+                  type="text"
+                  value={characterData.name}
+                  onChange={(e) => updateCharacterData({ name: e.target.value })}
+                  placeholder="Enter your character's name"
+                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+                
+                {/* Continue button when both photo analyzed and name entered */}
+                {!isProcessingPhoto && characterData.name && (
+                  <motion.button
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    onClick={moveToNextStep}
+                    className="mt-4 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-semibold px-6 py-3 rounded-xl flex items-center gap-2 mx-auto transition-all duration-200"
+                  >
+                    Continue
+                    <ArrowRight className="w-5 h-5" />
+                  </motion.button>
+                )}
               </motion.div>
             )}
           </motion.div>
