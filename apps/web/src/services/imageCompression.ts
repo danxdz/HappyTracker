@@ -8,6 +8,8 @@
  * ⚠️ For production: Use Render.com with file uploads
  */
 
+import { CharacterStorage } from './characterStorage'
+
 export interface CompressionOptions {
   maxWidth?: number
   maxHeight?: number
@@ -176,7 +178,6 @@ export class ImageCompression {
    */
   static cleanOldCharacters(maxCharacters: number = 10): number {
     try {
-      const { CharacterStorage } = require('./characterStorage')
       const characters = CharacterStorage.getAllCharacters()
       
       if (characters.length <= maxCharacters) {
@@ -184,7 +185,7 @@ export class ImageCompression {
       }
       
       // Sort by creation date (oldest first)
-      const sortedCharacters = characters.sort((a, b) => 
+      const sortedCharacters = characters.sort((a: any, b: any) => 
         new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
       )
       
@@ -192,7 +193,7 @@ export class ImageCompression {
       const toRemove = sortedCharacters.slice(0, characters.length - maxCharacters)
       let removedCount = 0
       
-      toRemove.forEach(character => {
+      toRemove.forEach((character: any) => {
         if (CharacterStorage.deleteCharacter(character.id)) {
           removedCount++
         }
@@ -211,7 +212,6 @@ export class ImageCompression {
    */
   static exportCharacters(): string {
     try {
-      const { CharacterStorage } = require('./characterStorage')
       return CharacterStorage.exportCharacters()
     } catch (error) {
       console.error('❌ Failed to export characters:', error)
@@ -224,7 +224,6 @@ export class ImageCompression {
    */
   static importCharacters(jsonData: string): boolean {
     try {
-      const { CharacterStorage } = require('./characterStorage')
       return CharacterStorage.importCharacters(jsonData)
     } catch (error) {
       console.error('❌ Failed to import characters:', error)
