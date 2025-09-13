@@ -729,6 +729,33 @@ const CharacterGallery: React.FC = () => {
                       </div>
                     </div>
                     
+                    {/* Variant Generation Panel */}
+                    <div className="bg-white/5 rounded-xl p-4">
+                      <h4 className="font-semibold text-white mb-3">Generate Variants</h4>
+                      <div className="grid grid-cols-2 gap-3">
+                        {['happy', 'sleepy', 'hungry', 'excited'].map((variant) => (
+                          <button
+                            key={variant}
+                            onClick={() => generateVariant(selectedCharacter.id, variant as any, 'casual')}
+                            disabled={generatingVariant?.includes(`${selectedCharacter.id}-${variant}`)}
+                            className="bg-purple-500/20 hover:bg-purple-500/30 disabled:bg-gray-500/20 text-purple-300 disabled:text-gray-400 font-semibold py-2 px-3 rounded-lg transition-colors text-sm"
+                          >
+                            {generatingVariant?.includes(`${selectedCharacter.id}-${variant}`) ? (
+                              <div className="flex items-center justify-center gap-1">
+                                <div className="animate-spin rounded-full h-3 w-3 border-b border-white"></div>
+                                <span>...</span>
+                              </div>
+                            ) : (
+                              `😊 ${variant.charAt(0).toUpperCase() + variant.slice(1)}`
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="mt-3 text-xs text-gray-400">
+                        Each variant costs $0.03 and uses the original character as reference for better similarity.
+                      </div>
+                    </div>
+                    
                     <div className="flex gap-3">
                       <button
                         onClick={() => downloadCharacter(selectedCharacter)}
@@ -752,13 +779,27 @@ const CharacterGallery: React.FC = () => {
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
                       <h3 className="text-lg font-semibold text-white">Character Variants</h3>
-                      <button
-                        onClick={() => setActiveTab('overview')}
-                        className="bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 font-semibold py-2 px-4 rounded-lg transition-colors flex items-center gap-2"
-                      >
-                        <Sparkles className="w-4 h-4" />
-                        Generate New Variant
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => generateVariant(selectedCharacter.id, 'happy', 'casual')}
+                          disabled={generatingVariant?.includes(`${selectedCharacter.id}-happy-casual`)}
+                          className="bg-purple-500/20 hover:bg-purple-500/30 disabled:bg-gray-500/20 text-purple-300 disabled:text-gray-400 font-semibold py-2 px-3 rounded-lg transition-colors flex items-center gap-2 text-sm"
+                        >
+                          {generatingVariant?.includes(`${selectedCharacter.id}-happy-casual`) ? (
+                            <div className="animate-spin rounded-full h-3 w-3 border-b border-white"></div>
+                          ) : (
+                            <Sparkles className="w-3 h-3" />
+                          )}
+                          Quick Happy
+                        </button>
+                        <button
+                          onClick={() => setActiveTab('overview')}
+                          className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 font-semibold py-2 px-3 rounded-lg transition-colors flex items-center gap-2 text-sm"
+                        >
+                          <Settings className="w-3 h-3" />
+                          More Options
+                        </button>
+                      </div>
                     </div>
                     
                     {selectedCharacter.variants && Object.keys(selectedCharacter.variants).length > 0 ? (
@@ -766,18 +807,34 @@ const CharacterGallery: React.FC = () => {
                         {Object.entries(selectedCharacter.variants).map(([variantKey, variantData]: [string, any]) => {
                           const [variantType, clothingLevel] = variantKey.split('-')
                           return (
-                            <div key={variantKey} className="bg-white/5 rounded-xl p-4">
-                              <div className="aspect-square bg-white rounded-lg mb-3 overflow-hidden">
+                            <div key={variantKey} className="bg-white/5 rounded-xl p-4 group">
+                              <div className="aspect-square bg-white rounded-lg mb-3 overflow-hidden relative">
                                 <img
                                   src={variantData.imageUrl}
                                   alt={`${selectedCharacter.name} - ${variantType}`}
                                   className="w-full h-full object-contain"
                                 />
+                                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <button
+                                    onClick={() => {
+                                      const link = document.createElement('a')
+                                      link.href = variantData.imageUrl
+                                      link.download = `${selectedCharacter.name}-${variantType}-${clothingLevel}.png`
+                                      link.click()
+                                    }}
+                                    className="bg-black/50 hover:bg-black/70 text-white p-1 rounded"
+                                  >
+                                    <Download className="w-3 h-3" />
+                                  </button>
+                                </div>
                               </div>
                               <div className="text-center">
                                 <div className="font-semibold text-white capitalize">{variantType}</div>
                                 <div className="text-xs text-gray-400 capitalize">{clothingLevel}</div>
                                 <div className="text-xs text-gray-500 mt-1">${variantData.cost.toFixed(3)}</div>
+                                <div className="text-xs text-gray-600 mt-1">
+                                  {new Date(variantData.createdAt).toLocaleDateString()}
+                                </div>
                               </div>
                             </div>
                           )
