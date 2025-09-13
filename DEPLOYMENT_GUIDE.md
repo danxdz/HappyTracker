@@ -39,9 +39,9 @@ VITE_MESHY_API_KEY=your_meshy_api_key_here
 REACT_APP_API_URL=https://happytracker-backend.onrender.com/api
 ```
 
-## Option 2: Vercel + Render
+## Option 2: Render + Netlify
 - **Backend**: Deploy to Render (manual)
-- **Frontend**: Deploy to Vercel (automatic)
+- **Frontend**: Deploy to Netlify (automatic)
 
 ## Option 3: Netlify + Render
 - **Backend**: Deploy to Render (manual)
