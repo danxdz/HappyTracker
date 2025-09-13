@@ -21,8 +21,8 @@ VITE_MESHY_API_KEY=your_meshy_api_key_here
 REACT_APP_API_URL=https://happytracker-backend.onrender.com/api
 ```
 
-### Option 2: Vercel Deployment
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/danxdz/HappyTracker&root-directory=apps/web)
+### Option 2: Netlify Deployment
+[![Deploy with Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/danxdz/HappyTracker)
 
 ### Option 3: Netlify Deployment
 [![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/danxdz/HappyTracker&base=apps/web)
