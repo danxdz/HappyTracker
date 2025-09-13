@@ -17,6 +17,7 @@
     "@reduxjs/toolkit": "^2.0.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "face-api.js": "^0.22.2",
     "framer-motion": "^11.18.2",
     "lucide-react": "^0.468.0",
     "react": "^19.1.1",

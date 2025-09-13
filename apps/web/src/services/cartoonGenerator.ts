@@ -1,6 +1,7 @@
 import { HuggingFaceService } from './huggingFaceService'
 import { RPGCharacterGenerator, PhotoAnalysis } from './rpgCharacterGenerator'
 import { ImageCompression } from './imageCompression'
+import { FaceAnalysisService } from './faceAnalysis'
 
 // PhotoAnalysis interface is now imported from rpgCharacterGenerator
 
@@ -156,38 +157,43 @@ export class CaricatureGenerator {
   }
 
   /**
-   * 📸 Analyze Photo with Filename Analysis
+   * 📸 Analyze Photo with Face Analysis
    * 
-   * Uses filename-based analysis - no TensorFlow.js or Face.js
-   * Completely eliminates TensorFlow.js backend errors
+   * Uses face-api.js for real face detection and analysis
    */
   private static async analyzePhotoWithLocalAI(photoFile: File): Promise<PhotoAnalysis> {
-    console.log('🔍 Analyzing photo with filename analysis (no TensorFlow.js)...')
+    console.log('🔍 Analyzing photo with face-api.js...')
     
     try {
-      // Use filename analysis directly - no Face.js or TensorFlow.js
-      const photoAnalysis = this.createFallbackAnalysis(photoFile)
-      console.log('🎯 Filename analysis result:', photoAnalysis)
+      // Use real face analysis with face-api.js
+      const faceAnalysis = await FaceAnalysisService.analyzeFace(photoFile)
+      
+      // Convert to PhotoAnalysis format
+      const photoAnalysis: PhotoAnalysis = {
+        gender: faceAnalysis.gender,
+        age: faceAnalysis.age,
+        height: faceAnalysis.height,
+        weight: faceAnalysis.weight,
+        glasses: faceAnalysis.glasses,
+        facialHair: faceAnalysis.facialHair,
+        hairColor: faceAnalysis.hairColor,
+        hairStyle: faceAnalysis.hairStyle,
+        skinTone: faceAnalysis.skinTone,
+        expression: faceAnalysis.expression,
+        faceShape: faceAnalysis.faceShape,
+        build: faceAnalysis.build
+      }
+      
+      console.log('🎯 Face analysis result:', photoAnalysis)
       return photoAnalysis
     } catch (error) {
-      console.error('❌ Filename analysis failed:', error)
-      console.log('🔄 Using default values...')
+      console.error('❌ Face analysis failed:', error)
+      console.log('🔄 Falling back to filename analysis...')
       
-      // Return default values if analysis fails
-      return {
-        gender: 'unknown',
-        age: 25,
-        height: 170,
-        weight: 70,
-        glasses: false,
-        facialHair: false,
-        hairColor: 'brown',
-        hairStyle: 'short',
-        skinTone: 'medium',
-        expression: 'confident',
-        faceShape: 'oval',
-        build: 'average'
-      }
+      // Fallback to filename analysis if face analysis fails
+      const photoAnalysis = this.createFallbackAnalysis(photoFile)
+      console.log('🎯 Fallback analysis result:', photoAnalysis)
+      return photoAnalysis
     }
   }
 
@@ -510,33 +516,39 @@ export class CaricatureGenerator {
   /**
    * 🔍 Analyze Photo for UI Pre-filling
    * 
-   * Uses filename-based analysis for immediate UI field population
-   * No TensorFlow.js or Face.js dependencies
+   * Uses face-api.js for real face analysis and UI field population
    */
   static async analyzePhotoForUI(photoFile: File): Promise<PhotoAnalysis> {
-    console.log('🔍 Analyzing photo for UI with filename analysis...')
+    console.log('🔍 Analyzing photo for UI with face-api.js...')
     try {
-      // Use filename analysis directly - no Face.js or TensorFlow.js
-      const photoAnalysis = this.createFallbackAnalysis(photoFile)
-      console.log('🎯 Filename analysis for UI result:', photoAnalysis)
+      // Use real face analysis with face-api.js
+      const faceAnalysis = await FaceAnalysisService.analyzeFace(photoFile)
+      
+      // Convert to PhotoAnalysis format
+      const photoAnalysis: PhotoAnalysis = {
+        gender: faceAnalysis.gender,
+        age: faceAnalysis.age,
+        height: faceAnalysis.height,
+        weight: faceAnalysis.weight,
+        glasses: faceAnalysis.glasses,
+        facialHair: faceAnalysis.facialHair,
+        hairColor: faceAnalysis.hairColor,
+        hairStyle: faceAnalysis.hairStyle,
+        skinTone: faceAnalysis.skinTone,
+        expression: faceAnalysis.expression,
+        faceShape: faceAnalysis.faceShape,
+        build: faceAnalysis.build
+      }
+      
+      console.log('🎯 Face analysis for UI result:', photoAnalysis)
       return photoAnalysis
     } catch (error) {
-      console.error('❌ Filename analysis failed:', error)
-      // Return default values if analysis fails
-      return {
-        gender: 'unknown',
-        age: 25,
-        height: 170,
-        weight: 70,
-        glasses: false,
-        facialHair: false,
-        hairColor: 'brown',
-        hairStyle: 'short',
-        skinTone: 'medium',
-        expression: 'confident',
-        faceShape: 'oval',
-        build: 'average'
-      }
+      console.error('❌ Face analysis failed:', error)
+      // Fallback to filename analysis if face analysis fails
+      console.log('🔄 Falling back to filename analysis...')
+      const photoAnalysis = this.createFallbackAnalysis(photoFile)
+      console.log('🎯 Fallback analysis result:', photoAnalysis)
+      return photoAnalysis
     }
   }
 
