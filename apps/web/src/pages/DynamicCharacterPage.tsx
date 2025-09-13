@@ -14,6 +14,7 @@ import { ThreeDCharacterGenerator } from '../services/threeDCharacterGenerator'
 import { Meshy3DService } from '../services/meshy3DService'
 import { Luma3DService } from '../services/luma3DService'
 import { ShapEService } from '../services/shape3DService'
+import { Hunyuan3DService } from '../services/hunyuan3DService'
 import { ThreeDViewer } from '../components/ThreeDViewer'
 
 interface CharacterData {
@@ -95,6 +96,8 @@ export const DynamicCharacterPage: React.FC = () => {
   const [luma3DResult, setLuma3DResult] = useState<any>(null)
   const [isGeneratingShapE3D, setIsGeneratingShapE3D] = useState(false)
   const [shapE3DResult, setShapE3DResult] = useState<any>(null)
+  const [isGeneratingHunyuan3D, setIsGeneratingHunyuan3D] = useState(false)
+  const [hunyuan3DResult, setHunyuan3DResult] = useState<any>(null)
 
   // Auto-progress through loading
   useEffect(() => {
@@ -507,6 +510,39 @@ export const DynamicCharacterPage: React.FC = () => {
     }
   }
 
+  const generateHunyuan3DCharacter = async () => {
+    try {
+      console.log('🎮 Starting Hunyuan3D character generation...')
+      setIsGeneratingHunyuan3D(true)
+      
+      if (!caricatureImage) {
+        console.error('❌ No caricature image available for Hunyuan3D generation')
+        alert('No caricature image available for Hunyuan3D generation')
+        return
+      }
+      
+      const result = await Hunyuan3DService.generateCharacterModel(caricatureImage, {
+        name: characterData.name,
+        rpgClass: rpgClass || undefined
+      })
+      
+      if (result.success && result.modelUrl) {
+        console.log('🎮 Hunyuan3D Character generated successfully!')
+        setHunyuan3DResult(result)
+        setThreeDModelUrl(result.modelUrl)
+      } else {
+        console.error('❌ Hunyuan3D Character generation failed:', result.error)
+        alert(`Hunyuan3D generation failed: ${result.error}`)
+      }
+      
+      setIsGeneratingHunyuan3D(false)
+    } catch (error) {
+      console.error('❌ Error generating Hunyuan3D character:', error)
+      setIsGeneratingHunyuan3D(false)
+      alert('Error generating Hunyuan3D character')
+    }
+  }
+
   const saveCharacterToGallery = async () => {
     if (isSavingCharacter || characterSaved) {
       console.log('⏳ Already saving or saved, ignoring duplicate request')
@@ -798,9 +834,25 @@ export const DynamicCharacterPage: React.FC = () => {
                       
                       {/* 3D Generation Options */}
                       <div className="mt-4 space-y-3">
-                        <h5 className="text-white font-semibold text-center mb-3">🎮 Create 3D Model (Free Options)</h5>
+                        <h5 className="text-white font-semibold text-center mb-3">🎮 Create 3D Model (Free AI Options)</h5>
                         
-                        {/* Shap-E 3D Generation - Primary Free Option */}
+                        {/* Hunyuan3D Generation - Top Free Option */}
+                        <button
+                          onClick={generateHunyuan3DCharacter}
+                          disabled={isGeneratingHunyuan3D}
+                          className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg disabled:scale-100 disabled:cursor-not-allowed"
+                        >
+                          {isGeneratingHunyuan3D ? (
+                            <div className="flex items-center justify-center">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                              Generating Hunyuan3D...
+                            </div>
+                          ) : (
+                            '🔥 Generate Hunyuan3D (FREE!)'
+                          )}
+                        </button>
+                        
+                        {/* Shap-E 3D Generation - Secondary Free Option */}
                         <button
                           onClick={generateShapE3DCharacter}
                           disabled={isGeneratingShapE3D}
@@ -849,7 +901,7 @@ export const DynamicCharacterPage: React.FC = () => {
                         </button>
                         
                         <p className="text-gray-400 text-xs text-center">
-                          Shap-E: AI-powered 3D from image | Basic: Simple geometry | Meshy: Premium quality (paid)
+                          Hunyuan3D: Tencent's advanced AI | Shap-E: OpenAI's model | Basic: Simple geometry | Meshy: Premium (paid)
                         </p>
                       </div>
                     </div>
