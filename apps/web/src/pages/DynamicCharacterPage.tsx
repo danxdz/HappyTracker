@@ -46,6 +46,8 @@ const DynamicCharacterPage: React.FC = () => {
   const [videoRef, setVideoRef] = useState<HTMLVideoElement | null>(null)
   const [isCheckingName, setIsCheckingName] = useState(false)
   const [nameAvailable, setNameAvailable] = useState<boolean | null>(null)
+  const [liveFaceTransform, setLiveFaceTransform] = useState(false)
+  const [faceDetectionCanvas, setFaceDetectionCanvas] = useState<HTMLCanvasElement | null>(null)
 
   // Auto-progress through loading screen
   useEffect(() => {
