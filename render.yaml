@@ -11,13 +11,12 @@ services:
       - key: PORT
         value: "3001"
   
-  - type: web
+  - type: static
     name: happytracker-frontend
-    env: node
     plan: free
     rootDir: apps/web
     buildCommand: npm install --legacy-peer-deps && npm run build
-    startCommand: node server.js
+    staticPublishPath: ./dist
     envVars:
       - key: VITE_HUGGINGFACE_TOKEN
         value: your_huggingface_token_here
