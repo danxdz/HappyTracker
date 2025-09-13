@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Camera, ArrowRight, Image, Sparkles, Zap, Users, Trophy } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
-export const HomePage: React.FC = () => {
+const HomePage: React.FC = () => {
   const navigate = useNavigate()
 
   const handleCreateCharacter = () => {
@@ -265,3 +265,5 @@ export const HomePage: React.FC = () => {
     </div>
   )
 }
+
+export default HomePage

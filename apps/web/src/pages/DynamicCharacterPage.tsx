@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { Camera, ArrowRight, ArrowLeft, Check, Upload, User, Calendar, Ruler, Weight, Sparkles, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { CaricatureGenerator } from '../services/cartoonGenerator'
@@ -23,7 +23,7 @@ interface CharacterData {
 
 type FlowStep = 'photo' | 'name' | 'gender' | 'age' | 'measures' | 'class' | 'card' | 'complete'
 
-export const DynamicCharacterPage: React.FC = () => {
+const DynamicCharacterPage: React.FC = () => {
   const navigate = useNavigate()
   const [currentStep, setCurrentStep] = useState<FlowStep>('photo')
   const [characterData, setCharacterData] = useState<CharacterData>({
@@ -118,7 +118,7 @@ export const DynamicCharacterPage: React.FC = () => {
     setIsGeneratingCaricature(true)
     
     try {
-      const result = await CaricatureGenerator.generateRPGCharacter(
+      const result = await CaricatureGenerator.generateCaricatureFromPhoto(
         characterData.photo!,
         {
           name: characterData.name,
@@ -167,7 +167,7 @@ export const DynamicCharacterPage: React.FC = () => {
     setIsGenerating3D(true)
     
     try {
-      const result = await ThreeDCharacterGenerator.generateCharacter(characterData)
+      const result = await ThreeDCharacterGenerator.generateThreeDCharacter(characterData)
       console.log('🎮 3D Character generated successfully!')
       setThreeDModelUrl(result.modelUrl)
     } catch (error) {
@@ -690,9 +690,7 @@ export const DynamicCharacterPage: React.FC = () => {
       {/* Main Content */}
       <div className="flex items-center justify-center min-h-screen px-4">
         <div className="w-full max-w-2xl">
-          <AnimatePresence mode="wait">
-            {renderStep()}
-          </AnimatePresence>
+          {renderStep()}
         </div>
       </div>
 
@@ -717,3 +715,5 @@ export const DynamicCharacterPage: React.FC = () => {
     </div>
   )
 }
+
+export default DynamicCharacterPage

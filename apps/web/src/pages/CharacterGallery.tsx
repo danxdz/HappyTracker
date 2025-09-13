@@ -32,10 +32,10 @@ interface Character {
   generationPrompt?: string
   processingTime?: number
   costBreakdown?: any
-  createdAt: string
+  createdAt: Date
 }
 
-export const CharacterGallery: React.FC = () => {
+const CharacterGallery: React.FC = () => {
   const navigate = useNavigate()
   const [characters, setCharacters] = useState<Character[]>([])
   const [filteredCharacters, setFilteredCharacters] = useState<Character[]>([])
@@ -440,3 +440,5 @@ export const CharacterGallery: React.FC = () => {
     </div>
   )
 }
+
+export default CharacterGallery
