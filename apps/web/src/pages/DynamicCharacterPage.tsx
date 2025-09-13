@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Camera, ArrowRight, ArrowLeft, Check, Upload, User, Calendar, Ruler, Weight, Sparkles, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -21,11 +21,11 @@ interface CharacterData {
   }
 }
 
-type FlowStep = 'photo' | 'name' | 'gender' | 'age' | 'measures' | 'class' | 'card' | 'complete'
+type FlowStep = 'loading' | 'photo' | 'name' | 'gender' | 'age' | 'measures' | 'class' | 'card' | 'complete'
 
 const DynamicCharacterPage: React.FC = () => {
   const navigate = useNavigate()
-  const [currentStep, setCurrentStep] = useState<FlowStep>('photo')
+  const [currentStep, setCurrentStep] = useState<FlowStep>('loading')
   const [characterData, setCharacterData] = useState<CharacterData>({
     name: '',
     age: 25,
@@ -44,6 +44,16 @@ const DynamicCharacterPage: React.FC = () => {
   const [showCameraModal, setShowCameraModal] = useState(false)
   const [stream, setStream] = useState<MediaStream | null>(null)
   const [videoRef, setVideoRef] = useState<HTMLVideoElement | null>(null)
+
+  // Auto-progress through loading screen
+  useEffect(() => {
+    if (currentStep === 'loading') {
+      const timer = setTimeout(() => {
+        setCurrentStep('photo')
+      }, 1500) // Reduced to 1.5 seconds for better UX
+      return () => clearTimeout(timer)
+    }
+  }, [currentStep])
   const [rpgClass, setRpgClass] = useState<{
     name: string
     description: string
@@ -309,6 +319,25 @@ const DynamicCharacterPage: React.FC = () => {
 
   const renderStep = () => {
     switch (currentStep) {
+      case 'loading':
+        return (
+          <motion.div
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="text-center"
+          >
+            <div className="mb-8">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                className="w-24 h-24 border-4 border-white border-t-transparent rounded-full mx-auto mb-8"
+              />
+              <h2 className="text-3xl font-bold text-white mb-4">Loading Character Creator</h2>
+              <p className="text-gray-300">Preparing your magical journey...</p>
+            </div>
+          </motion.div>
+        )
+
       case 'photo':
         return (
           <motion.div
