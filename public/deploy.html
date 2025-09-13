@@ -94,17 +94,17 @@
         
         <div class="deploy-section">
             <h2>🚀 Backend Deployment</h2>
-            <p>Deploy the API backend first:</p>
+            <p>Deploy the API backend first (Manual deployment recommended):</p>
             
             <div style="text-align: center;">
-                <a href="https://render.com/deploy?repo=https://github.com/danxdz/HappyTracker" class="deploy-button">
-                    🔧 Deploy Backend (Render)
+                <a href="https://dashboard.render.com/new/web-service" class="deploy-button" style="background: #00d4aa;">
+                    🔧 Manual Deploy Backend (Recommended)
                 </a>
-                <a href="https://render.com/deploy?repo=https://github.com/danxdz/HappyTracker&autoDeploy=true" class="deploy-button" style="background: #ff6b35;">
-                    ⚡ Quick Deploy (No Fork)
+                <a href="https://render.com/deploy?repo=https://github.com/danxdz/HappyTracker" class="deploy-button">
+                    🎯 Try Blueprint Deploy
                 </a>
                 <p style="color: #ccc; font-size: 0.9em; margin-top: 10px;">
-                    📁 Select "backend" folder when deploying
+                    📁 Select "backend" folder | Manual deploy is more reliable
                 </p>
             </div>
         </div>
@@ -114,17 +114,14 @@
             <p>Deploy the web frontend after backend is ready:</p>
             
             <div style="text-align: center;">
-                <a href="https://vercel.com/new/clone?repository-url=https://github.com/danxdz/HappyTracker" class="deploy-button">
-                    ⚫ Deploy Frontend (Vercel)
+                <a href="https://vercel.com/new/clone?repository-url=https://github.com/danxdz/HappyTracker" class="deploy-button" style="background: #00d4aa;">
+                    ⚫ Deploy Frontend (Vercel - Recommended)
                 </a>
                 <a href="https://app.netlify.com/start/deploy?repository=https://github.com/danxdz/HappyTracker" class="deploy-button">
                     🟢 Deploy Frontend (Netlify)
                 </a>
-                <a href="https://render.com/deploy?repo=https://github.com/danxdz/HappyTracker" class="deploy-button">
-                    🚀 Deploy Frontend (Render)
-                </a>
-                <a href="https://vercel.com/new/clone?repository-url=https://github.com/danxdz/HappyTracker&skip-git=true" class="deploy-button" style="background: #ff6b35;">
-                    ⚡ Quick Deploy Frontend (No Fork)
+                <a href="https://dashboard.render.com/new/static-site" class="deploy-button">
+                    🚀 Manual Deploy Frontend (Render)
                 </a>
                 <p style="color: #ccc; font-size: 0.9em; margin-top: 10px;">
                     📁 Select "apps/web" folder when deploying
@@ -136,13 +133,13 @@
             <h2>⚡ Deploy Options Explained</h2>
             <div class="steps">
                 <div class="step">
-                    <strong>🔧 Regular Deploy:</strong> Creates a fork of this repository in your GitHub account
+                    <strong>🔧 Manual Deploy:</strong> Full control, more reliable, step-by-step setup
                 </div>
                 <div class="step">
-                    <strong>⚡ Quick Deploy:</strong> Deploys directly without creating a fork (faster!)
+                    <strong>🎯 Blueprint Deploy:</strong> Automatic setup, but can be finicky
                 </div>
                 <div class="step">
-                    <strong>💡 Recommendation:</strong> Use Quick Deploy for testing, Regular Deploy for production
+                    <strong>💡 Recommendation:</strong> Use Manual Deploy for reliability
                 </div>
             </div>
         </div>
