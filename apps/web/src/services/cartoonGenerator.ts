@@ -657,7 +657,15 @@ export class CaricatureGenerator {
                       photoAnalysis.weight < 70 ? 'average build' :
                       photoAnalysis.weight < 90 ? 'solid build' : 'sturdy build'
     
-    return `toybox collectible figure style, oversized round head, small compact body, smooth plastic-like surface, simplified facial features, bright solid colors, cute proportions, minimal details, ${genderText} ${rpgClass.name.toLowerCase()}, ${hairColor} ${hairStyle} hair, ${skinTone} skin tone, ${expression} expression, ${faceShape} face shape, ${clothing}, ${ageGroup} appearance, ${photoAnalysis.age} years old, ${heightDesc}, ${weightDesc}, ${build} build, ONE SINGLE CHARACTER ONLY, NO DUPLICATES, NO MULTIPLE CHARACTERS, centered composition, clean white background, RPG character design, fantasy game art style, front-facing pose, face clearly visible, no weapons, no equipment, no helmets, no headgear, no face-covering equipment, photo-realistic facial features, detailed eyes and expression, ${photoAnalysis.height}cm tall, ${photoAnalysis.weight}kg weight, isolated character, no background characters, no reflections, no shadows of other characters`
+    return `A charming collectible toy figure in the style of Funko Pop or Nendoroid, featuring an adorable ${genderText} character with ${hairColor} ${hairStyle} hair and ${skinTone} skin tone. The character has a ${faceShape} face shape with ${expression} expression and ${ageGroup} appearance, ${photoAnalysis.age} years old. Body proportions: ${heightDesc} (${photoAnalysis.height}cm), ${weightDesc} (${photoAnalysis.weight}kg), ${build} build. Clothing: ${clothing}. 
+
+STYLE: Oversized round head, small compact body, smooth plastic-like surface, simplified facial features, bright solid colors, cute proportions, minimal details, chibi art style, kawaii aesthetic.
+
+COMPOSITION: ONE SINGLE CHARACTER ONLY, NO DUPLICATES, NO MULTIPLE CHARACTERS, centered composition, clean white background, front-facing pose, face clearly visible, isolated character, no background characters, no reflections, no shadows of other characters.
+
+RESTRICTIONS: No weapons, no equipment, no helmets, no headgear, no face-covering equipment, no armor, no accessories, no props, no background elements.
+
+QUALITY: High quality, detailed, professional, photo-realistic facial features, detailed eyes and expression, crisp edges, vibrant colors, studio lighting, perfect composition.`
   }
 
   /**
@@ -701,22 +709,22 @@ export class CaricatureGenerator {
     
     // Variant-specific expressions and poses
     const variantExpressions = {
-      sleepy: 'sleepy expression, droopy eyes, yawning pose, relaxed posture',
-      happy: 'big smile, bright eyes, cheerful expression, joyful pose',
-      hungry: 'hungry expression, looking at food, eager eyes, reaching pose',
-      excited: 'excited expression, wide eyes, energetic pose, enthusiastic',
-      confused: 'confused expression, tilted head, questioning look, puzzled pose',
-      angry: 'angry expression, furrowed brow, clenched fists, stern look',
-      surprised: 'surprised expression, wide eyes, open mouth, shocked pose'
+      sleepy: 'sleepy expression, droopy eyes, yawning pose, relaxed posture, tired but cute, gentle smile',
+      happy: 'big bright smile, sparkling eyes, cheerful expression, joyful pose, radiating happiness, delighted',
+      hungry: 'hungry expression, looking at food, eager eyes, reaching pose, mouth slightly open, anticipating',
+      excited: 'excited expression, wide bright eyes, energetic pose, enthusiastic, arms raised, thrilled',
+      confused: 'confused expression, tilted head, questioning look, puzzled pose, one eyebrow raised, curious',
+      angry: 'angry expression, furrowed brow, stern look, determined pose, serious but not scary',
+      surprised: 'surprised expression, wide eyes, open mouth, shocked pose, amazed, astonished'
     }
     
     // Clothing progression system
     const clothingStyles = {
-      basic: 'wearing basic simple clothes, minimal clothing, casual outfit, plain shirt and pants',
-      casual: 'wearing casual comfortable clothes, everyday outfit, relaxed style, simple t-shirt and jeans',
-      formal: 'wearing formal elegant clothes, dress shirt and dress pants, professional attire, smart casual',
-      adventure: 'wearing adventure gear, practical clothing, outdoor outfit, durable clothes, explorer style',
-      magical: 'wearing mystical robes, magical clothing, enchanted garments, fantasy attire, wizard robes'
+      basic: 'wearing basic simple clothes, minimal clothing, casual outfit, plain white t-shirt and simple pants, clean and simple',
+      casual: 'wearing casual comfortable clothes, everyday outfit, relaxed style, colorful t-shirt and jeans, modern casual wear',
+      formal: 'wearing formal elegant clothes, dress shirt and dress pants, professional attire, smart casual, business casual style',
+      adventure: 'wearing adventure gear, practical clothing, outdoor outfit, durable clothes, explorer style, hiking gear, outdoor clothing',
+      magical: 'wearing mystical robes, magical clothing, enchanted garments, fantasy attire, wizard robes, flowing magical garments, mystical outfit'
     }
     
     const variantExpression = variantExpressions[variantType as keyof typeof variantExpressions] || 'neutral expression'

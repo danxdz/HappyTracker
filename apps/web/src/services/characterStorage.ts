@@ -54,6 +54,17 @@ export interface SavedCharacter {
     caricatureGeneration: number
     total: number
   }
+  // Character variants
+  variants?: {
+    [variantKey: string]: {
+      imageUrl: string
+      variantType: string
+      clothingLevel: string
+      prompt: string
+      cost: number
+      createdAt: Date
+    }
+  }
 }
 
 /**
@@ -219,6 +230,83 @@ export class CharacterStorage {
     } catch (error) {
       console.error('❌ Failed to import characters:', error)
       return false
+    }
+  }
+
+  /**
+   * 💾 Save Character Variant
+   */
+  static saveCharacterVariant(
+    characterId: string, 
+    variantKey: string, 
+    variantData: {
+      imageUrl: string
+      variantType: string
+      clothingLevel: string
+      prompt: string
+      cost: number
+    }
+  ): boolean {
+    try {
+      const characters = this.getAllCharacters()
+      const character = characters.find((c: SavedCharacter) => c.id === characterId)
+      
+      if (!character) {
+        throw new Error('Character not found')
+      }
+
+      // Initialize variants object if it doesn't exist
+      if (!character.variants) {
+        character.variants = {}
+      }
+
+      // Save variant data
+      character.variants[variantKey] = {
+        ...variantData,
+        createdAt: new Date()
+      }
+
+      // Update character in storage
+      this.saveCharacter(character)
+      console.log(`💾 Variant ${variantKey} saved for character ${character.name}`)
+      return true
+    } catch (error) {
+      console.error('❌ Failed to save variant:', error)
+      return false
+    }
+  }
+
+  /**
+   * 📊 Get Character Statistics
+   */
+  static getCharacterStats(characterId: string): {
+    totalVariants: number
+    totalCost: number
+    variantTypes: string[]
+    clothingLevels: string[]
+  } | null {
+    try {
+      const characters = this.getAllCharacters()
+      const character = characters.find((c: SavedCharacter) => c.id === characterId)
+      
+      if (!character || !character.variants) {
+        return null
+      }
+
+      const variants = Object.values(character.variants)
+      const totalCost = variants.reduce((sum: number, variant: any) => sum + variant.cost, 0)
+      const variantTypes = [...new Set(variants.map((v: any) => v.variantType))]
+      const clothingLevels = [...new Set(variants.map((v: any) => v.clothingLevel))]
+
+      return {
+        totalVariants: variants.length,
+        totalCost,
+        variantTypes,
+        clothingLevels
+      }
+    } catch (error) {
+      console.error('❌ Failed to get character stats:', error)
+      return null
     }
   }
 }

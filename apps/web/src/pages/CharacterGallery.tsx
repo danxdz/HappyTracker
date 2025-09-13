@@ -33,6 +33,16 @@ interface Character {
   processingTime?: number
   costBreakdown?: any
   createdAt: Date
+  variants?: {
+    [variantKey: string]: {
+      imageUrl: string
+      variantType: string
+      clothingLevel: string
+      prompt: string
+      cost: number
+      createdAt: Date
+    }
+  }
 }
 
 const CharacterGallery: React.FC = () => {
@@ -48,11 +58,13 @@ const CharacterGallery: React.FC = () => {
 
   useEffect(() => {
     loadCharacters()
+    loadCharacterVariants()
     
     // Refresh characters when page becomes visible (e.g., returning from character creation)
     const handleVisibilityChange = () => {
       if (!document.hidden) {
         loadCharacters()
+        loadCharacterVariants()
       }
     }
     
@@ -77,6 +89,24 @@ const CharacterGallery: React.FC = () => {
       }
     } catch (error) {
       console.error('❌ Error loading characters:', error)
+    }
+  }
+
+  const loadCharacterVariants = () => {
+    try {
+      const variants: Record<string, Record<string, string>> = {}
+      characters.forEach(character => {
+        if (character.variants) {
+          variants[character.id] = {}
+          Object.entries(character.variants).forEach(([variantKey, variantData]: [string, any]) => {
+            variants[character.id][variantKey] = variantData.imageUrl
+          })
+        }
+      })
+      setCharacterVariants(variants)
+      console.log(`🎭 Loaded variants for ${Object.keys(variants).length} characters`)
+    } catch (error) {
+      console.error('❌ Error loading variants:', error)
     }
   }
 
@@ -133,6 +163,19 @@ const CharacterGallery: React.FC = () => {
       
       // Store the variant with clothing level
       const variantKey = `${variantType}-${clothingLevel}`
+      const variantData = {
+        imageUrl: result.imageUrl,
+        variantType,
+        clothingLevel,
+        prompt: characterData.characterPrompt || '',
+        cost: result.cost
+      }
+      
+      // Save to persistent storage
+      const { CharacterStorage } = await import('../services/characterStorage')
+      CharacterStorage.saveCharacterVariant(characterId, variantKey, variantData)
+      
+      // Update local state
       setCharacterVariants(prev => ({
         ...prev,
         [characterId]: {
@@ -328,6 +371,16 @@ const CharacterGallery: React.FC = () => {
                     <div><strong>Height:</strong> {character.height}cm</div>
                     <div><strong>Weight:</strong> {character.weight}kg</div>
                     <div><strong>Class:</strong> {character.rpgClass?.name || 'Unknown'}</div>
+                    
+                    {/* Character Statistics */}
+                    {character.variants && Object.keys(character.variants).length > 0 && (
+                      <div className="mt-3 pt-3 border-t border-white/10">
+                        <div className="text-xs text-gray-400">
+                          <div><strong>Variants:</strong> {Object.keys(character.variants).length}</div>
+                          <div><strong>Total Cost:</strong> ${Object.values(character.variants).reduce((sum: number, v: any) => sum + v.cost, 0).toFixed(3)}</div>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Class Badge */}
