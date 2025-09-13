@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Plus, Download, Trash2, Eye, Search, Filter, X, Copy, Sparkles, Image, FileText, BarChart3, Settings } from 'lucide-react'
+import { ArrowLeft, Plus, Download, Trash2, Eye, Search, Filter, X, Copy, Sparkles, Image, FileText, BarChart3, Settings, Heart, Share2, Edit3, RotateCcw, Zap } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { CharacterStorage } from '../services/characterStorage'
 
@@ -756,20 +756,40 @@ const CharacterGallery: React.FC = () => {
                       </div>
                     </div>
                     
-                    <div className="flex gap-3">
+                    <div className="grid grid-cols-2 gap-3">
                       <button
                         onClick={() => downloadCharacter(selectedCharacter)}
-                        className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 font-semibold py-2 px-4 rounded-lg transition-colors flex items-center gap-2"
+                        className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 font-semibold py-2 px-3 rounded-lg transition-colors flex items-center gap-2 text-sm"
                       >
                         <Download className="w-4 h-4" />
-                        Download Character
+                        Download
+                      </button>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(selectedCharacter.caricatureImage)
+                          // Could add toast notification here
+                        }}
+                        className="bg-green-500/20 hover:bg-green-500/30 text-green-400 font-semibold py-2 px-3 rounded-lg transition-colors flex items-center gap-2 text-sm"
+                      >
+                        <Share2 className="w-4 h-4" />
+                        Share
+                      </button>
+                      <button
+                        onClick={() => {
+                          // Could implement character editing functionality
+                          console.log('Edit character:', selectedCharacter.id)
+                        }}
+                        className="bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 font-semibold py-2 px-3 rounded-lg transition-colors flex items-center gap-2 text-sm"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                        Edit
                       </button>
                       <button
                         onClick={() => deleteCharacter(selectedCharacter.id)}
-                        className="bg-red-500/20 hover:bg-red-500/30 text-red-400 font-semibold py-2 px-4 rounded-lg transition-colors flex items-center gap-2"
+                        className="bg-red-500/20 hover:bg-red-500/30 text-red-400 font-semibold py-2 px-3 rounded-lg transition-colors flex items-center gap-2 text-sm"
                       >
                         <Trash2 className="w-4 h-4" />
-                        Delete Character
+                        Delete
                       </button>
                     </div>
                   </div>
@@ -779,7 +799,7 @@ const CharacterGallery: React.FC = () => {
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
                       <h3 className="text-lg font-semibold text-white">Character Variants</h3>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
                         <button
                           onClick={() => generateVariant(selectedCharacter.id, 'happy', 'casual')}
                           disabled={generatingVariant?.includes(`${selectedCharacter.id}-happy-casual`)}
@@ -793,6 +813,29 @@ const CharacterGallery: React.FC = () => {
                           Quick Happy
                         </button>
                         <button
+                          onClick={async () => {
+                            // Generate multiple variants at once
+                            const variants = [
+                              { type: 'sleepy', clothing: 'basic' },
+                              { type: 'excited', clothing: 'adventure' },
+                              { type: 'hungry', clothing: 'casual' }
+                            ]
+                            
+                            for (const variant of variants) {
+                              await generateVariant(selectedCharacter.id, variant.type as any, variant.clothing as any)
+                            }
+                          }}
+                          disabled={generatingVariant?.includes(selectedCharacter.id)}
+                          className="bg-orange-500/20 hover:bg-orange-500/30 disabled:bg-gray-500/20 text-orange-300 disabled:text-gray-400 font-semibold py-2 px-3 rounded-lg transition-colors flex items-center gap-2 text-sm"
+                        >
+                          {generatingVariant?.includes(selectedCharacter.id) ? (
+                            <div className="animate-spin rounded-full h-3 w-3 border-b border-white"></div>
+                          ) : (
+                            <Zap className="w-3 h-3" />
+                          )}
+                          Bulk Generate
+                        </button>
+                        <button
                           onClick={() => setActiveTab('overview')}
                           className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 font-semibold py-2 px-3 rounded-lg transition-colors flex items-center gap-2 text-sm"
                         >
@@ -803,42 +846,77 @@ const CharacterGallery: React.FC = () => {
                     </div>
                     
                     {selectedCharacter.variants && Object.keys(selectedCharacter.variants).length > 0 ? (
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {Object.entries(selectedCharacter.variants).map(([variantKey, variantData]: [string, any]) => {
-                          const [variantType, clothingLevel] = variantKey.split('-')
-                          return (
-                            <div key={variantKey} className="bg-white/5 rounded-xl p-4 group">
-                              <div className="aspect-square bg-white rounded-lg mb-3 overflow-hidden relative">
-                                <img
-                                  src={variantData.imageUrl}
-                                  alt={`${selectedCharacter.name} - ${variantType}`}
-                                  className="w-full h-full object-contain"
-                                />
-                                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <button
-                                    onClick={() => {
-                                      const link = document.createElement('a')
-                                      link.href = variantData.imageUrl
-                                      link.download = `${selectedCharacter.name}-${variantType}-${clothingLevel}.png`
-                                      link.click()
-                                    }}
-                                    className="bg-black/50 hover:bg-black/70 text-white p-1 rounded"
-                                  >
-                                    <Download className="w-3 h-3" />
-                                  </button>
+                      <div className="space-y-4">
+                        {/* Original Character Reference */}
+                        <div className="bg-white/5 rounded-xl p-4">
+                          <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
+                            <Image className="w-4 h-4" />
+                            Original Character (Reference)
+                          </h4>
+                          <div className="aspect-square bg-white rounded-lg overflow-hidden max-w-xs mx-auto">
+                            <img
+                              src={selectedCharacter.caricatureImage}
+                              alt={`${selectedCharacter.name} - Original`}
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Variants Grid */}
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                          {Object.entries(selectedCharacter.variants).map(([variantKey, variantData]: [string, any]) => {
+                            const [variantType, clothingLevel] = variantKey.split('-')
+                            return (
+                              <div key={variantKey} className="bg-white/5 rounded-xl p-4 group">
+                                <div className="aspect-square bg-white rounded-lg mb-3 overflow-hidden relative">
+                                  <img
+                                    src={variantData.imageUrl}
+                                    alt={`${selectedCharacter.name} - ${variantType}`}
+                                    className="w-full h-full object-contain"
+                                  />
+                                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                                    <button
+                                      onClick={() => {
+                                        const link = document.createElement('a')
+                                        link.href = variantData.imageUrl
+                                        link.download = `${selectedCharacter.name}-${variantType}-${clothingLevel}.png`
+                                        link.click()
+                                      }}
+                                      className="bg-black/50 hover:bg-black/70 text-white p-1 rounded"
+                                    >
+                                      <Download className="w-3 h-3" />
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(variantData.imageUrl)
+                                      }}
+                                      className="bg-black/50 hover:bg-black/70 text-white p-1 rounded"
+                                    >
+                                      <Copy className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="font-semibold text-white capitalize flex items-center justify-center gap-1">
+                                    {variantType === 'happy' && '😊'}
+                                    {variantType === 'sleepy' && '😴'}
+                                    {variantType === 'hungry' && '🍽️'}
+                                    {variantType === 'excited' && '🤩'}
+                                    {variantType === 'confused' && '😕'}
+                                    {variantType === 'angry' && '😠'}
+                                    {variantType === 'surprised' && '😲'}
+                                    {variantType}
+                                  </div>
+                                  <div className="text-xs text-gray-400 capitalize">{clothingLevel}</div>
+                                  <div className="text-xs text-gray-500 mt-1">${variantData.cost.toFixed(3)}</div>
+                                  <div className="text-xs text-gray-600 mt-1">
+                                    {new Date(variantData.createdAt).toLocaleDateString()}
+                                  </div>
                                 </div>
                               </div>
-                              <div className="text-center">
-                                <div className="font-semibold text-white capitalize">{variantType}</div>
-                                <div className="text-xs text-gray-400 capitalize">{clothingLevel}</div>
-                                <div className="text-xs text-gray-500 mt-1">${variantData.cost.toFixed(3)}</div>
-                                <div className="text-xs text-gray-600 mt-1">
-                                  {new Date(variantData.createdAt).toLocaleDateString()}
-                                </div>
-                              </div>
-                            </div>
-                          )
-                        })}
+                            )
+                          })}
+                        </div>
                       </div>
                     ) : (
                       <div className="text-center py-8">

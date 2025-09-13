@@ -787,13 +787,30 @@ QUALITY: High quality, detailed, professional, photo-realistic facial features, 
    */
   private static async generateVariantImageFromReference(originalImageUrl: string, prompt: string): Promise<string> {
     try {
-      // For now, we'll use the regular generation but with enhanced prompts
+      // Enhanced prompt that references the original image more specifically
+      const enhancedPrompt = `Create a variant of this exact character: ${prompt}. 
+      
+CHARACTER CONSISTENCY REQUIREMENTS:
+- Keep the EXACT same face shape, bone structure, and facial features
+- Maintain the same hair color, hair style, and hair texture
+- Preserve the same skin tone, skin texture, and complexion
+- Keep the same eye color, eye shape, and eye size
+- Maintain the same nose shape and size
+- Keep the same mouth shape and lip size
+- Preserve the same head proportions and body proportions
+- Maintain the same character's unique identifying features
+
+ONLY CHANGE:
+- Facial expression and mood
+- Clothing and outfit
+- Pose and body language
+
+The result should look like the same person in a different mood with different clothes, not a different character.`
+
+      // For now, we'll use the regular generation but with the enhanced prompt
       // In a real implementation, you would use image-to-image generation APIs
-      // like Stability AI's img2img or similar services
+      // like Stability AI's img2img, DALL-E 3 with image reference, or similar services
       
-      const enhancedPrompt = `Based on this character image, create a variant with: ${prompt}. Maintain the same character design, face, and proportions. Only change the expression and clothing as specified.`
-      
-      // Use the regular generation for now, but with the enhanced prompt
       return await this.generateCaricatureImage(enhancedPrompt)
     } catch (error) {
       console.error('❌ Image-to-image generation failed:', error)
