@@ -21,7 +21,7 @@ interface CharacterData {
   height: number
   weight: number
   gender: 'male' | 'female' | 'non-binary' | 'unknown'
-  aiGuesses: {
+  aiGuesses?: {
     age: number
     height: number
     weight: number
@@ -38,13 +38,7 @@ export const DynamicCharacterPage: React.FC = () => {
     age: 25,
     height: 170,
     weight: 70,
-    gender: 'unknown',
-    aiGuesses: {
-      age: 25,
-      height: 170,
-      weight: 70,
-      gender: 'unknown'
-    }
+    gender: 'unknown'
   })
   const [hfApiEnabled, setHfApiEnabled] = useState(true) // Always enabled for AI caricature generation
   const [caricatureGenerated, setCaricatureGenerated] = useState(false)
@@ -134,6 +128,11 @@ export const DynamicCharacterPage: React.FC = () => {
            const photoAnalysis = await CaricatureGenerator.analyzePhotoForUI(photo)
       
       console.log('🎯 AI Analysis complete:', photoAnalysis)
+      
+      // Ensure photoAnalysis is not null/undefined
+      if (!photoAnalysis) {
+        throw new Error('Photo analysis returned null/undefined')
+      }
       
       return {
         age: photoAnalysis.age,
@@ -564,7 +563,7 @@ export const DynamicCharacterPage: React.FC = () => {
                     {characterData.age} years old
                     {currentStep === 'age' && (
                       <span className="text-blue-400 text-sm ml-2">
-                        (AI guessed: {characterData.aiGuesses.age})
+                        (AI guessed: {characterData.aiGuesses?.age || 'N/A'})
                       </span>
                     )}
                   </p>
@@ -579,13 +578,13 @@ export const DynamicCharacterPage: React.FC = () => {
                   <p className="text-gray-300">
                     {characterData.height} cm tall
                     <span className="text-blue-400 text-sm ml-2">
-                      (AI guessed: {characterData.aiGuesses.height})
+                      (AI guessed: {characterData.aiGuesses?.height || 'N/A'})
                     </span>
                   </p>
                   <p className="text-gray-300">
                     {characterData.weight} kg
                     <span className="text-blue-400 text-sm ml-2">
-                      (AI guessed: {characterData.aiGuesses.weight})
+                      (AI guessed: {characterData.aiGuesses?.weight || 'N/A'})
                     </span>
                   </p>
                 </motion.div>
@@ -926,9 +925,9 @@ export const DynamicCharacterPage: React.FC = () => {
                 </h3>
                 <p className="text-gray-300 text-center mb-6">
                   AI guessed: <span className="text-blue-400 font-semibold">
-                    {characterData.aiGuesses.gender === 'unknown' ? 'Unknown' : 
-                     characterData.aiGuesses.gender === 'male' ? 'Male' :
-                     characterData.aiGuesses.gender === 'female' ? 'Female' : 'Non-binary'}
+                    {characterData.aiGuesses?.gender === 'unknown' ? 'Unknown' :
+                     characterData.aiGuesses?.gender === 'male' ? 'Male' :
+                     characterData.aiGuesses?.gender === 'female' ? 'Female' : 'Non-binary'}
                   </span>
                 </p>
                 <div className="space-y-3">
@@ -970,7 +969,7 @@ export const DynamicCharacterPage: React.FC = () => {
                 <div className="text-center mb-6">
                   <div className="text-4xl mb-4">🎂</div>
                   <p className="text-gray-300 mb-4">
-                    AI guessed: <span className="text-blue-400 font-semibold">{characterData.aiGuesses.age}</span> years old
+                    AI guessed: <span className="text-blue-400 font-semibold">{characterData.aiGuesses?.age || 'N/A'}</span> years old
                   </p>
                 </div>
                 
@@ -1023,15 +1022,15 @@ export const DynamicCharacterPage: React.FC = () => {
                   <h4 className="text-white font-semibold mb-2 text-center">🤖 AI Guesses from Photo:</h4>
                   <div className="grid grid-cols-3 gap-4 text-center text-sm">
                     <div>
-                      <div className="text-blue-400 font-semibold">{characterData.aiGuesses.age}</div>
+                      <div className="text-blue-400 font-semibold">{characterData.aiGuesses?.age || 'N/A'}</div>
                       <div className="text-gray-400">years old</div>
                     </div>
                     <div>
-                      <div className="text-blue-400 font-semibold">{characterData.aiGuesses.height}</div>
+                      <div className="text-blue-400 font-semibold">{characterData.aiGuesses?.height || 'N/A'}</div>
                       <div className="text-gray-400">cm tall</div>
                     </div>
                     <div>
-                      <div className="text-blue-400 font-semibold">{characterData.aiGuesses.weight}</div>
+                      <div className="text-blue-400 font-semibold">{characterData.aiGuesses?.weight || 'N/A'}</div>
                       <div className="text-gray-400">kg</div>
                     </div>
                   </div>
@@ -1277,7 +1276,7 @@ export const DynamicCharacterPage: React.FC = () => {
                     <div className="bg-blue-500/20 rounded-xl p-4">
                       <h5 className="text-white font-semibold mb-2">🤖 AI Analysis Summary</h5>
                       <div className="text-sm text-gray-300 space-y-1">
-                        <div>AI guessed: {characterData.aiGuesses.age}y, {characterData.aiGuesses.height}cm, {characterData.aiGuesses.weight}kg, {characterData.aiGuesses.gender}</div>
+                        <div>AI guessed: {characterData.aiGuesses?.age || 'N/A'}y, {characterData.aiGuesses?.height || 'N/A'}cm, {characterData.aiGuesses?.weight || 'N/A'}kg, {characterData.aiGuesses?.gender || 'N/A'}</div>
                         <div>Final values: {characterData.age}y, {characterData.height}cm, {characterData.weight}kg, {characterData.gender}</div>
                       </div>
                     </div>
