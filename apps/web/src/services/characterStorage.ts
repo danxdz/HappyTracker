@@ -4,7 +4,7 @@ export interface SavedCharacter {
   age: number
   height: number
   weight: number
-  gender: 'male' | 'female' | 'non-binary' | 'unknown'
+  gender: 'male' | 'female' | 'unknown'
   photo?: string // Base64 or URL
   caricatureImage: string // Base64 or URL
   createdAt: Date
@@ -25,7 +25,7 @@ export interface SavedCharacter {
   }
   // Complete photo analysis details
   photoAnalysis?: {
-    gender: 'male' | 'female' | 'non-binary' | 'unknown'
+    gender: 'male' | 'female' | 'unknown'
     age: number
     height: number
     weight: number
@@ -43,7 +43,7 @@ export interface SavedCharacter {
     age: number
     height: number
     weight: number
-    gender: 'male' | 'female' | 'non-binary' | 'unknown'
+    gender: 'male' | 'female' | 'unknown'
   }
   // Generation prompt used for caricature
   generationPrompt?: string

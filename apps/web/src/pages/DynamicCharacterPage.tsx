@@ -56,8 +56,6 @@ const DynamicCharacterPage: React.FC = () => {
   const [photoAnalysis, setPhotoAnalysis] = useState<any>(null)
   const [generationPrompt, setGenerationPrompt] = useState<string | null>(null)
   const [generationResult, setGenerationResult] = useState<any>(null)
-  const [isGenerating3D, setIsGenerating3D] = useState(false)
-  const [threeDModelUrl, setThreeDModelUrl] = useState<string | null>(null)
 
   const steps: FlowStep[] = ['photo', 'name', 'gender', 'age', 'measures', 'class', 'card', 'complete']
   const currentStepIndex = steps.indexOf(currentStep)
@@ -163,25 +161,6 @@ const DynamicCharacterPage: React.FC = () => {
     }
   }
 
-  const generateThreeDCharacter = async () => {
-    logger.log('🎮 Starting 3D character generation...')
-    setIsGenerating3D(true)
-    
-    try {
-      const { ThreeDCharacterGenerator } = await import('../services/threeDCharacterGenerator')
-      const result = await ThreeDCharacterGenerator.generateThreeDCharacter(
-        caricatureImage!,
-        characterData,
-        rpgClass
-      )
-      logger.log('🎮 3D Character generated successfully!')
-      setThreeDModelUrl(result.modelUrl || null)
-    } catch (error) {
-      logger.error('❌ 3D Character generation failed:', error)
-    } finally {
-      setIsGenerating3D(false)
-    }
-  }
 
   const saveCharacterToGallery = async () => {
     if (isSavingCharacter || characterSaved) {
@@ -596,46 +575,6 @@ const DynamicCharacterPage: React.FC = () => {
                   </div>
                 )}
                 
-                {/* Simple 3D Generation */}
-                <div className="mb-4">
-                  <button
-                    onClick={generateThreeDCharacter}
-                    disabled={isGenerating3D}
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg disabled:scale-100 disabled:cursor-not-allowed"
-                  >
-                    {isGenerating3D ? (
-                      <div className="flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Generating 3D Model...
-                      </div>
-                    ) : (
-                      '🎮 Generate 3D Model'
-                    )}
-                  </button>
-                  
-                  {threeDModelUrl && (
-                    <div className="mt-4 bg-white/10 rounded-xl p-4">
-                      <h5 className="text-white font-semibold mb-3 text-center">🎮 Your 3D Model</h5>
-                      <div className="w-full h-32 bg-gray-800 rounded-lg flex items-center justify-center mb-3">
-                        <div className="text-center">
-                          <div className="text-green-400 text-2xl mb-1">🎮</div>
-                          <p className="text-white text-sm">3D Model Ready!</p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => {
-                          const link = document.createElement('a')
-                          link.href = threeDModelUrl
-                          link.download = `${characterData.name}-3d-model.glb`
-                          link.click()
-                        }}
-                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200"
-                      >
-                        📥 Download 3D Model
-                      </button>
-                    </div>
-                  )}
-                </div>
                 
                 <div className="flex gap-3">
                   <button
