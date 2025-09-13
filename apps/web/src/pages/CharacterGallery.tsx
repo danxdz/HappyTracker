@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Plus, Download, Trash2, Eye, Search, Filter, X, Copy, Sparkles, Image, FileText, BarChart3, Settings, Heart, Share2, Edit3, RotateCcw, Zap } from 'lucide-react'
+import { ArrowLeft, Plus, Download, Trash2, Eye, Search, Filter, X, Copy, Sparkles, Image, FileText, BarChart3, Settings, Heart, Share2, Edit3, RotateCcw, Zap, Link } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { CharacterStorage } from '../services/characterStorage'
 
@@ -439,25 +439,44 @@ const CharacterGallery: React.FC = () => {
                   )}
 
                   {/* Quick Actions - Show on hover */}
-                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
                         downloadCharacter(character)
                       }}
-                      className="flex-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 font-semibold py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1"
+                      className="flex-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 font-semibold py-2 px-2 rounded-lg transition-colors flex items-center justify-center gap-1 text-xs"
                     >
-                      <Download className="w-4 h-4" />
+                      <Download className="w-3 h-3" />
                       Save
+                    </button>
+                    <button
+                      onClick={async (e) => {
+                        e.stopPropagation()
+                        try {
+                          const { ImageSharingService } = await import('../services/imageSharing')
+                          const shareableUrl = ImageSharingService.createShareableUrl(character.caricatureImage, `${character.name}-character.png`)
+                          await navigator.clipboard.writeText(shareableUrl)
+                          alert('Shareable link copied to clipboard!')
+                        } catch (error) {
+                          console.error('Failed to create shareable link:', error)
+                          alert('Failed to create shareable link')
+                        }
+                      }}
+                      className="bg-green-500/20 hover:bg-green-500/30 text-green-400 font-semibold py-2 px-2 rounded-lg transition-colors flex items-center justify-center"
+                      title="Share Link"
+                    >
+                      <Link className="w-3 h-3" />
                     </button>
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
                         deleteCharacter(character.id)
                       }}
-                      className="bg-red-500/20 hover:bg-red-500/30 text-red-400 font-semibold py-2 px-3 rounded-lg transition-colors flex items-center justify-center"
+                      className="bg-red-500/20 hover:bg-red-500/30 text-red-400 font-semibold py-2 px-2 rounded-lg transition-colors flex items-center justify-center"
+                      title="Delete"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3 h-3" />
                     </button>
                   </div>
 
@@ -847,16 +866,23 @@ const CharacterGallery: React.FC = () => {
                         <Download className="w-4 h-4" />
                         Download
                       </button>
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(selectedCharacter.caricatureImage)
-                          // Could add toast notification here
-                        }}
-                        className="bg-green-500/20 hover:bg-green-500/30 text-green-400 font-semibold py-2 px-3 rounded-lg transition-colors flex items-center gap-2 text-sm"
-                      >
-                        <Share2 className="w-4 h-4" />
-                        Share
-                      </button>
+                  <button
+                    onClick={async () => {
+                      try {
+                        const { ImageSharingService } = await import('../services/imageSharing')
+                        const shareableUrl = ImageSharingService.createShareableUrl(selectedCharacter.caricatureImage, `${selectedCharacter.name}-character.png`)
+                        await navigator.clipboard.writeText(shareableUrl)
+                        alert('Shareable link copied to clipboard! You can now share this link.')
+                      } catch (error) {
+                        console.error('Failed to create shareable link:', error)
+                        alert('Failed to create shareable link')
+                      }
+                    }}
+                    className="bg-green-500/20 hover:bg-green-500/30 text-green-400 font-semibold py-2 px-3 rounded-lg transition-colors flex items-center gap-2 text-sm"
+                  >
+                    <Link className="w-4 h-4" />
+                    Share Link
+                  </button>
                       <button
                         onClick={() => {
                           // Could implement character editing functionality
@@ -1163,10 +1189,8 @@ const CharacterGallery: React.FC = () => {
             <div className="absolute bottom-4 left-4 right-4 flex gap-2 justify-center">
               <button
                 onClick={() => {
-                  const link = document.createElement('a')
-                  link.href = selectedImageUrl
-                  link.download = `character-image.png`
-                  link.click()
+                  const { ImageSharingService } = require('../services/imageSharing')
+                  ImageSharingService.downloadImage(selectedImageUrl, `character-${Date.now()}.png`)
                 }}
                 className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
               >
@@ -1174,14 +1198,31 @@ const CharacterGallery: React.FC = () => {
                 Download
               </button>
               <button
-                onClick={() => {
-                  navigator.clipboard.writeText(selectedImageUrl)
-                  // Could add toast notification here
+                onClick={async () => {
+                  try {
+                    const { ImageSharingService } = await import('../services/imageSharing')
+                    const shareableUrl = ImageSharingService.createShareableUrl(selectedImageUrl, `character-${Date.now()}.png`)
+                    await navigator.clipboard.writeText(shareableUrl)
+                    alert('Shareable link copied to clipboard! You can now share this link.')
+                  } catch (error) {
+                    console.error('Failed to create shareable link:', error)
+                    alert('Failed to create shareable link')
+                  }
                 }}
                 className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
               >
+                <Link className="w-4 h-4" />
+                Share Link
+              </button>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(selectedImageUrl)
+                  alert('Base64 URL copied to clipboard!')
+                }}
+                className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+              >
                 <Copy className="w-4 h-4" />
-                Copy URL
+                Copy Base64
               </button>
             </div>
           </motion.div>
