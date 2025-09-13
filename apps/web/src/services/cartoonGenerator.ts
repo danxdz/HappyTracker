@@ -658,21 +658,21 @@ QUALITY: High quality, detailed, professional character art, detailed eyes and e
   private static selectArtStyle(photoAnalysis: PhotoAnalysis, rpgClass: any): string {
     const styles = [
       'chibi-style',
-      'Animal Crossing-inspired',
-      'Funko Pop-style',
+      'cozy village-inspired',
+      'collectible figure-style',
       'anime-inspired',
-      'Disney-style',
-      'Pixar-inspired',
-      'Studio Ghibli-style',
+      'classic animation-style',
+      'modern 3D animation-style',
+      'watercolor art-style',
       'cartoon-style',
       'stylized realistic'
     ]
     
     // Choose style based on age and class
     if (photoAnalysis.age < 25) {
-      return styles[Math.floor(Math.random() * 4)] // chibi, Animal Crossing, Funko, anime
+      return styles[Math.floor(Math.random() * 4)] // chibi, cozy village, collectible, anime
     } else if (photoAnalysis.age < 40) {
-      return styles[Math.floor(Math.random() * 3) + 3] // Disney, Pixar, Studio Ghibli
+      return styles[Math.floor(Math.random() * 3) + 3] // classic animation, modern 3D, watercolor
     } else {
       return styles[Math.floor(Math.random() * 2) + 7] // cartoon, stylized realistic
     }
@@ -701,12 +701,12 @@ QUALITY: High quality, detailed, professional character art, detailed eyes and e
   private static getStyleDescription(artStyle: string): string {
     const descriptions: { [key: string]: string } = {
       'chibi-style': 'large expressive eyes, cute proportions, adorable features, kawaii aesthetic',
-      'Animal Crossing-inspired': 'soft rounded features, friendly expression, charming simplicity, cozy aesthetic',
-      'Funko Pop-style': 'oversized head, large eyes, simplified features, collectible figure aesthetic',
+      'cozy village-inspired': 'soft rounded features, friendly expression, charming simplicity, cozy aesthetic',
+      'collectible figure-style': 'oversized head, large eyes, simplified features, collectible figure aesthetic',
       'anime-inspired': 'large expressive eyes, stylized proportions, vibrant colors, manga aesthetic',
-      'Disney-style': 'classic animation proportions, expressive features, timeless appeal, magical aesthetic',
-      'Pixar-inspired': 'modern 3D animation style, expressive features, vibrant colors, cinematic quality',
-      'Studio Ghibli-style': 'soft watercolor-like features, gentle expression, artistic beauty, hand-drawn aesthetic',
+      'classic animation-style': 'classic animation proportions, expressive features, timeless appeal, magical aesthetic',
+      'modern 3D animation-style': 'modern 3D animation style, expressive features, vibrant colors, cinematic quality',
+      'watercolor art-style': 'soft watercolor-like features, gentle expression, artistic beauty, hand-drawn aesthetic',
       'cartoon-style': 'simplified features, bold colors, playful proportions, animated aesthetic',
       'stylized realistic': 'realistic proportions with artistic flair, detailed features, professional quality'
     }
