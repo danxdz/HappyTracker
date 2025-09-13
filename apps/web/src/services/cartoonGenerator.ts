@@ -68,7 +68,8 @@ export class CaricatureGenerator {
   static async generateCaricatureFromPhoto(
     photoFile: File,
     style: 'cute' | 'anime' | 'disney' | 'pixar' = 'cute',
-    characterData?: { name: string; age: number; height: number; weight: number; gender: 'male' | 'female' | 'non-binary' | 'unknown' }
+    characterData?: { name: string; age: number; height: number; weight: number; gender: 'male' | 'female' | 'non-binary' | 'unknown' },
+    selectedRpgClass?: { name: string; description: string; stats: { strength: number; agility: number; intelligence: number; wisdom: number; charisma: number; constitution: number; total: number } }
   ): Promise<CaricatureGenerationResult> {
     const startTime = Date.now()
     
@@ -88,10 +89,22 @@ export class CaricatureGenerator {
         console.log('🎯 Using user input for age/height/weight/gender:', characterData)
       }
       
-      // Generate RPG character
-      const rpgGenerator = new RPGCharacterGenerator()
-      const rpgCharacter = rpgGenerator.generateRPGCharacter(photoAnalysis, characterData?.name || 'Character')
-      console.log('⚔️ RPG Character:', rpgCharacter.suggestedClass.name, 'Stats:', rpgCharacter.stats)
+      // Use selected RPG class or generate one
+      let rpgCharacter: any
+      if (selectedRpgClass) {
+        console.log('🎯 Using user-selected RPG class:', selectedRpgClass.name)
+        // Create a mock RPG character with the selected class
+        rpgCharacter = {
+          suggestedClass: selectedRpgClass,
+          stats: selectedRpgClass.stats,
+          characterPrompt: this.generateCharacterPrompt(photoAnalysis, characterData?.name || 'Character', selectedRpgClass)
+        }
+      } else {
+        // Generate RPG character automatically
+        const rpgGenerator = new RPGCharacterGenerator()
+        rpgCharacter = rpgGenerator.generateRPGCharacter(photoAnalysis, characterData?.name || 'Character')
+        console.log('⚔️ RPG Character:', rpgCharacter.suggestedClass.name, 'Stats:', rpgCharacter.stats)
+      }
       
       // Use the RPG-generated prompt
       const prompt = rpgCharacter.characterPrompt
@@ -593,5 +606,37 @@ export class CaricatureGenerator {
       reader.onerror = reject
       reader.readAsDataURL(file)
     })
+  }
+
+  /**
+   * Generate character prompt for selected RPG class
+   */
+  private static generateCharacterPrompt(
+    photoAnalysis: PhotoAnalysis, 
+    characterName: string, 
+    rpgClass: { name: string; description: string; stats: any }
+  ): string {
+    const genderText = photoAnalysis.gender === 'male' ? 'male' : 
+                      photoAnalysis.gender === 'female' ? 'female' : 'character'
+    
+    const hairColor = photoAnalysis.hairColor || 'brown'
+    const hairStyle = photoAnalysis.hairStyle || 'short'
+    const skinTone = photoAnalysis.skinTone || 'medium'
+    const expression = photoAnalysis.expression || 'confident'
+    const build = photoAnalysis.build || 'average'
+    
+    // Generate class-specific equipment and style
+    const classEquipment = {
+      Warrior: 'equipped with sword, shield, chest armor',
+      Rogue: 'equipped with daggers, leather armor, hood',
+      Mage: 'equipped with staff, robes, magical aura',
+      Cleric: 'equipped with mace, holy symbol, white robes',
+      Bard: 'equipped with lute, colorful clothes, musical notes',
+      Ranger: 'equipped with bow, arrows, green cloak'
+    }
+    
+    const equipment = classEquipment[rpgClass.name as keyof typeof classEquipment] || 'equipped with basic gear'
+    
+    return `toybox collectible figure style, oversized round head, small compact body, smooth plastic-like surface, simplified facial features, bright solid colors, cute proportions, minimal details, ${genderText} ${rpgClass.name.toLowerCase()}, ${hairColor} ${hairStyle} hair, ${skinTone} skin tone, ${expression} expression, ${equipment}, ${photoAnalysis.age} years old, ${build} build, single character only, centered composition, clean white background, RPG character design, fantasy game art style, front-facing heroic pose, face clearly visible, no helmets, no headgear, no face-covering equipment`
   }
 }

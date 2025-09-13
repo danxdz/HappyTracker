@@ -78,6 +78,8 @@ export const DynamicCharacterPage: React.FC = () => {
     build: 'slim' | 'average' | 'muscular' | 'heavy'
   } | null>(null)
   const [generationResult, setGenerationResult] = useState<any>(null)
+  const [isProcessingPhoto, setIsProcessingPhoto] = useState(false)
+  const [isGeneratingCaricature, setIsGeneratingCaricature] = useState(false)
 
   // Auto-progress through loading
   useEffect(() => {
@@ -155,6 +157,7 @@ export const DynamicCharacterPage: React.FC = () => {
 
   const handlePhotoUpload = async (photo: File) => {
     try {
+      setIsProcessingPhoto(true)
       updateCharacterData('photo', photo)
       
       // Analyze photo for AI guesses
@@ -169,7 +172,10 @@ export const DynamicCharacterPage: React.FC = () => {
       updateCharacterData('gender', aiGuesses.gender)
       
       console.log('✅ Character data updated, moving to next step...')
-      setTimeout(nextStep, 1000) // Give time to show AI analysis
+      setTimeout(() => {
+        setIsProcessingPhoto(false)
+        nextStep()
+      }, 1000) // Give time to show AI analysis
     } catch (error) {
       console.error('❌ Error in photo upload:', error)
       // Fallback to default values
@@ -179,7 +185,10 @@ export const DynamicCharacterPage: React.FC = () => {
       updateCharacterData('height', fallbackGuesses.height)
       updateCharacterData('weight', fallbackGuesses.weight)
       updateCharacterData('gender', fallbackGuesses.gender)
-      setTimeout(nextStep, 1000)
+      setTimeout(() => {
+        setIsProcessingPhoto(false)
+        nextStep()
+      }, 1000)
     }
   }
 
@@ -270,11 +279,15 @@ export const DynamicCharacterPage: React.FC = () => {
   const handleCardComplete = async () => {
     try {
       console.log('🎨 Starting caricature generation...')
+      setIsGeneratingCaricature(true)
       setCaricatureGenerated(true)
       
       if (!characterData.photo) {
         console.error('❌ No photo available for caricature generation')
-        setTimeout(() => setCurrentStep('complete'), 1000)
+        setTimeout(() => {
+          setIsGeneratingCaricature(false)
+          setCurrentStep('complete')
+        }, 1000)
         return
       }
       
@@ -289,7 +302,8 @@ export const DynamicCharacterPage: React.FC = () => {
           height: characterData.height,
           weight: characterData.weight,
           gender: characterData.gender
-        }
+        },
+        rpgClass || undefined // Pass the user-selected RPG class
       )
       
       if (result.success && result.imageUrl) {
@@ -322,10 +336,16 @@ export const DynamicCharacterPage: React.FC = () => {
         return
       }
       
-      setTimeout(() => setCurrentStep('complete'), 1000)
+      setTimeout(() => {
+        setIsGeneratingCaricature(false)
+        setCurrentStep('complete')
+      }, 1000)
     } catch (error) {
       console.error('❌ Error generating caricature:', error)
-      setTimeout(() => setCurrentStep('complete'), 1000)
+      setTimeout(() => {
+        setIsGeneratingCaricature(false)
+        setCurrentStep('complete')
+      }, 1000)
     }
   }
 
@@ -516,13 +536,17 @@ export const DynamicCharacterPage: React.FC = () => {
                   {caricatureImage && (
                     <div className="bg-white/10 rounded-xl p-4 max-w-sm mx-auto">
                       <h4 className="text-white font-semibold mb-3 text-center">🎨 Your Caricature Character</h4>
-                      <div className="w-64 h-64 bg-white rounded-lg mx-auto flex items-center justify-center overflow-hidden mb-4">
+                      <div 
+                        className="w-64 h-64 bg-white rounded-lg mx-auto flex items-center justify-center overflow-hidden mb-4 cursor-pointer hover:scale-105 transition-transform"
+                        onClick={() => setShowImageModal(true)}
+                      >
                         <img 
                           src={caricatureImage} 
                           alt="Your Caricature Character" 
                           className="w-full h-full object-contain"
                         />
                       </div>
+                      <p className="text-gray-300 text-sm text-center mb-2">Click image for fullscreen view</p>
                       
                       {/* Cost Information */}
                       {generationCost !== null && (
@@ -656,9 +680,10 @@ export const DynamicCharacterPage: React.FC = () => {
                     type="file"
                     accept="image/*"
                     capture="environment"
+                    disabled={isProcessingPhoto}
                     onChange={(e) => {
                       const file = e.target.files?.[0]
-                      if (file) {
+                      if (file && !isProcessingPhoto) {
                         handlePhotoUpload(file)
                       }
                     }}
@@ -671,9 +696,10 @@ export const DynamicCharacterPage: React.FC = () => {
                     type="file"
                     accept="image/*"
                     capture="user"
+                    disabled={isProcessingPhoto}
                     onChange={(e) => {
                       const file = e.target.files?.[0]
-                      if (file) {
+                      if (file && !isProcessingPhoto) {
                         handlePhotoUpload(file)
                       }
                     }}
@@ -684,16 +710,24 @@ export const DynamicCharacterPage: React.FC = () => {
                   <div className="space-y-3">
                     <label
                       htmlFor="photo-upload"
-                      className="block w-full py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition-all cursor-pointer"
+                      className={`block w-full py-3 text-white rounded-xl font-semibold transition-all ${
+                        isProcessingPhoto 
+                          ? 'bg-gray-500 cursor-not-allowed' 
+                          : 'bg-blue-500 hover:bg-blue-600 cursor-pointer'
+                      }`}
                     >
-                      📁 Choose from Gallery
+                      {isProcessingPhoto ? '⏳ Processing...' : '📁 Choose from Gallery'}
                     </label>
                     
                     <label
                       htmlFor="photo-camera"
-                      className="block w-full py-3 bg-green-500 text-white rounded-xl font-semibold hover:bg-green-600 transition-all cursor-pointer"
+                      className={`block w-full py-3 text-white rounded-xl font-semibold transition-all ${
+                        isProcessingPhoto 
+                          ? 'bg-gray-500 cursor-not-allowed' 
+                          : 'bg-green-500 hover:bg-green-600 cursor-pointer'
+                      }`}
                     >
-                      📸 Take Photo
+                      {isProcessingPhoto ? '⏳ Processing...' : '📸 Take Photo'}
                     </label>
                   </div>
                   
@@ -1181,21 +1215,23 @@ export const DynamicCharacterPage: React.FC = () => {
                 </div>
 
                 <motion.button
-                  whileHover={{ scale: caricatureGenerated ? 1 : 1.05 }}
-                  whileTap={{ scale: caricatureGenerated ? 1 : 0.95 }}
+                  whileHover={{ scale: (caricatureGenerated || isGeneratingCaricature) ? 1 : 1.05 }}
+                  whileTap={{ scale: (caricatureGenerated || isGeneratingCaricature) ? 1 : 0.95 }}
                   onClick={handleCardComplete}
-                  disabled={caricatureGenerated}
+                  disabled={caricatureGenerated || isGeneratingCaricature}
                   className={`w-full mt-6 py-3 rounded-xl font-semibold transition-all ${
-                    caricatureGenerated 
+                    (caricatureGenerated || isGeneratingCaricature)
                       ? 'bg-gray-500 text-gray-300 cursor-not-allowed' 
                       : 'bg-gradient-to-r from-green-500 to-blue-500 text-white hover:from-green-600 hover:to-blue-600'
                   }`}
                 >
-                  {caricatureGenerated 
-                    ? '✅ Caricature Generated!' 
-                    : hfApiEnabled 
-                      ? '🚀 Generate Real AI Caricature' 
-                      : '🎨 Generate Caricature Character'
+                  {isGeneratingCaricature 
+                    ? '⏳ Generating Caricature...' 
+                    : caricatureGenerated 
+                      ? '✅ Caricature Generated!' 
+                      : hfApiEnabled 
+                        ? '🚀 Generate Real AI Caricature' 
+                        : '🎨 Generate Caricature Character'
                   }
                 </motion.button>
               </div>
