@@ -38,8 +38,8 @@ export default defineConfig({
           // 3D libraries
           'three-vendor': ['three', '@react-three/fiber', '@react-three/drei', '@react-three/postprocessing'],
           
-          // AI/ML libraries
-          'ai-vendor': ['face-api.js'],
+          // AI/ML libraries (removed face-api.js)
+          // 'ai-vendor': ['face-api.js'],
           
           // Utility libraries
           'utils-vendor': ['clsx', 'class-variance-authority']

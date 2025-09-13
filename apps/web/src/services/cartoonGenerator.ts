@@ -1,6 +1,5 @@
 import { HuggingFaceService } from './huggingFaceService'
 import { RPGCharacterGenerator, PhotoAnalysis } from './rpgCharacterGenerator'
-import { LocalFaceAnalysis } from './localFaceAnalysis'
 import { ImageCompression } from './imageCompression'
 
 // PhotoAnalysis interface is now imported from rpgCharacterGenerator
@@ -157,49 +156,38 @@ export class CaricatureGenerator {
   }
 
   /**
-   * 📸 Analyze Photo with Local AI
+   * 📸 Analyze Photo with Filename Analysis
    * 
-   * Uses face-api.js for completely free, local face analysis
-   * No API keys, no external dependencies
+   * Uses filename-based analysis - no TensorFlow.js or Face.js
+   * Completely eliminates TensorFlow.js backend errors
    */
   private static async analyzePhotoWithLocalAI(photoFile: File): Promise<PhotoAnalysis> {
-    console.log('🔍 Analyzing photo with local face-api.js...')
+    console.log('🔍 Analyzing photo with filename analysis (no TensorFlow.js)...')
     
     try {
-      // Initialize face-api.js models first
-      await LocalFaceAnalysis.initialize()
-      
-      // Use local face analysis
-      const faceResult = await LocalFaceAnalysis.analyzeFace(photoFile)
-      
-      if (!faceResult.faceDetected) {
-        console.log('❌ No face detected, using filename analysis')
-        return this.createFallbackAnalysis(photoFile)
-      }
-
-      // Convert face analysis to PhotoAnalysis
-      const photoAnalysis: PhotoAnalysis = {
-        gender: faceResult.gender,
-        age: faceResult.age,
-        height: this.estimateHeightFromAge(faceResult.age),
-        weight: this.estimateWeightFromAge(faceResult.age),
-        glasses: false, // face-api.js doesn't detect glasses
-        facialHair: false, // face-api.js doesn't detect facial hair
-        hairColor: 'brown', // Default
-        hairStyle: 'short', // Default
-        skinTone: 'medium', // Default
-        expression: 'confident', // Default
-        faceShape: 'oval', // Default
-        build: 'average' // Default
-      }
-
-      console.log('🎯 Local face analysis result:', photoAnalysis)
+      // Use filename analysis directly - no Face.js or TensorFlow.js
+      const photoAnalysis = this.createFallbackAnalysis(photoFile)
+      console.log('🎯 Filename analysis result:', photoAnalysis)
       return photoAnalysis
-
     } catch (error) {
-      console.error('❌ Local face analysis failed:', error)
-      console.log('🔄 Falling back to filename analysis...')
-      return this.createFallbackAnalysis(photoFile)
+      console.error('❌ Filename analysis failed:', error)
+      console.log('🔄 Using default values...')
+      
+      // Return default values if analysis fails
+      return {
+        gender: 'unknown',
+        age: 25,
+        height: 170,
+        weight: 70,
+        glasses: false,
+        facialHair: false,
+        hairColor: 'brown',
+        hairStyle: 'short',
+        skinTone: 'medium',
+        expression: 'confident',
+        faceShape: 'oval',
+        build: 'average'
+      }
     }
   }
 
@@ -522,37 +510,33 @@ export class CaricatureGenerator {
   /**
    * 🔍 Analyze Photo for UI Pre-filling
    * 
-   * Uses local face-api.js analysis for immediate UI field population
-   * Falls back to filename analysis if face detection fails
+   * Uses filename-based analysis for immediate UI field population
+   * No TensorFlow.js or Face.js dependencies
    */
   static async analyzePhotoForUI(photoFile: File): Promise<PhotoAnalysis> {
-    console.log('🔍 Analyzing photo for UI with local face-api.js or fallback...')
+    console.log('🔍 Analyzing photo for UI with filename analysis...')
     try {
-      const faceResult = await LocalFaceAnalysis.analyzeFace(photoFile)
-      if (faceResult.faceDetected) {
-        const photoAnalysis: PhotoAnalysis = {
-          gender: faceResult.gender,
-          age: faceResult.age,
-          height: this.estimateHeightFromAge(faceResult.age),
-          weight: this.estimateWeightFromAge(faceResult.age),
-          glasses: false, // face-api.js doesn't detect glasses
-          facialHair: false, // face-api.js doesn't detect facial hair
-          hairColor: 'brown', // Default
-          hairStyle: 'short', // Default
-          skinTone: 'medium', // Default
-          expression: 'confident', // Default
-          faceShape: 'oval', // Default
-          build: 'average' // Default
-        }
-        console.log('🎯 Local face analysis for UI result:', photoAnalysis)
-        return photoAnalysis
-      } else {
-        console.log('❌ No face detected for UI, using filename analysis')
-        return this.createFallbackAnalysis(photoFile)
-      }
+      // Use filename analysis directly - no Face.js or TensorFlow.js
+      const photoAnalysis = this.createFallbackAnalysis(photoFile)
+      console.log('🎯 Filename analysis for UI result:', photoAnalysis)
+      return photoAnalysis
     } catch (error) {
-      console.error('❌ Local face analysis for UI failed, falling back to filename:', error)
-      return this.createFallbackAnalysis(photoFile)
+      console.error('❌ Filename analysis failed:', error)
+      // Return default values if analysis fails
+      return {
+        gender: 'unknown',
+        age: 25,
+        height: 170,
+        weight: 70,
+        glasses: false,
+        facialHair: false,
+        hairColor: 'brown',
+        hairStyle: 'short',
+        skinTone: 'medium',
+        expression: 'confident',
+        faceShape: 'oval',
+        build: 'average'
+      }
     }
   }
 
