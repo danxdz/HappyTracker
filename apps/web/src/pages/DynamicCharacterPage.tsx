@@ -1334,6 +1334,69 @@ export const DynamicCharacterPage: React.FC = () => {
                       : '🎨 Generate Caricature Character'
                   }
                 </motion.button>
+
+                {/* 3D Generation Button - Only shows after 2D is done */}
+                {caricatureGenerated && caricatureImage && !is3DGenerating && !model3DUrl && (
+                  <motion.button
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={generate3DModel}
+                    className="w-full mt-4 py-3 rounded-xl font-semibold transition-all bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
+                  >
+                    🎮 Generate 3D Model (Meshy)
+                  </motion.button>
+                )}
+
+                {/* 3D Generation Progress */}
+                {is3DGenerating && (
+                  <div className="mt-4 bg-black/30 rounded-xl p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-white font-medium">🎮 Creating 3D Model...</span>
+                      <span className="text-purple-300">{model3DProgress}%</span>
+                    </div>
+                    <div className="w-full bg-gray-700 rounded-full h-2">
+                      <motion.div
+                        className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${model3DProgress}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-gray-400 mt-2 text-center">
+                      This may take 1-2 minutes...
+                    </p>
+                  </div>
+                )}
+
+                {/* 3D Model Ready */}
+                {model3DUrl && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="mt-4 bg-gradient-to-r from-purple-900/50 to-pink-900/50 rounded-xl p-4"
+                  >
+                    <p className="text-white font-semibold text-center mb-2">
+                      ✨ 3D Model Ready!
+                    </p>
+                    <div className="flex gap-2">
+                      <a
+                        href={model3DUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 py-2 bg-purple-600 text-white rounded-lg text-center hover:bg-purple-700 transition-colors"
+                      >
+                        📥 Download 3D
+                      </a>
+                      <button
+                        onClick={() => window.open(model3DUrl, '_blank')}
+                        className="flex-1 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors"
+                      >
+                        👁️ View 3D
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
               </div>
             </motion.div>
           )}

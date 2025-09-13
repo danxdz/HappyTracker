@@ -164,7 +164,7 @@ export class CaricatureGenerator {
         console.log('🎮 Expression-based class suggestion:', suggestedClass)
         
         // Generate consistent character with auto-suggested class
-        rpgCharacter.characterPrompt = CharacterProgressionSystem.generateLeveledPrompt(
+        const basePrompt = CharacterProgressionSystem.generateLeveledPrompt(
           {
             expression: faceAnalysis.expression || 'neutral',
             gender: photoAnalysis.gender,
@@ -172,11 +172,15 @@ export class CaricatureGenerator {
             class: suggestedClass,
             hairColor: photoAnalysis.hairColor,
             skinTone: photoAnalysis.skinTone,
-            faceFeatures: `${photoAnalysis.faceShape} face, ${photoAnalysis.expression} expression`
+            faceFeatures: `${photoAnalysis.faceShape} face`
           },
           characterLevel,
-          characterStyle.name === 'Kawaii Chibi' ? 'cute' : 'cool'
+          'cute' // Keep consistent style
         )
+        
+        // Add subtle hints
+        const styleHints = this.getSubtleStyleHints(faceAnalysis.expression || 'neutral')
+        rpgCharacter.characterPrompt = `${basePrompt}, ${styleHints}`
       }
       
       console.log('⚔️ RPG Character:', rpgCharacter.suggestedClass.name, 'Stats:', rpgCharacter.stats)
