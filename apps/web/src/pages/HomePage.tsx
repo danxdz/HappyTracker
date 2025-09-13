@@ -25,6 +25,22 @@ export const HomePage: React.FC = () => {
     window.location.href = '/character-gallery'
   }
 
+  // Test API keys
+  const testApiKeys = () => {
+    const hfToken = import.meta.env.VITE_HUGGINGFACE_TOKEN
+    const meshyKey = import.meta.env.VITE_MESHY_API_KEY
+    const apiUrl = import.meta.env.REACT_APP_API_URL
+    
+    alert(`API Keys Status:
+Hugging Face: ${hfToken ? '✅ Set' : '❌ Missing'}
+Meshy: ${meshyKey ? '✅ Set' : '❌ Missing'}  
+Backend URL: ${apiUrl ? '✅ Set' : '❌ Missing'}
+
+HF Token: ${hfToken ? hfToken.substring(0, 10) + '...' : 'Not found'}
+Meshy Key: ${meshyKey ? meshyKey.substring(0, 10) + '...' : 'Not found'}
+Backend: ${apiUrl || 'Not found'}`)
+  }
+
   const features = [
     {
       icon: <Wand2 className="w-8 h-8" />,
@@ -112,6 +128,16 @@ export const HomePage: React.FC = () => {
               >
                 <Image className="w-6 h-6" />
                 View Gallery
+              </motion.button>
+
+              <motion.button
+                onClick={testApiKeys}
+                className="bg-yellow-500/20 backdrop-blur-sm border border-yellow-500/30 text-yellow-300 font-semibold text-lg px-8 py-4 rounded-xl flex items-center gap-3 hover:bg-yellow-500/30 transition-all duration-200"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Zap className="w-5 h-5" />
+                Test API Keys
               </motion.button>
             </div>
 
