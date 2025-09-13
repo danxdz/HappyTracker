@@ -1,7 +1,4 @@
-# Render.com Deployment Configuration for HappyTracker
-
 services:
-  # Backend API Service
   - type: web
     name: happytracker-backend
     env: node
@@ -11,4 +8,3 @@ services:
     envVars:
       NODE_ENV: production
       PORT: 3001
-    healthCheckPath: /api/health
