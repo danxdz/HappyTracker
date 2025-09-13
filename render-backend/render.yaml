@@ -1,0 +1,23 @@
+# Render.com Deployment Configuration
+
+services:
+  # Backend API Service
+  - type: web
+    name: character-generator-api
+    env: node
+    plan: starter
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+    healthCheckPath: /api/health
+    
+  # Database Service (Optional)
+  - type: pserv
+    name: character-generator-db
+    plan: starter
+    databaseName: character_generator
+    databaseUser: character_user
