@@ -44,6 +44,8 @@ const DynamicCharacterPage: React.FC = () => {
   const [showCameraModal, setShowCameraModal] = useState(false)
   const [stream, setStream] = useState<MediaStream | null>(null)
   const [videoRef, setVideoRef] = useState<HTMLVideoElement | null>(null)
+  const [isCheckingName, setIsCheckingName] = useState(false)
+  const [nameAvailable, setNameAvailable] = useState<boolean | null>(null)
 
   // Auto-progress through loading screen
   useEffect(() => {
@@ -54,6 +56,16 @@ const DynamicCharacterPage: React.FC = () => {
       return () => clearTimeout(timer)
     }
   }, [currentStep])
+
+  // Check name availability with debounce
+  useEffect(() => {
+    if (currentStep === 'name' && characterData.name) {
+      const timer = setTimeout(() => {
+        checkNameAvailability(characterData.name)
+      }, 500) // 500ms debounce
+      return () => clearTimeout(timer)
+    }
+  }, [characterData.name, currentStep])
   const [rpgClass, setRpgClass] = useState<{
     name: string
     description: string
@@ -77,6 +89,30 @@ const DynamicCharacterPage: React.FC = () => {
   const updateCharacterData = (updates: Partial<CharacterData>) => {
     logger.log('📝 Updating character data:', updates)
     setCharacterData(prev => ({ ...prev, ...updates }))
+  }
+
+  const checkNameAvailability = async (name: string) => {
+    if (!name.trim()) {
+      setNameAvailable(null)
+      return
+    }
+
+    setIsCheckingName(true)
+    try {
+      // Check if name already exists in localStorage
+      const existingCharacters = JSON.parse(localStorage.getItem('characters') || '[]')
+      const nameExists = existingCharacters.some((char: any) => 
+        char.name.toLowerCase() === name.toLowerCase()
+      )
+      
+      setNameAvailable(!nameExists)
+      logger.log(`🔍 Name "${name}" ${nameExists ? 'already exists' : 'is available'}`)
+    } catch (error) {
+      logger.error('❌ Error checking name availability:', error)
+      setNameAvailable(null)
+    } finally {
+      setIsCheckingName(false)
+    }
   }
 
   const moveToNextStep = () => {
@@ -487,6 +523,38 @@ const DynamicCharacterPage: React.FC = () => {
                 </div>
               </div>
             )}
+
+            {/* Name availability status */}
+            {characterData.name && (
+              <div className="mb-6">
+                {isCheckingName ? (
+                  <div className="p-4 bg-blue-500/20 border border-blue-500/30 rounded-xl">
+                    <div className="flex items-center justify-center gap-3">
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        className="w-5 h-5 border-2 border-blue-400 border-t-transparent rounded-full"
+                      />
+                      <span className="text-blue-300 text-sm">Checking name availability...</span>
+                    </div>
+                  </div>
+                ) : nameAvailable === true ? (
+                  <div className="p-4 bg-green-500/20 border border-green-500/30 rounded-xl">
+                    <div className="flex items-center justify-center gap-3">
+                      <Check className="w-5 h-5 text-green-400" />
+                      <span className="text-green-300 text-sm">✅ Name "{characterData.name}" is available!</span>
+                    </div>
+                  </div>
+                ) : nameAvailable === false ? (
+                  <div className="p-4 bg-red-500/20 border border-red-500/30 rounded-xl">
+                    <div className="flex items-center justify-center gap-3">
+                      <X className="w-5 h-5 text-red-400" />
+                      <span className="text-red-300 text-sm">❌ Name "{characterData.name}" already exists</span>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            )}
             
             <input
               type="text"
@@ -501,9 +569,14 @@ const DynamicCharacterPage: React.FC = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 onClick={moveToNextStep}
-                className="mt-6 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-semibold px-8 py-3 rounded-xl flex items-center gap-2 mx-auto transition-all duration-200"
+                disabled={nameAvailable === false || isCheckingName}
+                className={`mt-6 px-8 py-3 rounded-xl flex items-center gap-2 mx-auto transition-all duration-200 font-semibold ${
+                  nameAvailable === false || isCheckingName
+                    ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white'
+                }`}
               >
-                Continue
+                {isCheckingName ? 'Checking...' : nameAvailable === false ? 'Name Taken' : 'Continue'}
                 <ArrowRight className="w-5 h-5" />
               </motion.button>
             )}
