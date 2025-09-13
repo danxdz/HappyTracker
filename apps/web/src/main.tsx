@@ -33,7 +33,7 @@ const LoadingScreen = () => {
     )
   }
   
-  return null
+  return <App />
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -41,7 +41,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <Provider store={store}>
       <BrowserRouter>
         <LoadingScreen />
-        <App />
       </BrowserRouter>
     </Provider>
   </React.StrictMode>,
