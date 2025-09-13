@@ -80,6 +80,24 @@ let nextId = 1
 // Routes
 
 /**
+ * 🏠 Root Route
+ */
+app.get('/', (req, res) => {
+  res.json({
+    message: 'HappyTracker Backend API',
+    version: '1.0.0',
+    status: 'OK',
+    endpoints: {
+      health: '/api/health',
+      gallery: '/api/gallery',
+      characters: '/api/characters',
+      stats: '/api/stats'
+    },
+    documentation: 'Visit /api/health for health check'
+  })
+})
+
+/**
  * 🏠 Health Check
  */
 app.get('/api/health', (req, res) => {
