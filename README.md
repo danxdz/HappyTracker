@@ -8,15 +8,10 @@ An AI-powered character generator that creates personalized RPG characters from 
 
 ## 🚀 **Live Demo**
 
-### **Current Version (Netlify)**
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/danxdz/321)
+### **Deploy to Render.com**
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/danxdz/321)
 
-**⚠️ Limitations**: localStorage storage (only ~3-10 characters max)
-
-### **New Version (Render.com)**
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/danxdz/character-generator-backend)
-
-**✅ Benefits**: Unlimited storage, world gallery, file persistence
+**✅ Benefits**: Unlimited storage, world gallery, file persistence, full-stack deployment
 
 ---
 
@@ -85,13 +80,7 @@ render-backend/
 
 ## 🚀 **Deployment Options**
 
-### **Option 1: Netlify (Current)**
-- ✅ **Static hosting** - Simple deployment
-- ❌ **localStorage limit** - Only 3-10 characters
-- ❌ **No world gallery** - No sharing
-- ❌ **No file persistence** - Images lost on refresh
-
-### **Option 2: Render.com (Recommended)**
+### **Render.com (Recommended)**
 - ✅ **Full-stack hosting** - Backend + Frontend
 - ✅ **Unlimited storage** - No character limits
 - ✅ **World gallery** - Public character sharing
@@ -133,7 +122,7 @@ render-backend/
 - Git
 - Hugging Face account (for AI features)
 
-### **Quick Start (Netlify)**
+### **Quick Start (Render.com)**
 ```bash
 # Clone repository
 git clone https://github.com/danxdz/321
@@ -188,11 +177,6 @@ npm run dev
 ---
 
 ## 💰 **Pricing**
-
-### **Netlify (Free)**
-- Static hosting only
-- localStorage limitations
-- No backend features
 
 ### **Render.com**
 - **Free Tier**: 750 hours/month (development)
@@ -293,9 +277,9 @@ npm run dev
 
 Ready to create amazing AI characters?
 
-1. **Choose Deployment**: Netlify (simple) or Render.com (full-featured)
+1. **Deploy to Render**: Use the one-click deploy button above
 2. **Set up AI**: Get Hugging Face token for character generation
-3. **Deploy**: Use the one-click deploy buttons above
+3. **Enjoy**: Unlimited character storage and world gallery!
 4. **Create**: Upload photos and generate characters!
 
 **Let's build the ultimate AI character generator!** 🎨✨

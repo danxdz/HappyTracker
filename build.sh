@@ -1,4 +1,4 @@
-# Netlify Build Script
+# Build Script
 #!/bin/bash
 
 echo "🚀 Building HappyTracker Web App..."
