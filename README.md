@@ -12,15 +12,21 @@ An AI-powered character generator that creates personalized RPG characters from 
 
 **Step 1: Deploy Backend**
 [![Deploy Backend](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/danxdz/HappyTracker)
+[![Quick Deploy Backend](https://img.shields.io/badge/Quick_Deploy_Backend-ff6b35?style=for-the-badge&logo=render)](https://render.com/deploy?repo=https://github.com/danxdz/HappyTracker&autoDeploy=true)
 
 **Step 2: Deploy Frontend**
 [![Deploy Frontend](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/danxdz/HappyTracker)
+[![Quick Deploy Frontend](https://img.shields.io/badge/Quick_Deploy_Frontend-ff6b35?style=for-the-badge&logo=vercel)](https://vercel.com/new/clone?repository-url=https://github.com/danxdz/HappyTracker&autoDeploy=true)
 
 **✅ Benefits**: Separate deployments, better reliability, unlimited storage, world gallery
 
 **📁 Important**: When deploying, select the correct folder:
 - **Backend**: Select `backend` folder
 - **Frontend**: Select `apps/web` folder
+
+**⚡ Deploy Options**:
+- **Regular Deploy**: Creates a fork in your GitHub account (recommended for production)
+- **Quick Deploy**: Deploys directly without forking (faster for testing)
 
 ---
 
