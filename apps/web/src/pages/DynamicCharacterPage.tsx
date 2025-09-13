@@ -149,19 +149,28 @@ const DynamicCharacterPage: React.FC = () => {
   }
 
   const handlePhotoUpload = async (file: File) => {
-    logger.log('📸 Starting real-time photo analysis with Face.js...')
+    logger.log('📸 Photo uploaded, moving to name step while analyzing...')
+    
+    // Create preview URL immediately
+    const photoUrl = URL.createObjectURL(file)
+    updateCharacterData({ photo: file, photoUrl })
+    
+    // Start Face.js analysis in background (non-blocking)
+    startBackgroundFaceAnalysis(file)
+    
+    // Move to name step immediately - analysis happens in parallel
+    moveToNextStep()
+  }
+
+  const startBackgroundFaceAnalysis = async (file: File) => {
+    logger.log('🔍 Starting background Face.js analysis...')
     setIsProcessingPhoto(true)
     
     try {
-      // Create preview URL immediately
-      const photoUrl = URL.createObjectURL(file)
-      updateCharacterData({ photo: file, photoUrl })
-      
-      // Start real Face.js analysis in background
       const { CaricatureGenerator } = await import('../services/cartoonGenerator')
       const analysisResult = await CaricatureGenerator.analyzePhotoForUI(file)
       
-      logger.log('🎯 Face.js Analysis complete:', analysisResult)
+      logger.log('🎯 Background Face.js Analysis complete:', analysisResult)
       
       // Auto-fill form with detected values
       const aiGuesses = {
@@ -180,14 +189,10 @@ const DynamicCharacterPage: React.FC = () => {
         gender: analysisResult.gender as 'male' | 'female' | 'non-binary' | 'unknown'
       })
       
-      logger.log('✅ Form auto-filled with:', aiGuesses)
+      logger.log('✅ Background analysis complete, form auto-filled with:', aiGuesses)
       
-      setIsProcessingPhoto(false)
-      
-      // Move to name step immediately - face analysis is complete
-      moveToNextStep()
     } catch (error) {
-      logger.error('❌ Photo analysis failed:', error)
+      logger.error('❌ Background analysis failed:', error)
       
       // Check if it's a TensorFlow.js/Face.js specific error
       if (error instanceof Error && error.message && (error.message.includes('backend') || error.message.includes('TensorFlow'))) {
@@ -211,10 +216,8 @@ const DynamicCharacterPage: React.FC = () => {
       })
       
       logger.log('🔄 Using fallback values:', fallbackGuesses)
+    } finally {
       setIsProcessingPhoto(false)
-      
-      // Move to name step even with fallback values
-      moveToNextStep()
     }
   }
 
