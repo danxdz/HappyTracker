@@ -1,5 +1,4 @@
 # Render.com Deployment Configuration for HappyTracker
-# This file deploys the backend API service
 
 services:
   # Backend API Service
@@ -7,17 +6,9 @@ services:
     name: happytracker-backend
     env: node
     plan: starter
-    rootDir: backend
-    buildCommand: npm install
-    startCommand: npm start
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
     envVars:
       NODE_ENV: production
       PORT: 3001
     healthCheckPath: /api/health
-    
-  # Database Service (Optional)
-  - type: pserv
-    name: happytracker-database
-    plan: starter
-    databaseName: happytracker
-    databaseUser: happytracker_user
