@@ -190,44 +190,92 @@ const DynamicCharacterPage: React.FC = () => {
       stream.getTracks().forEach(track => track.stop())
       setStream(null)
     }
+    
+    // Clean up canvas overlay
+    if (faceDetectionCanvas && faceDetectionCanvas.parentElement) {
+      faceDetectionCanvas.parentElement.removeChild(faceDetectionCanvas)
+    }
+    setFaceDetectionCanvas(null)
+    
     setLiveFaceTransform(false)
     setShowCameraModal(false)
   }
 
   const startLiveFaceDetection = async (video: HTMLVideoElement) => {
     try {
+      logger.log('🎭 Starting live face detection...')
+      
       // Import face-api.js
       const faceapi = await import('face-api.js')
       
       // Load models if not already loaded
       if (!faceapi.nets.tinyFaceDetector.isLoaded) {
+        logger.log('📥 Loading face-api.js models...')
         await faceapi.nets.tinyFaceDetector.loadFromUri('/models')
         await faceapi.nets.faceLandmark68Net.loadFromUri('/models')
+        logger.log('✅ Face-api.js models loaded!')
       }
+      
+      // Wait for video to be ready
+      const waitForVideo = () => {
+        return new Promise<void>((resolve) => {
+          if (video.readyState >= 2) {
+            resolve()
+          } else {
+            video.addEventListener('loadedmetadata', () => resolve(), { once: true })
+          }
+        })
+      }
+      
+      await waitForVideo()
       
       // Create canvas for face overlay
       const canvas = document.createElement('canvas')
       canvas.width = video.videoWidth
       canvas.height = video.videoHeight
-      setFaceDetectionCanvas(canvas)
+      canvas.style.position = 'absolute'
+      canvas.style.top = '0'
+      canvas.style.left = '0'
+      canvas.style.width = '100%'
+      canvas.style.height = '100%'
+      canvas.style.pointerEvents = 'none'
+      canvas.style.zIndex = '10'
+      
+      // Add canvas to video container
+      const videoContainer = video.parentElement
+      if (videoContainer) {
+        videoContainer.style.position = 'relative'
+        videoContainer.appendChild(canvas)
+        setFaceDetectionCanvas(canvas)
+      }
+      
+      logger.log('🎨 Canvas overlay created and positioned')
       
       const detectFaces = async () => {
         if (video.readyState === video.HAVE_ENOUGH_DATA && liveFaceTransform) {
-          const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
-            .withFaceLandmarks()
-          
-          // Clear canvas
-          const ctx = canvas.getContext('2d')!
-          ctx.clearRect(0, 0, canvas.width, canvas.height)
-          
-          // Draw character face overlay on detected faces
-          detections.forEach(detection => {
-            const { x, y, width, height } = detection.detection.box
-            const landmarks = detection.landmarks
+          try {
+            const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+              .withFaceLandmarks()
             
-            // Draw character face overlay
-            drawCharacterFaceOverlay(ctx, x, y, width, height, landmarks)
-          })
+            // Clear canvas
+            const ctx = canvas.getContext('2d')!
+            ctx.clearRect(0, 0, canvas.width, canvas.height)
+            
+            // Draw character face overlay on detected faces
+            detections.forEach(detection => {
+              const { x, y, width, height } = detection.detection.box
+              const landmarks = detection.landmarks
+              
+              // Draw character face overlay
+              drawCharacterFaceOverlay(ctx, x, y, width, height, landmarks)
+            })
+            
+            if (detections.length > 0) {
+              logger.log(`🎭 Detected ${detections.length} face(s)`)
+            }
+          } catch (error) {
+            logger.error('❌ Face detection error:', error)
+          }
         }
         
         if (liveFaceTransform) {
@@ -236,6 +284,7 @@ const DynamicCharacterPage: React.FC = () => {
       }
       
       detectFaces()
+      logger.log('🔄 Face detection loop started')
       
     } catch (error) {
       logger.error('❌ Live face detection failed:', error)
@@ -246,8 +295,8 @@ const DynamicCharacterPage: React.FC = () => {
     // Draw a stylized character face overlay
     ctx.save()
     
-    // Create character face shape
-    ctx.fillStyle = '#FFE4B5' // Character skin tone
+    // Create character face shape with transparency
+    ctx.fillStyle = 'rgba(255, 228, 181, 0.7)' // Character skin tone with transparency
     ctx.beginPath()
     ctx.ellipse(x + width/2, y + height/2, width/2, height/2, 0, 0, 2 * Math.PI)
     ctx.fill()
@@ -280,6 +329,13 @@ const DynamicCharacterPage: React.FC = () => {
     ctx.beginPath()
     ctx.ellipse(mouth[0].x, mouth[0].y, 6, 3, 0, 0, 2 * Math.PI)
     ctx.fill()
+    
+    // Add a border to make it more visible
+    ctx.strokeStyle = '#FFD700'
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    ctx.ellipse(x + width/2, y + height/2, width/2, height/2, 0, 0, 2 * Math.PI)
+    ctx.stroke()
     
     ctx.restore()
   }
@@ -1167,14 +1223,7 @@ const DynamicCharacterPage: React.FC = () => {
                 style={{ maxHeight: '400px' }}
               />
               
-              {/* Face Transformation Overlay Canvas */}
-              {liveFaceTransform && (
-                <canvas
-                  ref={setFaceDetectionCanvas}
-                  className="absolute top-0 left-0 w-full h-full rounded-lg pointer-events-none"
-                  style={{ maxHeight: '400px' }}
-                />
-              )}
+              {/* Face Transformation Overlay Canvas - Created dynamically */}
               
               {liveFaceTransform && (
                 <div className="absolute top-2 left-2 bg-purple-500/80 text-white px-3 py-1 rounded-full text-sm font-semibold">
