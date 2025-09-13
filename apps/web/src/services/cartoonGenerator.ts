@@ -1,6 +1,7 @@
 import { HuggingFaceService } from './huggingFaceService'
 import { RPGCharacterGenerator, PhotoAnalysis } from './rpgCharacterGenerator'
 import { LocalFaceAnalysis } from './localFaceAnalysis'
+import { ImageCompression } from './imageCompression'
 
 // PhotoAnalysis interface is now imported from rpgCharacterGenerator
 
@@ -582,13 +583,18 @@ export class CaricatureGenerator {
     }
 
     const blob = await response.blob()
-    // Convert blob to base64 for persistent storage
-    return new Promise<string>((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = () => resolve(reader.result as string)
-      reader.onerror = reject
-      reader.readAsDataURL(blob)
+    
+    // Convert blob to compressed base64 for efficient storage
+    const file = new File([blob], 'caricature.png', { type: 'image/png' })
+    const compressionResult = await ImageCompression.compressImage(file, {
+      maxWidth: 512,
+      maxHeight: 512,
+      quality: 0.8,
+      format: 'jpeg'
     })
+    
+    console.log(`🗜️ Image compressed: ${compressionResult.compressionRatio.toFixed(1)}% size reduction`)
+    return compressionResult.compressedDataUrl
   }
 
 
