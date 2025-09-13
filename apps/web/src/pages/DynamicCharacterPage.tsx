@@ -177,6 +177,11 @@ const DynamicCharacterPage: React.FC = () => {
     } catch (error) {
       logger.error('❌ Photo analysis failed:', error)
       
+      // Check if it's a TensorFlow.js/Face.js specific error
+      if (error instanceof Error && error.message && (error.message.includes('backend') || error.message.includes('TensorFlow'))) {
+        logger.warn('⚠️ Face.js TensorFlow error detected, using fallback values')
+      }
+      
       // Fallback to basic values if analysis fails
       const fallbackGuesses = {
         age: 25,
@@ -193,6 +198,7 @@ const DynamicCharacterPage: React.FC = () => {
         gender: fallbackGuesses.gender
       })
       
+      logger.log('🔄 Using fallback values:', fallbackGuesses)
       setIsProcessingPhoto(false)
       moveToNextStep()
     }
