@@ -699,7 +699,7 @@ QUALITY: High quality, detailed, professional character art, detailed eyes and e
    * Get detailed style description
    */
   private static getStyleDescription(artStyle: string): string {
-    const descriptions = {
+    const descriptions: { [key: string]: string } = {
       'chibi-style': 'large expressive eyes, cute proportions, adorable features, kawaii aesthetic',
       'Animal Crossing-inspired': 'soft rounded features, friendly expression, charming simplicity, cozy aesthetic',
       'Funko Pop-style': 'oversized head, large eyes, simplified features, collectible figure aesthetic',

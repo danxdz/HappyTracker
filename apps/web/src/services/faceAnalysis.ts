@@ -242,7 +242,7 @@ export class FaceAnalysisService {
    */
   private static detectSkinTone(detection: any): 'light' | 'medium' | 'dark' {
     // Simple skin tone detection based on age and other factors
-    const tones = ['light', 'medium', 'dark']
+    const tones: ('light' | 'medium' | 'dark')[] = ['light', 'medium', 'dark']
     return tones[Math.floor(Math.random() * tones.length)]
   }
 
