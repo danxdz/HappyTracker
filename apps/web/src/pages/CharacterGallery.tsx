@@ -62,11 +62,16 @@ const CharacterGallery: React.FC = () => {
     loadCharacters()
     loadCharacterVariants()
     
+    // Ensure body scroll is always enabled when component mounts
+    document.body.style.overflow = 'unset'
+    
     // Refresh characters when page becomes visible (e.g., returning from character creation)
     const handleVisibilityChange = () => {
       if (!document.hidden) {
         loadCharacters()
         loadCharacterVariants()
+        // Ensure scroll is enabled when page becomes visible
+        document.body.style.overflow = 'unset'
       }
     }
     
@@ -226,6 +231,13 @@ const CharacterGallery: React.FC = () => {
     // Restore body scroll
     document.body.style.overflow = 'unset'
   }
+
+  // Ensure body scroll is restored when component unmounts or modal closes
+  React.useEffect(() => {
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [showDetailModal])
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)

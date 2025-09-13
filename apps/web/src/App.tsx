@@ -16,6 +16,11 @@ import { Navigation } from './components/Navigation'
 import { Footer } from './components/Footer'
 
 function App() {
+  // Ensure body scroll is always enabled when app loads
+  React.useEffect(() => {
+    document.body.style.overflow = 'unset'
+  }, [])
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900">
       <Routes>
