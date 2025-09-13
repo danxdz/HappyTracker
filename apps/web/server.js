@@ -8,11 +8,15 @@ const __dirname = path.dirname(__filename)
 const app = express()
 const PORT = process.env.PORT || 3000
 
+console.log(`🚀 Starting frontend server on port ${PORT}`)
+console.log(`📁 Serving from: ${path.join(__dirname, 'dist')}`)
+
 // Serve static files from the dist directory
 app.use(express.static(path.join(__dirname, 'dist')))
 
 // Handle React Router (SPA) - send all requests to index.html
 app.get('*', (req, res) => {
+  console.log(`📄 SPA route requested: ${req.path}`)
   res.sendFile(path.join(__dirname, 'dist', 'index.html'))
 })
 
