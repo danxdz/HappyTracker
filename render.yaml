@@ -2,22 +2,17 @@
 
 services:
   # Frontend Web App
-  - type: web
+  - type: static
     name: happytracker-frontend
-    env: static
     plan: starter
     rootDir: apps/web
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
     envVars:
-      - key: NODE_ENV
-        value: production
-      - key: VITE_HUGGINGFACE_TOKEN
-        value: your_huggingface_token_here
-      - key: VITE_REPLICATE_TOKEN
-        value: your_replicate_token_here
-      - key: REACT_APP_API_URL
-        value: https://happytracker-api.onrender.com/api
+      NODE_ENV: production
+      VITE_HUGGINGFACE_TOKEN: your_huggingface_token_here
+      VITE_REPLICATE_TOKEN: your_replicate_token_here
+      REACT_APP_API_URL: https://happytracker-api.onrender.com/api
     
   # Backend API Service
   - type: web
@@ -28,12 +23,9 @@ services:
     buildCommand: npm install
     startCommand: npm start
     envVars:
-      - key: NODE_ENV
-        value: production
-      - key: PORT
-        value: 3001
-      - key: FRONTEND_URL
-        value: https://happytracker-frontend.onrender.com
+      NODE_ENV: production
+      PORT: 3001
+      FRONTEND_URL: https://happytracker-frontend.onrender.com
     healthCheckPath: /api/health
     
   # Database Service (Optional)
