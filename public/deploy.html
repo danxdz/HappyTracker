@@ -93,29 +93,41 @@
         <p class="subtitle">Your Health MMO Adventure Awaits!</p>
         
         <div class="deploy-section">
-            <h2>🚀 Magic Deploy Links</h2>
-            <p>Choose your preferred platform for instant deployment:</p>
+            <h2>🚀 Backend Deployment</h2>
+            <p>Deploy the API backend first:</p>
             
             <div style="text-align: center;">
-                <a href="https://render.com/deploy?repo=https://github.com/danxdz/HappyTracker" class="deploy-button">
-                    🚀 Deploy to Render
-                </a>
-                <a href="https://vercel.com/new/clone?repository-url=https://github.com/danxdz/HappyTracker" class="deploy-button">
-                    ⚫ Deploy to Vercel
-                </a>
-                <a href="https://railway.app/new/template?template=https://github.com/danxdz/HappyTracker" class="deploy-button">
-                    🚂 Deploy to Railway
+                <a href="https://render.com/deploy?repo=https://github.com/danxdz/HappyTracker&root-directory=backend" class="deploy-button">
+                    🔧 Deploy Backend (Render)
                 </a>
             </div>
         </div>
 
         <div class="deploy-section">
-            <h2>✨ How Magic Deploy Works</h2>
+            <h2>🌐 Frontend Deployment</h2>
+            <p>Deploy the web frontend after backend is ready:</p>
+            
+            <div style="text-align: center;">
+                <a href="https://vercel.com/new/clone?repository-url=https://github.com/danxdz/HappyTracker&root-directory=apps/web" class="deploy-button">
+                    ⚫ Deploy Frontend (Vercel)
+                </a>
+                <a href="https://app.netlify.com/start/deploy?repository=https://github.com/danxdz/HappyTracker&base=apps/web" class="deploy-button">
+                    🟢 Deploy Frontend (Netlify)
+                </a>
+                <a href="https://render.com/deploy?repo=https://github.com/danxdz/HappyTracker&root-directory=apps/web" class="deploy-button">
+                    🚀 Deploy Frontend (Render)
+                </a>
+            </div>
+        </div>
+
+        <div class="deploy-section">
+            <h2>✨ How Two-Step Deploy Works</h2>
             <div class="steps">
-                <div class="step">1️⃣ Click any deploy button above</div>
-                <div class="step">2️⃣ Connect your GitHub account</div>
-                <div class="step">3️⃣ Platform detects your repository automatically</div>
-                <div class="step">4️⃣ Your HappyTracker app deploys instantly! 🎉</div>
+                <div class="step">1️⃣ Deploy Backend first (API + Database)</div>
+                <div class="step">2️⃣ Get your backend URL (e.g., happytracker-backend.onrender.com)</div>
+                <div class="step">3️⃣ Deploy Frontend with backend URL</div>
+                <div class="step">4️⃣ Set environment variables (Hugging Face token, etc.)</div>
+                <div class="step">5️⃣ Your full-stack HappyTracker app is live! 🎉</div>
             </div>
         </div>
 
