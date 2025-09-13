@@ -14,6 +14,18 @@ const CharacterGallery: React.FC = () => {
     loadCharacters()
   }, [])
 
+  // Refresh characters when page becomes visible (in case user came from character creation)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        loadCharacters()
+      }
+    }
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [])
+
   // Auto-redirect to character creation if no characters exist
   useEffect(() => {
     if (characters.length === 0) {

@@ -15,7 +15,7 @@ export interface Hunyuan3DResult {
 }
 
 export class Hunyuan3DService {
-  private static readonly HF_API_URL = 'https://api-inference.huggingface.co/models/Tencent/Hunyuan3D'
+  private static readonly HF_API_URL = 'https://api-inference.huggingface.co/models/Tencent/Hunyuan3D-2'
   private static readonly HF_TOKEN = import.meta.env.VITE_HUGGINGFACE_TOKEN || ''
 
   /**

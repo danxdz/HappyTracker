@@ -15,6 +15,7 @@ import { Meshy3DService } from '../services/meshy3DService'
 import { Luma3DService } from '../services/luma3DService'
 import { ShapEService } from '../services/shape3DService'
 import { Hunyuan3DService } from '../services/hunyuan3DService'
+import { Simple3DService } from '../services/simple3DService'
 import { ThreeDViewer } from '../components/ThreeDViewer'
 
 interface CharacterData {
@@ -98,6 +99,8 @@ export const DynamicCharacterPage: React.FC = () => {
   const [shapE3DResult, setShapE3DResult] = useState<any>(null)
   const [isGeneratingHunyuan3D, setIsGeneratingHunyuan3D] = useState(false)
   const [hunyuan3DResult, setHunyuan3DResult] = useState<any>(null)
+  const [isGeneratingSimple3D, setIsGeneratingSimple3D] = useState(false)
+  const [simple3DResult, setSimple3DResult] = useState<any>(null)
 
   // Auto-progress through loading
   useEffect(() => {
@@ -543,6 +546,35 @@ export const DynamicCharacterPage: React.FC = () => {
     }
   }
 
+  const generateSimple3DCharacter = async () => {
+    try {
+      console.log('🎮 Starting Simple 3D character generation...')
+      setIsGeneratingSimple3D(true)
+      
+      const result = await Simple3DService.generateCharacterModel({
+        name: characterData.name,
+        age: characterData.age,
+        gender: characterData.gender,
+        rpgClass: rpgClass || undefined
+      })
+      
+      if (result.success && result.modelUrl) {
+        console.log('🎮 Simple 3D Character generated successfully!')
+        setSimple3DResult(result)
+        setThreeDModelUrl(result.modelUrl)
+      } else {
+        console.error('❌ Simple 3D Character generation failed:', result.error)
+        alert(`Simple 3D generation failed: ${result.error}`)
+      }
+      
+      setIsGeneratingSimple3D(false)
+    } catch (error) {
+      console.error('❌ Error generating Simple 3D character:', error)
+      setIsGeneratingSimple3D(false)
+      alert('Error generating Simple 3D character')
+    }
+  }
+
   const saveCharacterToGallery = async () => {
     if (isSavingCharacter || characterSaved) {
       console.log('⏳ Already saving or saved, ignoring duplicate request')
@@ -832,11 +864,52 @@ export const DynamicCharacterPage: React.FC = () => {
                         </div>
                       )}
                       
+                      {/* 3D Model Display */}
+                      {threeDModelUrl && (
+                        <div className="mt-4 bg-white/10 rounded-xl p-4">
+                          <h5 className="text-white font-semibold mb-3 text-center">🎮 Your 3D Model</h5>
+                          <div className="w-full h-64 bg-gray-800 rounded-lg flex items-center justify-center mb-3">
+                            <div className="text-center">
+                              <div className="text-green-400 text-4xl mb-2">🎮</div>
+                              <p className="text-white text-sm">3D Model Generated!</p>
+                              <p className="text-gray-400 text-xs">Click to download</p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => {
+                              const link = document.createElement('a')
+                              link.href = threeDModelUrl
+                              link.download = `${characterData.name}-3d-model.glb`
+                              link.click()
+                            }}
+                            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200"
+                          >
+                            📥 Download 3D Model
+                          </button>
+                        </div>
+                      )}
+
                       {/* 3D Generation Options */}
                       <div className="mt-4 space-y-3">
                         <h5 className="text-white font-semibold text-center mb-3">🎮 Create 3D Model (Free AI Options)</h5>
                         
-                        {/* Hunyuan3D Generation - Top Free Option */}
+                        {/* Simple 3D Generation - Working Option */}
+                        <button
+                          onClick={generateSimple3DCharacter}
+                          disabled={isGeneratingSimple3D}
+                          className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg disabled:scale-100 disabled:cursor-not-allowed"
+                        >
+                          {isGeneratingSimple3D ? (
+                            <div className="flex items-center justify-center">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                              Generating Simple 3D...
+                            </div>
+                          ) : (
+                            '✅ Generate Simple 3D (WORKS!)'
+                          )}
+                        </button>
+                        
+                        {/* Hunyuan3D Generation - Experimental */}
                         <button
                           onClick={generateHunyuan3DCharacter}
                           disabled={isGeneratingHunyuan3D}
@@ -848,7 +921,7 @@ export const DynamicCharacterPage: React.FC = () => {
                               Generating Hunyuan3D...
                             </div>
                           ) : (
-                            '🔥 Generate Hunyuan3D (FREE!)'
+                            '🔥 Generate Hunyuan3D (Experimental)'
                           )}
                         </button>
                         

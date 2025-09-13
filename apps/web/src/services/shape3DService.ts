@@ -15,7 +15,7 @@ export interface ShapEResult {
 }
 
 export class ShapEService {
-  private static readonly HF_API_URL = 'https://api-inference.huggingface.co/models/openai/shap-e-img2img'
+  private static readonly HF_API_URL = 'https://api-inference.huggingface.co/models/openai/shap-e'
   private static readonly HF_TOKEN = import.meta.env.VITE_HUGGINGFACE_TOKEN || ''
 
   /**
