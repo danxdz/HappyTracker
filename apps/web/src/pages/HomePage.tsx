@@ -1,6 +1,6 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Camera, ArrowRight, Image } from 'lucide-react'
+import { Camera, ArrowRight, Image, Sparkles } from 'lucide-react'
 
 export const HomePage: React.FC = () => {
   const handleCreateCharacter = () => {
