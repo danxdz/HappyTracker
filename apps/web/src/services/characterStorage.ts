@@ -61,7 +61,7 @@ export interface SavedCharacter {
  * 
  * Manages saving and loading character cards to/from localStorage
  * 
- * ⚠️ NETLIFY LIMITATION: localStorage has ~5-10MB limit
+ * ⚠️ BROWSER LIMITATION: localStorage has ~5-10MB limit
  * ⚠️ Base64 images quickly fill storage (only ~3-10 characters)
  * ⚠️ For production: Use Render.com with backend API + database
  * 
