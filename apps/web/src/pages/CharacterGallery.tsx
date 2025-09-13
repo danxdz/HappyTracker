@@ -187,14 +187,18 @@ const CharacterGallery: React.FC = () => {
       const { CharacterStorage } = await import('../services/characterStorage')
       CharacterStorage.saveCharacterVariant(characterId, variantKey, variantData)
       
-      // Update local state
-      setCharacterVariants(prev => ({
-        ...prev,
-        [characterId]: {
-          ...prev[characterId],
-          [variantKey]: result.imageUrl
+      // Update local state - refresh characters to get updated variants
+      const updatedCharacters = CharacterStorage.getAllCharacters()
+      setCharacters(updatedCharacters)
+      loadCharacterVariants()
+      
+      // Update selected character if it's the one being modified
+      if (selectedCharacter && selectedCharacter.id === characterId) {
+        const updatedCharacter = updatedCharacters.find(c => c.id === characterId)
+        if (updatedCharacter) {
+          setSelectedCharacter(updatedCharacter)
         }
-      }))
+      }
       
       console.log(`✅ ${variantType} variant with ${clothingLevel} clothing generated for ${character.name}`)
     } catch (error) {
@@ -563,12 +567,37 @@ const CharacterGallery: React.FC = () => {
               </div>
 
               {/* Character Image */}
-              <div className="w-full h-64 bg-white rounded-xl mb-6 p-4">
+              <div className="w-full h-64 bg-white rounded-xl mb-6 p-4 relative group">
                 <img
                   src={selectedCharacter.caricatureImage}
                   alt={selectedCharacter.name}
                   className="w-full h-full object-contain"
                 />
+                {/* Image actions overlay */}
+                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                  <button
+                    onClick={() => {
+                      const link = document.createElement('a')
+                      link.href = selectedCharacter.caricatureImage
+                      link.download = `${selectedCharacter.name}-character.png`
+                      link.click()
+                    }}
+                    className="bg-black/50 hover:bg-black/70 text-white p-2 rounded-lg transition-colors"
+                    title="Download Image"
+                  >
+                    <Download className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(selectedCharacter.caricatureImage)
+                      // Could add toast notification here
+                    }}
+                    className="bg-black/50 hover:bg-black/70 text-white p-2 rounded-lg transition-colors"
+                    title="Copy Image URL"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
 
               {/* Character Details */}

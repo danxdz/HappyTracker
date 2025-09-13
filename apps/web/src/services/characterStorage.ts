@@ -249,11 +249,13 @@ export class CharacterStorage {
   ): boolean {
     try {
       const characters = this.getAllCharacters()
-      const character = characters.find((c: SavedCharacter) => c.id === characterId)
+      const characterIndex = characters.findIndex((c: SavedCharacter) => c.id === characterId)
       
-      if (!character) {
+      if (characterIndex === -1) {
         throw new Error('Character not found')
       }
+
+      const character = characters[characterIndex]
 
       // Initialize variants object if it doesn't exist
       if (!character.variants) {
@@ -266,8 +268,11 @@ export class CharacterStorage {
         createdAt: new Date()
       }
 
-      // Update character in storage
-      this.saveCharacter(character)
+      // Update the character in the array
+      characters[characterIndex] = character
+
+      // Save updated characters array to storage
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(characters))
       console.log(`💾 Variant ${variantKey} saved for character ${character.name}`)
       return true
     } catch (error) {
