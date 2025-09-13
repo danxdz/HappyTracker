@@ -706,7 +706,7 @@ export const DynamicCharacterPage: React.FC = () => {
                       
                       {/* 3D Generation Options */}
                       <div className="mt-4 space-y-3">
-                        <h5 className="text-white font-semibold text-center mb-3">🎮 Create 3D Model (Updated)</h5>
+                        <h5 className="text-white font-semibold text-center mb-3">🎮 Create 3D Model (Latest)</h5>
                         
                         {/* Free 3D Generation */}
                         <button
