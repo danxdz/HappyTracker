@@ -53,7 +53,7 @@ const DynamicCharacterPage: React.FC = () => {
       constitution: number
       total: number
     }
-  } | null>(null)
+  } | undefined>(undefined)
   const [photoAnalysis, setPhotoAnalysis] = useState<any>(null)
   const [generationPrompt, setGenerationPrompt] = useState<string | null>(null)
   const [generationResult, setGenerationResult] = useState<any>(null)
