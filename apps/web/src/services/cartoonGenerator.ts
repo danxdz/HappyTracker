@@ -645,17 +645,8 @@ export class CaricatureGenerator {
                     photoAnalysis.age < 50 ? 'adult' :
                     photoAnalysis.age < 70 ? 'mature' : 'elderly'
     
-    // Generate class-specific clothing style (no weapons)
-    const classStyle = {
-      Warrior: 'wearing simple tunic and pants',
-      Rogue: 'wearing casual clothes',
-      Mage: 'wearing simple robes',
-      Cleric: 'wearing white robes',
-      Bard: 'wearing colorful clothes',
-      Ranger: 'wearing green clothes'
-    }
-    
-    const clothing = classStyle[rpgClass.name as keyof typeof classStyle] || 'wearing simple clothes'
+    // Start with basic/naked clothing - no class-specific gear
+    const clothing = 'wearing basic simple clothes, minimal clothing, casual outfit'
     
     // Height and weight descriptions
     const heightDesc = photoAnalysis.height < 150 ? 'short stature' :
@@ -670,17 +661,18 @@ export class CaricatureGenerator {
   }
 
   /**
-   * Generate character variant with different expression/mood
+   * Generate character variant with different expression/mood and clothing
    */
   static async generateCharacterVariant(
     originalCharacter: any,
-    variantType: 'sleepy' | 'happy' | 'hungry' | 'excited' | 'confused' | 'angry' | 'surprised'
+    variantType: 'sleepy' | 'happy' | 'hungry' | 'excited' | 'confused' | 'angry' | 'surprised',
+    clothingLevel: 'basic' | 'casual' | 'formal' | 'adventure' | 'magical' = 'casual'
   ): Promise<{ imageUrl: string; cost: number }> {
     const startTime = Date.now()
     
     try {
       // Create variant-specific prompt
-      const variantPrompt = this.generateVariantPrompt(originalCharacter, variantType)
+      const variantPrompt = this.generateVariantPrompt(originalCharacter, variantType, clothingLevel)
       
       // Generate variant image
       const variantImage = await this.generateCaricatureImage(variantPrompt)
@@ -688,7 +680,7 @@ export class CaricatureGenerator {
       const processingTime = Date.now() - startTime
       const cost = 0.03 // Same as regular generation
       
-      console.log(`✅ ${variantType} variant generated in ${processingTime}ms`)
+      console.log(`✅ ${variantType} variant with ${clothingLevel} clothing generated in ${processingTime}ms`)
       console.log(`💰 Estimated cost: $${cost.toFixed(3)}`)
       
       return {
@@ -702,9 +694,9 @@ export class CaricatureGenerator {
   }
 
   /**
-   * Generate variant-specific prompt
+   * Generate variant-specific prompt with clothing progression
    */
-  private static generateVariantPrompt(originalCharacter: any, variantType: string): string {
+  private static generateVariantPrompt(originalCharacter: any, variantType: string, clothingLevel: string): string {
     const basePrompt = originalCharacter.characterPrompt || ''
     
     // Variant-specific expressions and poses
@@ -718,13 +710,32 @@ export class CaricatureGenerator {
       surprised: 'surprised expression, wide eyes, open mouth, shocked pose'
     }
     
+    // Clothing progression system
+    const clothingStyles = {
+      basic: 'wearing basic simple clothes, minimal clothing, casual outfit, plain shirt and pants',
+      casual: 'wearing casual comfortable clothes, everyday outfit, relaxed style, simple t-shirt and jeans',
+      formal: 'wearing formal elegant clothes, dress shirt and dress pants, professional attire, smart casual',
+      adventure: 'wearing adventure gear, practical clothing, outdoor outfit, durable clothes, explorer style',
+      magical: 'wearing mystical robes, magical clothing, enchanted garments, fantasy attire, wizard robes'
+    }
+    
     const variantExpression = variantExpressions[variantType as keyof typeof variantExpressions] || 'neutral expression'
+    const clothingStyle = clothingStyles[clothingLevel as keyof typeof clothingStyles] || clothingStyles.casual
     
     // Replace the original expression with the variant expression
-    const variantPrompt = basePrompt.replace(
+    let variantPrompt = basePrompt.replace(
       /confident expression|neutral expression|happy expression|sad expression|angry expression|surprised expression|sleepy expression|hungry expression|excited expression|confused expression/g,
       variantExpression
     )
+    
+    // Replace clothing while keeping head and body consistent
+    variantPrompt = variantPrompt.replace(
+      /wearing basic simple clothes, minimal clothing, casual outfit|wearing.*clothes|wearing.*outfit|wearing.*gear|wearing.*robes/g,
+      clothingStyle
+    )
+    
+    // Ensure head and body consistency
+    variantPrompt += ', same head shape, same body proportions, same facial features, consistent character design, only clothing changes'
     
     return variantPrompt
   }

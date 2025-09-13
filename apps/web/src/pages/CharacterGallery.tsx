@@ -112,8 +112,8 @@ const CharacterGallery: React.FC = () => {
     }
   }
 
-  const generateVariant = async (characterId: string, variantType: 'sleepy' | 'happy' | 'hungry' | 'excited' | 'confused' | 'angry' | 'surprised') => {
-    setGeneratingVariant(`${characterId}-${variantType}`)
+  const generateVariant = async (characterId: string, variantType: 'sleepy' | 'happy' | 'hungry' | 'excited' | 'confused' | 'angry' | 'surprised', clothingLevel: 'basic' | 'casual' | 'formal' | 'adventure' | 'magical' = 'casual') => {
+    setGeneratingVariant(`${characterId}-${variantType}-${clothingLevel}`)
     
     try {
       const { CaricatureGenerator } = await import('../services/cartoonGenerator')
@@ -129,18 +129,19 @@ const CharacterGallery: React.FC = () => {
         ...character
       }
       
-      const result = await CaricatureGenerator.generateCharacterVariant(characterData, variantType)
+      const result = await CaricatureGenerator.generateCharacterVariant(characterData, variantType, clothingLevel)
       
-      // Store the variant
+      // Store the variant with clothing level
+      const variantKey = `${variantType}-${clothingLevel}`
       setCharacterVariants(prev => ({
         ...prev,
         [characterId]: {
           ...prev[characterId],
-          [variantType]: result.imageUrl
+          [variantKey]: result.imageUrl
         }
       }))
       
-      console.log(`✅ ${variantType} variant generated for ${character.name}`)
+      console.log(`✅ ${variantType} variant with ${clothingLevel} clothing generated for ${character.name}`)
     } catch (error) {
       console.error(`❌ Error generating ${variantType} variant:`, error)
       alert(`Error generating ${variantType} variant. Please try again.`)
@@ -366,24 +367,56 @@ const CharacterGallery: React.FC = () => {
                   {/* Character Variants */}
                   <div className="space-y-3">
                     <h4 className="text-sm font-semibold text-white">Generate Variants:</h4>
-                    <div className="grid grid-cols-2 gap-2">
-                      {['happy', 'sleepy', 'hungry', 'excited'].map((variant) => (
-                        <button
-                          key={variant}
-                          onClick={() => generateVariant(character.id, variant as any)}
-                          disabled={generatingVariant === `${character.id}-${variant}`}
-                          className="bg-purple-500/20 hover:bg-purple-500/30 disabled:bg-gray-500/20 text-purple-300 disabled:text-gray-400 font-semibold py-2 px-2 rounded-lg transition-colors text-xs"
-                        >
-                          {generatingVariant === `${character.id}-${variant}` ? (
-                            <div className="flex items-center justify-center gap-1">
-                              <div className="animate-spin rounded-full h-3 w-3 border-b border-white"></div>
-                              <span>...</span>
-                            </div>
-                          ) : (
-                            `😊 ${variant.charAt(0).toUpperCase() + variant.slice(1)}`
-                          )}
-                        </button>
-                      ))}
+                    
+                    {/* Clothing Level Selection */}
+                    <div className="space-y-2">
+                      <h5 className="text-xs font-semibold text-gray-300">Clothing Style:</h5>
+                      <div className="grid grid-cols-3 gap-1">
+                        {[
+                          { key: 'basic', label: 'Basic', emoji: '👕' },
+                          { key: 'casual', label: 'Casual', emoji: '👔' },
+                          { key: 'formal', label: 'Formal', emoji: '👔' },
+                          { key: 'adventure', label: 'Adventure', emoji: '🎒' },
+                          { key: 'magical', label: 'Magical', emoji: '🧙' }
+                        ].map(({ key, label, emoji }) => (
+                          <button
+                            key={key}
+                            onClick={() => generateVariant(character.id, 'happy', key as any)}
+                            disabled={generatingVariant?.includes(`${character.id}-happy-${key}`)}
+                            className="bg-blue-500/20 hover:bg-blue-500/30 disabled:bg-gray-500/20 text-blue-300 disabled:text-gray-400 font-semibold py-1 px-1 rounded text-xs"
+                          >
+                            {generatingVariant?.includes(`${character.id}-happy-${key}`) ? (
+                              <div className="animate-spin rounded-full h-3 w-3 border-b border-white mx-auto"></div>
+                            ) : (
+                              `${emoji} ${label}`
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    {/* Expression Variants */}
+                    <div className="space-y-2">
+                      <h5 className="text-xs font-semibold text-gray-300">Expressions:</h5>
+                      <div className="grid grid-cols-2 gap-2">
+                        {['happy', 'sleepy', 'hungry', 'excited'].map((variant) => (
+                          <button
+                            key={variant}
+                            onClick={() => generateVariant(character.id, variant as any, 'casual')}
+                            disabled={generatingVariant?.includes(`${character.id}-${variant}`)}
+                            className="bg-purple-500/20 hover:bg-purple-500/30 disabled:bg-gray-500/20 text-purple-300 disabled:text-gray-400 font-semibold py-2 px-2 rounded-lg transition-colors text-xs"
+                          >
+                            {generatingVariant?.includes(`${character.id}-${variant}`) ? (
+                              <div className="flex items-center justify-center gap-1">
+                                <div className="animate-spin rounded-full h-3 w-3 border-b border-white"></div>
+                                <span>...</span>
+                              </div>
+                            ) : (
+                              `😊 ${variant.charAt(0).toUpperCase() + variant.slice(1)}`
+                            )}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                     
                     {/* Show generated variants */}
@@ -391,18 +424,22 @@ const CharacterGallery: React.FC = () => {
                       <div className="mt-3">
                         <h5 className="text-xs font-semibold text-gray-300 mb-2">Generated Variants:</h5>
                         <div className="grid grid-cols-2 gap-2">
-                          {Object.entries(characterVariants[character.id]).map(([variantType, imageUrl]) => (
-                            <div key={variantType} className="relative">
-                              <img
-                                src={imageUrl}
-                                alt={`${character.name} - ${variantType}`}
-                                className="w-full h-16 object-contain bg-white rounded-lg"
-                              />
-                              <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs text-center py-1 rounded-b-lg">
-                                {variantType}
+                          {Object.entries(characterVariants[character.id]).map(([variantKey, imageUrl]) => {
+                            const [variantType, clothingLevel] = variantKey.split('-')
+                            return (
+                              <div key={variantKey} className="relative">
+                                <img
+                                  src={imageUrl}
+                                  alt={`${character.name} - ${variantType} - ${clothingLevel}`}
+                                  className="w-full h-16 object-contain bg-white rounded-lg"
+                                />
+                                <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs text-center py-1 rounded-b-lg">
+                                  <div className="font-semibold">{variantType}</div>
+                                  <div className="text-xs opacity-75">{clothingLevel}</div>
+                                </div>
                               </div>
-                            </div>
-                          ))}
+                            )
+                          })}
                         </div>
                       </div>
                     )}
