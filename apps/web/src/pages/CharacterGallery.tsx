@@ -71,7 +71,12 @@ const CharacterGallery: React.FC = () => {
     }
     
     document.addEventListener('visibilitychange', handleVisibilityChange)
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+    
+    // Cleanup: restore body scroll when component unmounts
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      document.body.style.overflow = 'unset'
+    }
   }, [])
 
   useEffect(() => {
@@ -212,6 +217,14 @@ const CharacterGallery: React.FC = () => {
     setSelectedCharacter(character)
     setShowDetailModal(true)
     setActiveTab('overview')
+    // Prevent body scroll when modal is open
+    document.body.style.overflow = 'hidden'
+  }
+
+  const closeCharacterDetail = () => {
+    setShowDetailModal(false)
+    // Restore body scroll
+    document.body.style.overflow = 'unset'
   }
 
   const copyToClipboard = (text: string) => {
@@ -624,20 +637,20 @@ const CharacterGallery: React.FC = () => {
 
       {/* Character Detail Modal */}
       {showDetailModal && selectedCharacter && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto"
+          onClick={closeCharacterDetail}
+        >
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-            onClick={() => setShowDetailModal(false)}
+            initial={{ scale: 0.8, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.8, opacity: 0, y: 20 }}
+            className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl max-w-5xl w-full my-8 max-h-[85vh] overflow-hidden flex flex-col"
+            onClick={(e) => e.stopPropagation()}
           >
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.8, opacity: 0, y: 20 }}
-              className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
-            >
               {/* Header */}
               <div className="flex items-center justify-between p-6 border-b border-white/10">
                 <div className="flex items-center gap-4">
@@ -654,7 +667,7 @@ const CharacterGallery: React.FC = () => {
                   </div>
                 </div>
                 <button
-                  onClick={() => setShowDetailModal(false)}
+                  onClick={closeCharacterDetail}
                   className="text-gray-400 hover:text-white transition-colors p-2"
                 >
                   <X className="w-6 h-6" />
@@ -685,7 +698,7 @@ const CharacterGallery: React.FC = () => {
               </div>
 
               {/* Tab Content */}
-              <div className="p-6 max-h-96 overflow-y-auto">
+              <div className="p-6 flex-1 overflow-y-auto">
                 {activeTab === 'overview' && (
                   <div className="space-y-6">
                     <div className="grid grid-cols-2 gap-6">
@@ -866,7 +879,6 @@ const CharacterGallery: React.FC = () => {
             </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
     </div>
   )
 }
