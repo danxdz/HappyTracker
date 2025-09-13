@@ -79,7 +79,7 @@ export class FaceAnalysisService {
 
       if (detections.length === 0) {
         console.log('❌ No faces detected')
-        return this.getFallbackAnalysis(imageFile)
+        return this.getDefaultAnalysis()
       }
 
       const detection = detections[0] // Use first detected face
@@ -119,7 +119,7 @@ export class FaceAnalysisService {
       
     } catch (error) {
       console.error('❌ Face analysis failed:', error)
-      return this.getFallbackAnalysis(imageFile)
+      return this.getDefaultAnalysis()
     }
   }
 
@@ -207,28 +207,18 @@ export class FaceAnalysisService {
   }
 
   /**
-   * Fallback analysis when face detection fails
+   * Default analysis when face detection fails
    */
-  private static getFallbackAnalysis(imageFile: File): FaceAnalysisResult {
-    console.log('🔄 Using fallback analysis')
+  private static getDefaultAnalysis(): FaceAnalysisResult {
+    console.log('🔄 Using default analysis (no filename analysis)')
     
-    // Extract some info from filename if possible
-    const filename = imageFile.name.toLowerCase()
-    let gender: 'male' | 'female' | 'unknown' = 'unknown'
-    
-    if (filename.includes('male') || filename.includes('man') || filename.includes('boy')) {
-      gender = 'male'
-    } else if (filename.includes('female') || filename.includes('woman') || filename.includes('girl')) {
-      gender = 'female'
-    }
-
     return {
-      gender,
-      age: 25 + Math.floor(Math.random() * 20),
-      height: gender === 'male' ? 170 + Math.floor(Math.random() * 20) : 160 + Math.floor(Math.random() * 15),
-      weight: gender === 'male' ? 70 + Math.floor(Math.random() * 20) : 60 + Math.floor(Math.random() * 15),
-      glasses: Math.random() < 0.3,
-      facialHair: gender === 'male' && Math.random() < 0.4,
+      gender: 'unknown',
+      age: 25,
+      height: 170,
+      weight: 70,
+      glasses: false,
+      facialHair: false,
       hairColor: 'brown',
       hairStyle: 'short',
       skinTone: 'medium' as const,

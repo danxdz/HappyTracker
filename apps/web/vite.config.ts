@@ -39,7 +39,7 @@ export default defineConfig({
           'three-vendor': ['three', '@react-three/fiber', '@react-three/drei', '@react-three/postprocessing'],
           
           // AI/ML libraries
-          'ai-vendor': ['face-api.js'],
+          'ai-vendor': ['face-api.js', '@tensorflow/tfjs'],
           
           // Utility libraries
           'utils-vendor': ['clsx', 'class-variance-authority']

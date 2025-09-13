@@ -77,9 +77,9 @@ export class CaricatureGenerator {
     try {
       console.log('🎨 Starting AI-powered RPG caricature generation...')
       
-      // Use filename analysis for now (face-api.js models not available)
-      const photoAnalysis = this.createFallbackAnalysis(photoFile)
-      console.log('📸 Filename analysis complete:', photoAnalysis)
+      // Use face analysis only
+      const photoAnalysis = await this.analyzePhotoWithLocalAI(photoFile)
+      console.log('📸 Face analysis complete:', photoAnalysis)
       
       // Override with user input if provided (user input takes priority)
       if (characterData) {
@@ -157,12 +157,13 @@ export class CaricatureGenerator {
   }
 
   /**
-   * 📸 Analyze Photo with Face Analysis
+   * 📸 Analyze Photo with Face Analysis Only
    * 
    * Uses face-api.js for real face detection and analysis
+   * NO filename analysis - face.js only
    */
   private static async analyzePhotoWithLocalAI(photoFile: File): Promise<PhotoAnalysis> {
-    console.log('🔍 Analyzing photo with face-api.js...')
+    console.log('🔍 Analyzing photo with face-api.js ONLY (no filename analysis)...')
     
     try {
       // Use real face analysis with face-api.js
@@ -188,12 +189,23 @@ export class CaricatureGenerator {
       return photoAnalysis
     } catch (error) {
       console.error('❌ Face analysis failed:', error)
-      console.log('🔄 Falling back to filename analysis...')
+      console.log('🔄 Using default values (no filename analysis)...')
       
-      // Fallback to filename analysis if face analysis fails
-      const photoAnalysis = this.createFallbackAnalysis(photoFile)
-      console.log('🎯 Fallback analysis result:', photoAnalysis)
-      return photoAnalysis
+      // Return default values if face analysis fails - NO filename analysis
+      return {
+        gender: 'unknown',
+        age: 25,
+        height: 170,
+        weight: 70,
+        glasses: false,
+        facialHair: false,
+        hairColor: 'brown',
+        hairStyle: 'short',
+        skinTone: 'medium',
+        expression: 'confident',
+        faceShape: 'oval',
+        build: 'average'
+      }
     }
   }
 
@@ -279,67 +291,26 @@ export class CaricatureGenerator {
       
     } catch (error) {
       console.error('❌ AI Photo analysis failed:', error)
-      console.log('🔄 Falling back to filename-based analysis...')
+      console.log('🔄 Using default values (no filename analysis)...')
       
-      // Complete fallback: use filename analysis only
-      return this.createFallbackAnalysis(photoFile)
+      // Return default values if analysis fails - NO filename analysis
+      return {
+        gender: 'unknown',
+        age: 25,
+        height: 170,
+        weight: 70,
+        glasses: false,
+        facialHair: false,
+        hairColor: 'brown',
+        hairStyle: 'short',
+        skinTone: 'medium',
+        expression: 'confident',
+        faceShape: 'oval',
+        build: 'average'
+      }
     }
   }
 
-  /**
-   * 🔄 Create Fallback Analysis
-   * 
-   * Uses filename analysis when AI models fail
-   */
-  private static createFallbackAnalysis(photoFile: File): PhotoAnalysis {
-    console.log('🔄 Using filename-based fallback analysis')
-    
-    const fileName = photoFile.name.toLowerCase()
-    
-    // Extract age from filename
-    let age = 30
-    if (fileName.includes('old') || fileName.includes('elderly') || fileName.includes('senior')) {
-      age = Math.floor(Math.random() * 20) + 65
-    } else if (fileName.includes('young') || fileName.includes('teen') || fileName.includes('child')) {
-      age = Math.floor(Math.random() * 15) + 15
-    }
-    
-    // Extract gender from filename
-    let gender: 'male' | 'female' | 'non-binary' | 'unknown' = 'unknown'
-    if (fileName.includes('man') || fileName.includes('male') || fileName.includes('guy')) {
-      gender = 'male'
-    } else if (fileName.includes('woman') || fileName.includes('female') || fileName.includes('lady')) {
-      gender = 'female'
-    }
-    
-    // Estimate height and weight
-    let height = 170
-    let weight = 70
-    if (age > 60) {
-      height = Math.floor(Math.random() * 15) + 165
-      weight = Math.floor(Math.random() * 20) + 60
-    } else if (age < 25) {
-      height = Math.floor(Math.random() * 20) + 160
-      weight = Math.floor(Math.random() * 25) + 55
-    }
-    
-    console.log('🎯 Fallback analysis complete:', { age, height, weight, gender })
-    
-    return {
-      gender,
-      age,
-      height,
-      weight,
-      glasses: fileName.includes('glasses'),
-      facialHair: fileName.includes('beard') || fileName.includes('mustache'),
-      hairColor: 'brown',
-      hairStyle: 'short',
-      skinTone: 'medium',
-      expression: 'confident',
-      faceShape: 'oval',
-      build: 'average'
-    }
-  }
 
   /**
    * 🔍 Extract Features from AI Description
@@ -516,10 +487,11 @@ export class CaricatureGenerator {
   /**
    * 🔍 Analyze Photo for UI Pre-filling
    * 
-   * Uses face-api.js for real face analysis and UI field population
+   * Uses face-api.js ONLY for real face analysis and UI field population
+   * NO filename analysis - face.js only
    */
   static async analyzePhotoForUI(photoFile: File): Promise<PhotoAnalysis> {
-    console.log('🔍 Analyzing photo for UI with face-api.js...')
+    console.log('🔍 Analyzing photo for UI with face-api.js ONLY (no filename analysis)...')
     try {
       // Use real face analysis with face-api.js
       const faceAnalysis = await FaceAnalysisService.analyzeFace(photoFile)
@@ -544,11 +516,22 @@ export class CaricatureGenerator {
       return photoAnalysis
     } catch (error) {
       console.error('❌ Face analysis failed:', error)
-      // Fallback to filename analysis if face analysis fails
-      console.log('🔄 Falling back to filename analysis...')
-      const photoAnalysis = this.createFallbackAnalysis(photoFile)
-      console.log('🎯 Fallback analysis result:', photoAnalysis)
-      return photoAnalysis
+      // Return default values if face analysis fails - NO filename analysis
+      console.log('🔄 Using default values (no filename analysis)...')
+      return {
+        gender: 'unknown',
+        age: 25,
+        height: 170,
+        weight: 70,
+        glasses: false,
+        facialHair: false,
+        hairColor: 'brown',
+        hairStyle: 'short',
+        skinTone: 'medium',
+        expression: 'confident',
+        faceShape: 'oval',
+        build: 'average'
+      }
     }
   }
 
