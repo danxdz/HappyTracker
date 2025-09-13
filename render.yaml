@@ -3,6 +3,7 @@ services:
     name: happytracker-backend
     env: node
     plan: free
+    rootDir: backend
     buildCommand: npm install --legacy-peer-deps
     startCommand: npm start
     envVars:
