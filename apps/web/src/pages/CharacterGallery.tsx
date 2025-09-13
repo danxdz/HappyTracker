@@ -757,17 +757,17 @@ const CharacterGallery: React.FC = () => {
                           </div>
                         </div>
 
-                        {/* Equipment Tiers */}
+                        {/* Clothing Tiers */}
                         <div>
-                          <h5 className="text-sm font-semibold text-white mb-2">Equipment Tiers</h5>
+                          <h5 className="text-sm font-semibold text-white mb-2">Clothing Tiers</h5>
                           <div className="grid grid-cols-3 gap-2">
                             {[
-                              { tier: 'gray', name: 'Starter', color: 'gray', icon: '⚪' },
-                              { tier: 'white', name: 'Common', color: 'white', icon: '⚪' },
-                              { tier: 'green', name: 'Uncommon', color: 'green', icon: '🟢' },
-                              { tier: 'blue', name: 'Rare', color: 'blue', icon: '🔵' },
-                              { tier: 'purple', name: 'Epic', color: 'purple', icon: '🟣' },
-                              { tier: 'orange', name: 'Legendary', color: 'orange', icon: '🟠' }
+                              { tier: 'gray', name: 'Casual', color: 'gray', icon: '👕' },
+                              { tier: 'white', name: 'Business', color: 'white', icon: '👔' },
+                              { tier: 'green', name: 'Smart', color: 'green', icon: '👗' },
+                              { tier: 'blue', name: 'Premium', color: 'blue', icon: '💎' },
+                              { tier: 'purple', name: 'Luxury', color: 'purple', icon: '👑' },
+                              { tier: 'orange', name: 'Exclusive', color: 'orange', icon: '✨' }
                             ].map(({ tier, name, color, icon }) => (
                               <button
                                 key={tier}
@@ -945,12 +945,12 @@ const CharacterGallery: React.FC = () => {
                                     {variantType}
                                   </div>
                                   <div className="text-xs text-gray-400 capitalize flex items-center justify-center gap-1">
-                                    {clothingLevel === 'gray' && '⚪ Starter'}
-                                    {clothingLevel === 'white' && '⚪ Common'}
-                                    {clothingLevel === 'green' && '🟢 Uncommon'}
-                                    {clothingLevel === 'blue' && '🔵 Rare'}
-                                    {clothingLevel === 'purple' && '🟣 Epic'}
-                                    {clothingLevel === 'orange' && '🟠 Legendary'}
+                                    {clothingLevel === 'gray' && '👕 Casual'}
+                                    {clothingLevel === 'white' && '👔 Business'}
+                                    {clothingLevel === 'green' && '👗 Smart'}
+                                    {clothingLevel === 'blue' && '💎 Premium'}
+                                    {clothingLevel === 'purple' && '👑 Luxury'}
+                                    {clothingLevel === 'orange' && '✨ Exclusive'}
                                     {!['gray', 'white', 'green', 'blue', 'purple', 'orange'].includes(clothingLevel) && clothingLevel}
                                   </div>
                                   <div className="text-xs text-gray-500 mt-1">${variantData.cost.toFixed(3)}</div>

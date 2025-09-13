@@ -657,9 +657,9 @@ export class CaricatureGenerator {
                       photoAnalysis.weight < 70 ? 'average build' :
                       photoAnalysis.weight < 90 ? 'solid build' : 'sturdy build'
     
-    return `A charming collectible toy figure in the style of Funko Pop or Nendoroid, featuring an adorable ${genderText} character with ${hairColor} ${hairStyle} hair and ${skinTone} skin tone. The character has a ${faceShape} face shape with ${expression} expression and ${ageGroup} appearance, ${photoAnalysis.age} years old. Body proportions: ${heightDesc} (${photoAnalysis.height}cm), ${weightDesc} (${photoAnalysis.weight}kg), ${build} build. Clothing: ${clothing}. 
+    return `A realistic ${genderText} character with ${hairColor} ${hairStyle} hair and ${skinTone} skin tone. The character has a ${faceShape} face shape with ${expression} expression and ${ageGroup} appearance, ${photoAnalysis.age} years old. Body proportions: ${heightDesc} (${photoAnalysis.height}cm), ${weightDesc} (${photoAnalysis.weight}kg), ${build} build. Clothing: ${clothing}. 
 
-STYLE: Oversized round head, small compact body, smooth plastic-like surface, simplified facial features, bright solid colors, cute proportions, minimal details, chibi art style, kawaii aesthetic.
+STYLE: Photo-realistic character design, detailed facial features, natural proportions, realistic skin texture, detailed eyes and expression, professional character art, high-quality digital art.
 
 COMPOSITION: ONE SINGLE CHARACTER ONLY, NO DUPLICATES, NO MULTIPLE CHARACTERS, centered composition, clean white background, front-facing pose, face clearly visible, isolated character, no background characters, no reflections, no shadows of other characters.
 
@@ -675,7 +675,7 @@ QUALITY: High quality, detailed, professional, photo-realistic facial features, 
   static async generateCharacterVariant(
     originalCharacter: any,
     variantType: 'sleepy' | 'happy' | 'hungry' | 'excited' | 'confused' | 'angry' | 'surprised',
-    clothingLevel: 'basic' | 'casual' | 'formal' | 'adventure' | 'magical' = 'casual'
+    clothingLevel: 'gray' | 'white' | 'green' | 'blue' | 'purple' | 'orange' = 'white'
   ): Promise<{ imageUrl: string; cost: number }> {
     const startTime = Date.now()
     
@@ -767,25 +767,25 @@ QUALITY: High quality, detailed, professional, photo-realistic facial features, 
       surprised: 'surprised expression, wide eyes, open mouth, shocked pose, amazed, astonished'
     }
     
-    // WoW-style Equipment Progression System (visual tiers only)
+    // Realistic Equipment Progression System
     const equipmentTiers = {
       // Gray tier - basic starter gear
-      gray: 'wearing basic starter equipment, simple cloth robes, basic leather boots, simple belt, minimal gear, beginner adventurer outfit',
+      gray: 'wearing basic casual clothes, simple t-shirt and jeans, comfortable sneakers, minimal accessories, everyday outfit',
       
-      // White tier - common dungeon gear
-      white: 'wearing common equipment, leather armor pieces, basic chainmail, simple weapons, standard adventurer gear, dungeon-tier equipment',
+      // White tier - common gear
+      white: 'wearing casual business attire, dress shirt and slacks, leather shoes, professional appearance, office-appropriate clothing',
       
       // Green tier - improved gear
-      green: 'wearing uncommon equipment, reinforced leather armor, iron chainmail, quality weapons, improved adventurer gear, enhanced equipment',
+      green: 'wearing smart casual clothing, quality fabrics, well-fitted garments, stylish accessories, modern professional look',
       
-      // Blue tier - rare boss drops
-      blue: 'wearing rare equipment, masterwork armor, steel chainmail, enchanted weapons, high-quality gear, boss-tier equipment with magical properties',
+      // Blue tier - rare gear
+      blue: 'wearing premium clothing, designer fabrics, elegant styling, high-quality accessories, sophisticated appearance',
       
-      // Purple tier - epic raid gear
-      purple: 'wearing epic equipment, legendary armor pieces, mithril chainmail, powerful enchanted weapons, raid-tier gear, epic magical equipment with glowing effects',
+      // Purple tier - epic gear
+      purple: 'wearing luxury clothing, designer brands, exquisite tailoring, premium accessories, high-end fashion',
       
-      // Orange tier - legendary endgame gear
-      orange: 'wearing legendary equipment, mythic armor pieces, adamantine chainmail, legendary weapons, endgame-tier gear, legendary magical equipment with powerful auras and glowing effects'
+      // Orange tier - legendary gear
+      orange: 'wearing exclusive designer clothing, couture fashion, luxury accessories, bespoke tailoring, ultra-premium appearance'
     }
     
     const variantExpression = variantExpressions[variantType as keyof typeof variantExpressions] || 'neutral expression'
