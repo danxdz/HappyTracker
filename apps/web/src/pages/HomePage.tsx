@@ -15,7 +15,7 @@ export const HomePage: React.FC = () => {
   React.useEffect(() => {
     const hfToken = import.meta.env.VITE_HUGGINGFACE_TOKEN
     const meshyKey = import.meta.env.VITE_MESHY_API_KEY
-    const apiUrl = import.meta.env.REACT_APP_API_URL
+    const apiUrl = import.meta.env.VITE_API_URL
     
     console.log('🔑 API Keys Status Check:')
     console.log(`Hugging Face: ${hfToken ? '✅ Set' : '❌ Missing'}`)
