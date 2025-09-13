@@ -10,3 +10,16 @@ services:
         value: production
       - key: PORT
         value: "3001"
+  
+  - type: static
+    name: happytracker-frontend
+    rootDir: apps/web
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_HUGGINGFACE_TOKEN
+        value: your_huggingface_token_here
+      - key: VITE_MESHY_API_KEY
+        value: your_meshy_api_key_here
+      - key: REACT_APP_API_URL
+        value: https://happytracker-backend.onrender.com/api
