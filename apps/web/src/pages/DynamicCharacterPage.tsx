@@ -433,6 +433,7 @@ const DynamicCharacterPage: React.FC = () => {
         height: characterData.height,
         weight: characterData.weight,
         gender: characterData.gender,
+        photo: characterData.photoUrl, // Save original photo
         caricatureImage,
         generationCost: generationCost || 0,
         style: 'cute',

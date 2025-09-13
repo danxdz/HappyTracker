@@ -11,6 +11,7 @@ interface Character {
   height: number
   weight: number
   gender: string
+  photo?: string // Original photo
   caricatureImage: string
   generationCost?: number
   style?: string
@@ -59,6 +60,7 @@ const CharacterGallery: React.FC = () => {
   const [characterVariants, setCharacterVariants] = useState<Record<string, Record<string, string>>>({})
   const [showImageModal, setShowImageModal] = useState(false)
   const [selectedImageUrl, setSelectedImageUrl] = useState<string>('')
+  const [showOriginalPhotos, setShowOriginalPhotos] = useState(false)
 
   useEffect(() => {
     loadCharacters()
@@ -310,9 +312,36 @@ const CharacterGallery: React.FC = () => {
           className="text-center mb-8"
         >
           <h1 className="text-4xl font-bold text-white mb-4">Character Gallery</h1>
-          <p className="text-xl text-gray-300">
+          <p className="text-xl text-gray-300 mb-6">
             Your collection of AI-generated characters ({characters.length} total)
           </p>
+          
+          {/* Toggle between Original Photos and AI Characters */}
+          <div className="flex items-center justify-center gap-4 mb-6">
+            <button
+              onClick={() => setShowOriginalPhotos(false)}
+              className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2 ${
+                !showOriginalPhotos
+                  ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              <Sparkles className="w-5 h-5" />
+              AI Characters
+            </button>
+            
+            <button
+              onClick={() => setShowOriginalPhotos(true)}
+              className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2 ${
+                showOriginalPhotos
+                  ? 'bg-gradient-to-r from-green-500 to-teal-500 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              <Image className="w-5 h-5" />
+              Original Photos
+            </button>
+          </div>
         </motion.div>
 
         {/* Filters */}
@@ -396,12 +425,30 @@ const CharacterGallery: React.FC = () => {
                 onClick={() => openCharacterDetail(character)}
               >
                 {/* Character Image */}
-                <div className="aspect-square bg-white p-4">
-                  <img
-                    src={character.caricatureImage}
-                    alt={character.name}
-                    className="w-full h-full object-contain rounded-lg"
-                  />
+                <div className="aspect-square bg-white p-4 relative">
+                  {showOriginalPhotos && character.photo ? (
+                    <>
+                      <img
+                        src={character.photo}
+                        alt={`${character.name} - Original Photo`}
+                        className="w-full h-full object-cover rounded-lg"
+                      />
+                      <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                        📸 Original
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <img
+                        src={character.caricatureImage}
+                        alt={`${character.name} - AI Character`}
+                        className="w-full h-full object-contain rounded-lg"
+                      />
+                      <div className="absolute top-2 right-2 bg-purple-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                        ✨ AI Character
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {/* Character Info */}
