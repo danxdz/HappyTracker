@@ -46,7 +46,7 @@ export interface PopGenerationResult {
   
   // 3D model data
   modelUrl?: string
-  modelData?: ArrayBuffer | null // GLB/GLTF data
+  modelData?: string // GLB/GLTF data URL
   
   // Generated pop characteristics
   characteristics: {
@@ -88,9 +88,9 @@ export interface PopGenerationResult {
   
   // Game character data
   gameCharacter?: {
-    modelData: any
-    characteristics: any
-    gameCriteria: any
+    modelData: string
+    characteristics: Record<string, unknown>
+    gameCriteria: Record<string, unknown>
     is3D: boolean
     previewImage?: string
   }
@@ -188,7 +188,7 @@ export class HuggingFaceService {
   }
   
   // Generate 3D in-game character from photo
-  static async generate3DPop(imageData: string, onProgress?: (step: string, data?: any) => void): Promise<PopGenerationResult> {
+  static async generate3DPop(imageData: string, onProgress?: (step: string, data?: unknown) => void): Promise<PopGenerationResult> {
     try {
       const startTime = Date.now()
       
