@@ -1,9 +1,9 @@
-# Render.com Deployment Configuration
+# Render.com Deployment Configuration for HappyTracker
 
 services:
   # Backend API Service
   - type: web
-    name: character-generator-api
+    name: happytracker-api
     env: node
     plan: starter
     buildCommand: npm install
@@ -17,7 +17,7 @@ services:
     
   # Database Service (Optional)
   - type: pserv
-    name: character-generator-db
+    name: happytracker-db
     plan: starter
-    databaseName: character_generator
-    databaseUser: character_user
+    databaseName: happytracker
+    databaseUser: happytracker_user

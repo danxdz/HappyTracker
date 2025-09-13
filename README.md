@@ -9,7 +9,7 @@ An AI-powered character generator that creates personalized RPG characters from 
 ## 🚀 **Live Demo**
 
 ### **Deploy to Render.com**
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/danxdz/321)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/danxdz/HappyTracker)
 
 **✅ Benefits**: Unlimited storage, world gallery, file persistence, full-stack deployment
 
@@ -125,8 +125,8 @@ render-backend/
 ### **Quick Start (Render.com)**
 ```bash
 # Clone repository
-git clone https://github.com/danxdz/321
-cd 321/apps/web
+git clone https://github.com/danxdz/HappyTracker
+cd HappyTracker/apps/web
 
 # Install dependencies
 npm install
@@ -248,7 +248,7 @@ npm run dev
 - **Gallery Empty**: Verify API connection
 
 ### **Support**
-- Check the [Issues](https://github.com/danxdz/321/issues) page
+- Check the [Issues](https://github.com/danxdz/HappyTracker/issues) page
 - Review deployment guides
 - Test with the provided API test script
 
