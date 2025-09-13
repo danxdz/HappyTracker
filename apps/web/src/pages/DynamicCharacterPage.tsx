@@ -41,6 +41,9 @@ const DynamicCharacterPage: React.FC = () => {
   const [characterSaved, setCharacterSaved] = useState(false)
   const [isSavingCharacter, setIsSavingCharacter] = useState(false)
   const [showImageModal, setShowImageModal] = useState(false)
+  const [showCameraModal, setShowCameraModal] = useState(false)
+  const [stream, setStream] = useState<MediaStream | null>(null)
+  const [videoRef, setVideoRef] = useState<HTMLVideoElement | null>(null)
   const [rpgClass, setRpgClass] = useState<{
     name: string
     description: string
@@ -80,6 +83,59 @@ const DynamicCharacterPage: React.FC = () => {
       logger.log('⬅️ Moving to previous step:', steps[prevIndex])
       setCurrentStep(steps[prevIndex])
     }
+  }
+
+  const handleTakePhoto = async () => {
+    try {
+      setShowCameraModal(true)
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: 'user',
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        } 
+      })
+      setStream(mediaStream)
+      
+      // Set up video element
+      setTimeout(() => {
+        if (videoRef) {
+          videoRef.srcObject = mediaStream
+          videoRef.play()
+        }
+      }, 100)
+    } catch (error) {
+      console.error('Error accessing camera:', error)
+      alert('Unable to access camera. Please check permissions.')
+    }
+  }
+
+  const capturePhoto = () => {
+    if (!videoRef) return
+    
+    const canvas = document.createElement('canvas')
+    const context = canvas.getContext('2d')
+    
+    canvas.width = videoRef.videoWidth
+    canvas.height = videoRef.videoHeight
+    
+    context?.drawImage(videoRef, 0, 0)
+    
+    canvas.toBlob((blob) => {
+      if (blob) {
+        const file = new File([blob], 'camera-photo.jpg', { type: 'image/jpeg' })
+        handlePhotoUpload(file)
+        closeCamera()
+      }
+    }, 'image/jpeg', 0.8)
+  }
+
+  const closeCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop())
+      setStream(null)
+    }
+    setShowCameraModal(false)
   }
 
   const handlePhotoUpload = async (file: File) => {
@@ -231,19 +287,32 @@ const DynamicCharacterPage: React.FC = () => {
             <h2 className="text-2xl font-bold text-white mb-4">Upload Your Photo</h2>
             <p className="text-gray-300 mb-8">Let our AI analyze your photo to create a personalized character</p>
             
-            <div className="border-2 border-dashed border-gray-400 rounded-xl p-8 hover:border-purple-500 transition-colors">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => e.target.files?.[0] && handlePhotoUpload(e.target.files[0])}
-                className="hidden"
-                id="photo-upload"
-              />
-              <label htmlFor="photo-upload" className="cursor-pointer">
-                <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-300">Click to upload or drag and drop</p>
-                <p className="text-sm text-gray-500 mt-2">PNG, JPG up to 10MB</p>
-              </label>
+            <div className="space-y-4">
+              <div className="border-2 border-dashed border-gray-400 rounded-xl p-8 hover:border-purple-500 transition-colors">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => e.target.files?.[0] && handlePhotoUpload(e.target.files[0])}
+                  className="hidden"
+                  id="photo-upload"
+                />
+                <label htmlFor="photo-upload" className="cursor-pointer">
+                  <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-300">Click to upload or drag and drop</p>
+                  <p className="text-sm text-gray-500 mt-2">PNG, JPG up to 10MB</p>
+                </label>
+              </div>
+              
+              <div className="text-center">
+                <p className="text-gray-400 mb-4">or</p>
+                <button
+                  onClick={handleTakePhoto}
+                  className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 flex items-center gap-2 mx-auto"
+                >
+                  <Camera className="w-5 h-5" />
+                  Take Photo with Camera
+                </button>
+              </div>
             </div>
             
             {characterData.photoUrl && (
@@ -703,6 +772,49 @@ const DynamicCharacterPage: React.FC = () => {
               alt="Your Character" 
               className="w-full h-full object-contain rounded-xl"
             />
+          </div>
+        </div>
+      )}
+
+      {/* Camera Modal */}
+      {showCameraModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 rounded-xl p-6 max-w-2xl w-full">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-white">Take Photo</h3>
+              <button
+                onClick={closeCamera}
+                className="text-gray-400 hover:text-white"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="relative">
+              <video
+                ref={setVideoRef}
+                autoPlay
+                playsInline
+                className="w-full h-auto rounded-lg bg-gray-800"
+                style={{ maxHeight: '400px' }}
+              />
+              
+              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-4">
+                <button
+                  onClick={capturePhoto}
+                  className="bg-white hover:bg-gray-200 text-black font-semibold py-3 px-6 rounded-full transition-colors flex items-center gap-2"
+                >
+                  <Camera className="w-5 h-5" />
+                  Capture
+                </button>
+                <button
+                  onClick={closeCamera}
+                  className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-full transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

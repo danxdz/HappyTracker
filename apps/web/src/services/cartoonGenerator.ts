@@ -166,6 +166,9 @@ export class CaricatureGenerator {
     console.log('🔍 Analyzing photo with local face-api.js...')
     
     try {
+      // Initialize face-api.js models first
+      await LocalFaceAnalysis.initialize()
+      
       // Use local face analysis
       const faceResult = await LocalFaceAnalysis.analyzeFace(photoFile)
       
