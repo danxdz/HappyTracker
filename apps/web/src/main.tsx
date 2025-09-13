@@ -13,7 +13,7 @@ const LoadingScreen = () => {
   React.useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false)
-    }, 2000) // 2 second loading for dramatic effect
+    }, 1000) // 1 second loading for faster experience
     
     return () => clearTimeout(timer)
   }, [])
