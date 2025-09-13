@@ -46,9 +46,8 @@ export class FaceAnalysisService {
         faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
         faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
         faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
-        faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL)
-        // Note: ageGenderNet temporarily disabled due to model file issues
-        // faceapi.nets.ageGenderNet.loadFromUri(MODEL_URL)
+        faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL),
+        faceapi.nets.ageGenderNet.loadFromUri(MODEL_URL)
       ])
 
       this.modelsLoaded = true
@@ -71,12 +70,12 @@ export class FaceAnalysisService {
       // Convert file to image element
       const image = await this.fileToImage(imageFile)
       
-      // Detect faces and get landmarks (without age/gender for now)
+      // Detect faces and get landmarks
       const detections = await faceapi
         .detectAllFaces(image, new faceapi.TinyFaceDetectorOptions())
         .withFaceLandmarks()
         .withFaceExpressions()
-        // Note: withAgeAndGender() temporarily disabled due to model issues
+        .withAgeAndGender()
 
       if (detections.length === 0) {
         console.log('❌ No faces detected')
@@ -85,9 +84,9 @@ export class FaceAnalysisService {
 
       const detection = detections[0] // Use first detected face
       
-      // Extract face data (age/gender estimated since model is disabled)
-      const age = this.estimateAgeFromFace(detection)
-      const gender = this.estimateGenderFromFace(detection)
+      // Extract face data
+      const age = Math.round(detection.age)
+      const gender = detection.gender === 'male' ? 'male' : 'female'
       const expressions = detection.expressions
       
       // Determine expression
@@ -136,47 +135,6 @@ export class FaceAnalysisService {
     })
   }
 
-  /**
-   * Estimate age from face detection (since age model is disabled)
-   */
-  private static estimateAgeFromFace(detection: any): number {
-    // Simple estimation based on face size and confidence
-    const confidence = detection.detection.score
-    const faceSize = detection.detection.box.area
-    
-    // Higher confidence + larger face = likely older
-    let estimatedAge = 25
-    if (confidence > 0.8 && faceSize > 10000) {
-      estimatedAge = 30 + Math.floor(Math.random() * 20) // 30-50
-    } else if (confidence > 0.6) {
-      estimatedAge = 20 + Math.floor(Math.random() * 15) // 20-35
-    } else {
-      estimatedAge = 18 + Math.floor(Math.random() * 12) // 18-30
-    }
-    
-    return estimatedAge
-  }
-
-  /**
-   * Estimate gender from face detection (since gender model is disabled)
-   */
-  private static estimateGenderFromFace(detection: any): 'male' | 'female' | 'unknown' {
-    // Simple estimation based on face shape and landmarks
-    const landmarks = detection.landmarks
-    if (!landmarks) return 'unknown'
-    
-    // Very basic heuristic - in real implementation this would be more sophisticated
-    const faceWidth = detection.detection.box.width
-    const faceHeight = detection.detection.box.height
-    const aspectRatio = faceWidth / faceHeight
-    
-    // Slightly more square faces might indicate male, but this is very rough
-    if (aspectRatio > 0.85) {
-      return Math.random() < 0.6 ? 'male' : 'female'
-    } else {
-      return Math.random() < 0.4 ? 'male' : 'female'
-    }
-  }
 
   /**
    * Estimate height based on age and gender
