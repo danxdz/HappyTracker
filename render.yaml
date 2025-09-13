@@ -13,7 +13,7 @@ services:
   
   - type: web
     name: happytracker-frontend
-    env: static
+    env: node
     rootDir: apps/web
     buildCommand: npm install --legacy-peer-deps && npm run build
     startCommand: node server.js
