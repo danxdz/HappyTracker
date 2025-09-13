@@ -166,7 +166,7 @@ const CharacterGallery: React.FC = () => {
         ...character
       }
       
-      const result = await CaricatureGenerator.generateCharacterVariant(characterData, variantType, clothingLevel)
+      const result = await CaricatureGenerator.generateCharacterVariant(characterData, variantType, clothingLevel as any)
       
       // Store the variant with clothing level
       const variantKey = `${variantType}-${clothingLevel}`
@@ -740,7 +740,7 @@ const CharacterGallery: React.FC = () => {
                             {['happy', 'sleepy', 'hungry', 'excited'].map((variant) => (
                               <button
                                 key={variant}
-                                onClick={() => generateVariant(selectedCharacter.id, variant as any, 'white')}
+                                onClick={() => generateVariant(selectedCharacter.id, variant as any, 'white' as any)}
                                 disabled={generatingVariant?.includes(`${selectedCharacter.id}-${variant}`)}
                                 className="bg-purple-500/20 hover:bg-purple-500/30 disabled:bg-gray-500/20 text-purple-300 disabled:text-gray-400 font-semibold py-2 px-3 rounded-lg transition-colors text-sm"
                               >
@@ -771,7 +771,7 @@ const CharacterGallery: React.FC = () => {
                             ].map(({ tier, name, color, icon }) => (
                               <button
                                 key={tier}
-                                onClick={() => generateVariant(selectedCharacter.id, 'happy', tier)}
+                                onClick={() => generateVariant(selectedCharacter.id, 'happy', tier as any)}
                                 disabled={generatingVariant?.includes(`${selectedCharacter.id}-happy-${tier}`)}
                                 className={`bg-${color}-500/20 hover:bg-${color}-500/30 disabled:bg-gray-500/20 text-${color}-300 disabled:text-gray-400 font-semibold py-2 px-2 rounded-lg transition-colors text-xs`}
                               >
