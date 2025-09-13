@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { ArrowLeft, Plus, Download, Trash2, Eye, Search, Filter } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { ArrowLeft, Plus, Download, Trash2, Eye, Search, Filter, X, Copy, Sparkles, Image, FileText, BarChart3, Settings } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { CharacterStorage } from '../services/characterStorage'
 
@@ -53,6 +53,8 @@ const CharacterGallery: React.FC = () => {
   const [selectedClass, setSelectedClass] = useState('all')
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null)
   const [showModal, setShowModal] = useState(false)
+  const [showDetailModal, setShowDetailModal] = useState(false)
+  const [activeTab, setActiveTab] = useState<'overview' | 'variants' | 'prompts' | 'stats'>('overview')
   const [generatingVariant, setGeneratingVariant] = useState<string | null>(null)
   const [characterVariants, setCharacterVariants] = useState<Record<string, Record<string, string>>>({})
 
@@ -204,6 +206,17 @@ const CharacterGallery: React.FC = () => {
       console.error('❌ Error downloading character:', error)
       alert('Failed to download character')
     }
+  }
+
+  const openCharacterDetail = (character: Character) => {
+    setSelectedCharacter(character)
+    setShowDetailModal(true)
+    setActiveTab('overview')
+  }
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text)
+    // You could add a toast notification here
   }
 
   const getClassIcon = (className?: string) => {
@@ -393,14 +406,11 @@ const CharacterGallery: React.FC = () => {
                   {/* Actions */}
                   <div className="flex gap-2">
                     <button
-                      onClick={() => {
-                        setSelectedCharacter(character)
-                        setShowModal(true)
-                      }}
+                      onClick={() => openCharacterDetail(character)}
                       className="flex-1 bg-white/10 hover:bg-white/20 text-white font-semibold py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1"
                     >
                       <Eye className="w-4 h-4" />
-                      View
+                      View Details
                     </button>
                     <button
                       onClick={() => downloadCharacter(character)}
@@ -611,6 +621,252 @@ const CharacterGallery: React.FC = () => {
           </motion.div>
         </div>
       )}
+
+      {/* Character Detail Modal */}
+      {showDetailModal && selectedCharacter && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={() => setShowDetailModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.8, opacity: 0, y: 20 }}
+              className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-white/10">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-white rounded-xl overflow-hidden">
+                    <img
+                      src={selectedCharacter.caricatureImage}
+                      alt={selectedCharacter.name}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white">{selectedCharacter.name}</h2>
+                    <p className="text-gray-300">{selectedCharacter.rpgClass?.name || 'Unknown Class'}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowDetailModal(false)}
+                  className="text-gray-400 hover:text-white transition-colors p-2"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* Tabs */}
+              <div className="flex border-b border-white/10">
+                {[
+                  { id: 'overview', label: 'Overview', icon: Eye },
+                  { id: 'variants', label: 'Variants', icon: Image },
+                  { id: 'prompts', label: 'Prompts', icon: FileText },
+                  { id: 'stats', label: 'Stats', icon: BarChart3 }
+                ].map(({ id, label, icon: Icon }) => (
+                  <button
+                    key={id}
+                    onClick={() => setActiveTab(id as any)}
+                    className={`flex items-center gap-2 px-6 py-4 font-semibold transition-colors ${
+                      activeTab === id
+                        ? 'text-white border-b-2 border-purple-500 bg-purple-500/10'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Tab Content */}
+              <div className="p-6 max-h-96 overflow-y-auto">
+                {activeTab === 'overview' && (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-2 gap-6">
+                      <div>
+                        <h3 className="text-lg font-semibold text-white mb-3">Character Info</h3>
+                        <div className="space-y-2 text-gray-300">
+                          <div><strong>Age:</strong> {selectedCharacter.age}</div>
+                          <div><strong>Height:</strong> {selectedCharacter.height}cm</div>
+                          <div><strong>Weight:</strong> {selectedCharacter.weight}kg</div>
+                          <div><strong>Gender:</strong> {selectedCharacter.gender}</div>
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-white mb-3">RPG Stats</h3>
+                        {selectedCharacter.rpgClass?.stats ? (
+                          <div className="space-y-2 text-gray-300">
+                            <div><strong>Strength:</strong> {selectedCharacter.rpgClass.stats.strength}</div>
+                            <div><strong>Agility:</strong> {selectedCharacter.rpgClass.stats.agility}</div>
+                            <div><strong>Intelligence:</strong> {selectedCharacter.rpgClass.stats.intelligence}</div>
+                            <div><strong>Wisdom:</strong> {selectedCharacter.rpgClass.stats.wisdom}</div>
+                            <div><strong>Charisma:</strong> {selectedCharacter.rpgClass.stats.charisma}</div>
+                            <div><strong>Constitution:</strong> {selectedCharacter.rpgClass.stats.constitution}</div>
+                            <div className="pt-2 border-t border-white/10"><strong>Total:</strong> {selectedCharacter.rpgClass.stats.total}</div>
+                          </div>
+                        ) : (
+                          <p className="text-gray-400">No stats available</p>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => downloadCharacter(selectedCharacter)}
+                        className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 font-semibold py-2 px-4 rounded-lg transition-colors flex items-center gap-2"
+                      >
+                        <Download className="w-4 h-4" />
+                        Download Character
+                      </button>
+                      <button
+                        onClick={() => deleteCharacter(selectedCharacter.id)}
+                        className="bg-red-500/20 hover:bg-red-500/30 text-red-400 font-semibold py-2 px-4 rounded-lg transition-colors flex items-center gap-2"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Delete Character
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'variants' && (
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold text-white">Character Variants</h3>
+                      <button
+                        onClick={() => setActiveTab('overview')}
+                        className="bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 font-semibold py-2 px-4 rounded-lg transition-colors flex items-center gap-2"
+                      >
+                        <Sparkles className="w-4 h-4" />
+                        Generate New Variant
+                      </button>
+                    </div>
+                    
+                    {selectedCharacter.variants && Object.keys(selectedCharacter.variants).length > 0 ? (
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {Object.entries(selectedCharacter.variants).map(([variantKey, variantData]: [string, any]) => {
+                          const [variantType, clothingLevel] = variantKey.split('-')
+                          return (
+                            <div key={variantKey} className="bg-white/5 rounded-xl p-4">
+                              <div className="aspect-square bg-white rounded-lg mb-3 overflow-hidden">
+                                <img
+                                  src={variantData.imageUrl}
+                                  alt={`${selectedCharacter.name} - ${variantType}`}
+                                  className="w-full h-full object-contain"
+                                />
+                              </div>
+                              <div className="text-center">
+                                <div className="font-semibold text-white capitalize">{variantType}</div>
+                                <div className="text-xs text-gray-400 capitalize">{clothingLevel}</div>
+                                <div className="text-xs text-gray-500 mt-1">${variantData.cost.toFixed(3)}</div>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <Image className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-400 mb-4">No variants generated yet</p>
+                        <button
+                          onClick={() => setActiveTab('overview')}
+                          className="bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 font-semibold py-2 px-4 rounded-lg transition-colors"
+                        >
+                          Generate Your First Variant
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {activeTab === 'prompts' && (
+                  <div className="space-y-6">
+                    <h3 className="text-lg font-semibold text-white">Generation Prompts</h3>
+                    
+                    {selectedCharacter.generationPrompt && (
+                      <div className="bg-white/5 rounded-xl p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-semibold text-white">Original Character Prompt</h4>
+                          <button
+                            onClick={() => copyToClipboard(selectedCharacter.generationPrompt!)}
+                            className="text-gray-400 hover:text-white transition-colors"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <div className="bg-black/20 rounded-lg p-3 text-sm text-gray-300 font-mono overflow-x-auto">
+                          {selectedCharacter.generationPrompt}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {selectedCharacter.variants && Object.keys(selectedCharacter.variants).length > 0 && (
+                      <div className="space-y-4">
+                        <h4 className="font-semibold text-white">Variant Prompts</h4>
+                        {Object.entries(selectedCharacter.variants).map(([variantKey, variantData]: [string, any]) => {
+                          const [variantType, clothingLevel] = variantKey.split('-')
+                          return (
+                            <div key={variantKey} className="bg-white/5 rounded-xl p-4">
+                              <div className="flex items-center justify-between mb-3">
+                                <h5 className="font-semibold text-white capitalize">{variantType} - {clothingLevel}</h5>
+                                <button
+                                  onClick={() => copyToClipboard(variantData.prompt)}
+                                  className="text-gray-400 hover:text-white transition-colors"
+                                >
+                                  <Copy className="w-4 h-4" />
+                                </button>
+                              </div>
+                              <div className="bg-black/20 rounded-lg p-3 text-sm text-gray-300 font-mono overflow-x-auto">
+                                {variantData.prompt}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {activeTab === 'stats' && (
+                  <div className="space-y-6">
+                    <h3 className="text-lg font-semibold text-white">Character Statistics</h3>
+                    
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="bg-white/5 rounded-xl p-4">
+                        <h4 className="font-semibold text-white mb-3">Generation Stats</h4>
+                        <div className="space-y-2 text-gray-300">
+                          <div><strong>Created:</strong> {new Date(selectedCharacter.createdAt).toLocaleDateString()}</div>
+                          <div><strong>Generation Cost:</strong> ${selectedCharacter.generationCost?.toFixed(3) || '0.000'}</div>
+                          <div><strong>Processing Time:</strong> {selectedCharacter.processingTime || 0}ms</div>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-white/5 rounded-xl p-4">
+                        <h4 className="font-semibold text-white mb-3">Variant Stats</h4>
+                        {selectedCharacter.variants && Object.keys(selectedCharacter.variants).length > 0 ? (
+                          <div className="space-y-2 text-gray-300">
+                            <div><strong>Total Variants:</strong> {Object.keys(selectedCharacter.variants).length}</div>
+                            <div><strong>Total Variant Cost:</strong> ${Object.values(selectedCharacter.variants).reduce((sum: number, v: any) => sum + v.cost, 0).toFixed(3)}</div>
+                            <div><strong>Total Investment:</strong> ${((selectedCharacter.generationCost || 0) + Object.values(selectedCharacter.variants).reduce((sum: number, v: any) => sum + v.cost, 0)).toFixed(3)}</div>
+                          </div>
+                        ) : (
+                          <p className="text-gray-400">No variants generated</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
