@@ -13,6 +13,7 @@ const fs = require('fs')
 const helmet = require('helmet')
 const rateLimit = require('express-rate-limit')
 const compression = require('compression')
+const { Pool } = require('pg')
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -82,9 +83,40 @@ const upload = multer({
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
-// In-memory storage (replace with database in production)
-let characters = []
-let nextId = 1
+// Database connection
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+})
+
+// Initialize database table
+const initDatabase = async () => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS characters (
+        id SERIAL PRIMARY KEY,
+        user_id VARCHAR(255) NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        age INTEGER NOT NULL,
+        gender VARCHAR(50) NOT NULL,
+        height INTEGER NOT NULL,
+        weight INTEGER NOT NULL,
+        image_url TEXT,
+        model_url TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `)
+    console.log('✅ Database initialized successfully')
+  } catch (error) {
+    console.error('❌ Database initialization failed:', error)
+    // Fallback to in-memory storage if database fails
+    console.log('🔄 Falling back to in-memory storage')
+  }
+}
+
+// Initialize database on startup
+initDatabase()
 
 // Routes
 
@@ -157,14 +189,17 @@ app.get('/api/gallery', (req, res) => {
 /**
  * 👤 Get User Characters
  */
-app.get('/api/characters/:userId', (req, res) => {
+app.get('/api/characters/:userId', async (req, res) => {
   try {
     const { userId } = req.params
-    const userCharacters = characters.filter(char => char.userId === userId)
+    const result = await pool.query(
+      'SELECT * FROM characters WHERE user_id = $1 ORDER BY created_at DESC',
+      [userId]
+    )
     
     res.json({
-      characters: userCharacters,
-      count: userCharacters.length
+      characters: result.rows,
+      count: result.rows.length
     })
   } catch (error) {
     console.error('❌ Error fetching user characters:', error)

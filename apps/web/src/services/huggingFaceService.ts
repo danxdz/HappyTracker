@@ -46,7 +46,7 @@ export interface PopGenerationResult {
   
   // 3D model data
   modelUrl?: string
-  modelData?: any // GLB/GLTF data
+  modelData?: ArrayBuffer | null // GLB/GLTF data
   
   // Generated pop characteristics
   characteristics: {
@@ -63,7 +63,7 @@ export interface PopGenerationResult {
     style: string
     accessories: string[]
     specialFeatures: string[]
-    gameCriteria?: any // Game-specific criteria and attributes
+    gameCriteria?: Record<string, unknown> // Game-specific criteria and attributes
   }
   
   // Generated pop image
@@ -1083,7 +1083,7 @@ export class HuggingFaceService {
       const imageBase64 = await this.blobToBase64(imageBlob)
       
       // 1. Try Hunyuan3D-2 API server (FREE! if available locally)
-      const hunyuanApiUrl = 'http://localhost:8080/generate'
+      const hunyuanApiUrl = import.meta.env.VITE_HUNYUAN_API_URL || 'http://localhost:8080/generate'
       
       try {
         console.log('🎯 Trying Hunyuan3D-2 API server (FREE 3D generation!)...')
