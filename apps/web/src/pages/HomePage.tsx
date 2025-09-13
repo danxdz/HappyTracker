@@ -1,6 +1,6 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Camera, ArrowRight, Image, Zap } from 'lucide-react'
+import { Camera, ArrowRight, Image } from 'lucide-react'
 
 export const HomePage: React.FC = () => {
   const handleCreateCharacter = () => {
@@ -11,21 +11,25 @@ export const HomePage: React.FC = () => {
     window.location.href = '/character-gallery'
   }
 
-  // Test API keys
-  const testApiKeys = () => {
+  // Test API keys on component mount
+  React.useEffect(() => {
     const hfToken = import.meta.env.VITE_HUGGINGFACE_TOKEN
     const meshyKey = import.meta.env.VITE_MESHY_API_KEY
     const apiUrl = import.meta.env.REACT_APP_API_URL
     
-    alert(`API Keys Status:
-Hugging Face: ${hfToken ? '✅ Set' : '❌ Missing'}
-Meshy: ${meshyKey ? '✅ Set' : '❌ Missing'}  
-Backend URL: ${apiUrl ? '✅ Set' : '❌ Missing'}
-
-HF Token: ${hfToken ? hfToken.substring(0, 10) + '...' : 'Not found'}
-Meshy Key: ${meshyKey ? meshyKey.substring(0, 10) + '...' : 'Not found'}
-Backend: ${apiUrl || 'Not found'}`)
-  }
+    console.log('🔑 API Keys Status Check:')
+    console.log(`Hugging Face: ${hfToken ? '✅ Set' : '❌ Missing'}`)
+    console.log(`Meshy: ${meshyKey ? '✅ Set' : '❌ Missing'}`)
+    console.log(`Backend URL: ${apiUrl ? '✅ Set' : '❌ Missing'}`)
+    
+    if (hfToken) {
+      console.log(`HF Token: ${hfToken.substring(0, 10)}...`)
+    }
+    if (meshyKey) {
+      console.log(`Meshy Key: ${meshyKey.substring(0, 10)}...`)
+    }
+    console.log(`Backend: ${apiUrl || 'Not found'}`)
+  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
@@ -94,15 +98,6 @@ Backend: ${apiUrl || 'Not found'}`)
                 View Gallery
               </motion.button>
 
-              <motion.button
-                onClick={testApiKeys}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-yellow-500/20 backdrop-blur-sm border border-yellow-500/30 text-yellow-300 px-6 py-3 rounded-lg font-medium hover:bg-yellow-500/30 transition-all duration-300 flex items-center gap-2"
-              >
-                <Zap className="w-5 h-5" />
-                Test API Keys
-              </motion.button>
             </motion.div>
           </motion.div>
         </div>
