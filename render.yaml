@@ -6,8 +6,8 @@ services:
     name: happytracker-backend
     env: node
     plan: starter
-    buildCommand: cd backend && npm install
-    startCommand: cd backend && npm start
+    buildCommand: npm install
+    startCommand: npm start
     envVars:
       NODE_ENV: production
       PORT: 3001

@@ -16,7 +16,7 @@ An AI-powered character generator that creates personalized RPG characters from 
 
 **Step 2: Deploy Frontend**
 [![Deploy Frontend](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/danxdz/HappyTracker)
-[![Quick Deploy Frontend](https://img.shields.io/badge/Quick_Deploy_Frontend-ff6b35?style=for-the-badge&logo=vercel)](https://vercel.com/new/clone?repository-url=https://github.com/danxdz/HappyTracker&autoDeploy=true)
+[![Quick Deploy Frontend](https://img.shields.io/badge/Quick_Deploy_Frontend-ff6b35?style=for-the-badge&logo=vercel)](https://vercel.com/new/clone?repository-url=https://github.com/danxdz/HappyTracker&skip-git=true)
 
 **✅ Benefits**: Separate deployments, better reliability, unlimited storage, world gallery
 
