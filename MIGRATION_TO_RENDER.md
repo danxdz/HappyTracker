@@ -3,7 +3,7 @@
 ## 📋 **Migration Plan**
 
 ### **Phase 1: Backup Current Version** ✅
-- [x] Create `backup_netlify` branch
+- [x] Create `backup_netlify` branch (legacy)
 - [x] Add warning comments about localStorage limitations
 - [x] Document current approach
 
@@ -85,7 +85,7 @@ render-frontend/
 
 ## 🔄 **Migration Benefits**
 
-### **Before (Netlify + localStorage)**
+### **Before (Static Hosting + localStorage)**
 - ❌ 5-10MB storage limit
 - ❌ Only 3-10 characters max
 - ❌ No world gallery
@@ -124,7 +124,7 @@ git push -u origin main
 cd render-frontend
 # Update API_URL to point to Render backend
 npm run build
-# Deploy to Render or Netlify
+# Deploy to Render
 ```
 
 ## 🔧 **Environment Variables**

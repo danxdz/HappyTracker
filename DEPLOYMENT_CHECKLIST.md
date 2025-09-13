@@ -138,7 +138,7 @@ REACT_APP_API_URL=https://your-service-name.onrender.com/api
 
 ## 🎯 **Benefits After Deployment**
 
-### **Before (Netlify + localStorage)**
+### **Before (Static Hosting + localStorage)**
 - ❌ 5-10MB storage limit
 - ❌ Only 3-10 characters max
 - ❌ No world gallery

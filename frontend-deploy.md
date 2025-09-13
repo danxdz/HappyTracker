@@ -21,11 +21,8 @@ VITE_MESHY_API_KEY=your_meshy_api_key_here
 REACT_APP_API_URL=https://happytracker-backend.onrender.com/api
 ```
 
-### Option 2: Netlify Deployment
-[![Deploy with Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/danxdz/HappyTracker)
-
-### Option 3: Netlify Deployment
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/danxdz/HappyTracker&base=apps/web)
+### Option 2: Render Deployment
+[![Deploy with Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/danxdz/HappyTracker)
 
 ## Backend Deployment
 Use the backend render.yaml in the `/backend` folder for backend deployment.

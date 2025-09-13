@@ -15,8 +15,7 @@ An AI-powered character generator that creates personalized RPG characters from 
 [![Quick Deploy Backend](https://img.shields.io/badge/Quick_Deploy_Backend-ff6b35?style=for-the-badge&logo=render)](https://render.com/deploy?repo=https://github.com/danxdz/HappyTracker&autoDeploy=true)
 
 **Step 2: Deploy Frontend**
-[![Deploy Frontend](https://img.shields.io/badge/Deploy_Frontend-00d4aa?style=for-the-badge&logo=render)](https://dashboard.render.com/new/static-site)
-[![Deploy Frontend Netlify](https://img.shields.io/badge/Deploy_Frontend_Netlify-00C7B7?style=for-the-badge&logo=netlify)](https://app.netlify.com/start/deploy?repository=https://github.com/danxdz/HappyTracker)
+[![Deploy Frontend](https://img.shields.io/badge/Deploy_Frontend-00d4aa?style=for-the-badge&logo=render)](https://render.com/deploy?repo=https://github.com/danxdz/HappyTracker)
 
 **✅ Benefits**: Separate deployments, better reliability, unlimited storage, world gallery
 
