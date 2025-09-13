@@ -1,19 +1,6 @@
 # Render.com Deployment Configuration for HappyTracker
 
 services:
-  # Frontend Web App
-  - type: static
-    name: happytracker-frontend
-    plan: starter
-    rootDir: apps/web
-    buildCommand: npm install && npm run build
-    staticPublishPath: ./dist
-    envVars:
-      NODE_ENV: production
-      VITE_HUGGINGFACE_TOKEN: your_huggingface_token_here
-      VITE_MESHY_API_KEY: your_meshy_api_key_here
-      REACT_APP_API_URL: https://happytracker-api.onrender.com/api
-    
   # Backend API Service
   - type: web
     name: happytracker-api
@@ -25,7 +12,6 @@ services:
     envVars:
       NODE_ENV: production
       PORT: 3001
-      FRONTEND_URL: https://happytracker-frontend.onrender.com
     healthCheckPath: /api/health
     
   # Database Service (Optional)
