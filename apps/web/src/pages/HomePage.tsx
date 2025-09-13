@@ -14,7 +14,7 @@ const HomePage: React.FC = () => {
     navigate('/character-gallery')
   }
 
-  // Test API keys on component mount
+  // Check API keys on component mount (without logging sensitive data)
   React.useEffect(() => {
     const hfToken = import.meta.env.VITE_HUGGINGFACE_TOKEN
     const meshyKey = import.meta.env.VITE_MESHY_API_KEY
@@ -24,18 +24,10 @@ const HomePage: React.FC = () => {
     console.log(`Hugging Face: ${hfToken ? '✅ Set' : '❌ Missing'}`)
     console.log(`Meshy: ${meshyKey ? '✅ Set' : '❌ Missing'}`)
     console.log(`Backend URL: ${apiUrl ? '✅ Set' : '❌ Missing'}`)
-    
-    if (hfToken) {
-      console.log(`HF Token: ${hfToken.substring(0, 10)}...`)
-    }
-    if (meshyKey) {
-      console.log(`Meshy Key: ${meshyKey.substring(0, 10)}...`)
-    }
-    console.log(`Backend: ${apiUrl || 'Not found'}`)
   }, [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-y-auto">
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-blue-600/20"></div>
@@ -123,10 +115,10 @@ const HomePage: React.FC = () => {
             className="text-center mb-16"
           >
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-              Why Choose HappyTracker?
+              Create Your AI Character
             </h2>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Experience the future of health tracking with AI-powered character creation and gamified wellness.
+              Upload your photo and let AI create a unique character that represents you. Generate variants with different expressions and clothing styles.
             </p>
           </motion.div>
 
@@ -144,7 +136,7 @@ const HomePage: React.FC = () => {
               </div>
               <h3 className="text-xl font-semibold text-white mb-4">AI-Powered Creation</h3>
               <p className="text-gray-300">
-                Advanced AI analyzes your photos and creates unique, personalized characters that represent your health journey.
+                Advanced AI analyzes your photos and creates unique, personalized characters with realistic features and expressions.
               </p>
             </motion.div>
 
@@ -159,9 +151,9 @@ const HomePage: React.FC = () => {
               <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-teal-500 rounded-xl flex items-center justify-center mb-6">
                 <Users className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-4">Community Gallery</h3>
+              <h3 className="text-xl font-semibold text-white mb-4">Character Gallery</h3>
               <p className="text-gray-300">
-                Share your characters with the community and get inspired by others' creative health journeys.
+                View all your created characters and their variants in a beautiful gallery. Download and share your favorites.
               </p>
             </motion.div>
 
@@ -176,58 +168,15 @@ const HomePage: React.FC = () => {
               <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center mb-6">
                 <Trophy className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-4">Gamified Progress</h3>
+              <h3 className="text-xl font-semibold text-white mb-4">Character Variants</h3>
               <p className="text-gray-300">
-                Turn your health goals into RPG-style quests with achievements, levels, and character progression.
+                Generate multiple variants of your character with different expressions, moods, and clothing styles.
               </p>
             </motion.div>
           </div>
         </div>
       </div>
 
-      {/* Stats Section */}
-      <div className="py-20 bg-gradient-to-r from-purple-600/20 to-blue-600/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-            >
-              <div className="text-3xl sm:text-4xl font-bold text-white mb-2">10K+</div>
-              <div className="text-gray-300">Characters Created</div>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              viewport={{ once: true }}
-            >
-              <div className="text-3xl sm:text-4xl font-bold text-white mb-2">5K+</div>
-              <div className="text-gray-300">Active Users</div>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              viewport={{ once: true }}
-            >
-              <div className="text-3xl sm:text-4xl font-bold text-white mb-2">98%</div>
-              <div className="text-gray-300">Satisfaction Rate</div>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              viewport={{ once: true }}
-            >
-              <div className="text-3xl sm:text-4xl font-bold text-white mb-2">24/7</div>
-              <div className="text-gray-300">AI Support</div>
-            </motion.div>
-          </div>
-        </div>
-      </div>
 
       {/* Final CTA */}
       <div className="py-20 text-center">
@@ -248,7 +197,7 @@ const HomePage: React.FC = () => {
             viewport={{ once: true }}
             className="text-xl text-gray-300 mb-10"
           >
-            Join thousands of users transforming their health with fun, engaging, and personalized challenges.
+            Start your journey of transforming your health with fun, engaging, and personalized character creation.
           </motion.p>
           <motion.button 
             onClick={handleCreateCharacter}
