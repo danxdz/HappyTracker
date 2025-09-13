@@ -16,7 +16,7 @@ services:
     env: static
     rootDir: apps/web
     buildCommand: npm install --legacy-peer-deps && npm run build
-    startCommand: npx serve -s dist -l 3000
+    startCommand: node server.js
     envVars:
       - key: VITE_HUGGINGFACE_TOKEN
         value: your_huggingface_token_here
