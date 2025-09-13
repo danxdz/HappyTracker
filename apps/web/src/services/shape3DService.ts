@@ -1,7 +1,7 @@
 /**
  * 🎮 Shap-E 3D Generation Service
  * 
- * Free image-to-3D generation using OpenAI's Shap-E model
+ * Free image-to-3D generation using Hugging Face's Shap-E model
  * Alternative to Meshy for free 3D generation
  */
 
@@ -15,30 +15,35 @@ export interface ShapEResult {
 }
 
 export class ShapEService {
-  private static readonly SHAPE_API_URL = 'https://api.openai.com/v1/images/generations'
+  private static readonly HF_API_URL = 'https://api-inference.huggingface.co/models/openai/shap-e-img2img'
+  private static readonly HF_TOKEN = import.meta.env.VITE_HUGGINGFACE_TOKEN || ''
 
   /**
-   * Generate 3D model from image using Shap-E
+   * Generate 3D model from image using Shap-E via Hugging Face
    */
   static async imageToModel(imageData: string, prompt?: string): Promise<ShapEResult> {
     try {
-      console.log('🎮 Starting Shap-E 3D generation...')
+      console.log('🎮 Starting Shap-E 3D generation via Hugging Face...')
       console.log('🖼️ Image data length:', imageData.length)
 
-      // For now, we'll use a placeholder since Shap-E API access is limited
-      // In a real implementation, you'd need OpenAI API access
-      const response = await fetch(this.SHAPE_API_URL, {
+      if (!this.HF_TOKEN) {
+        return {
+          success: false,
+          error: 'Hugging Face token required for Shap-E generation'
+        }
+      }
+
+      const response = await fetch(this.HF_API_URL, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY || ''}`
+          'Authorization': `Bearer ${this.HF_TOKEN}`,
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'shap-e',
-          image: imageData,
-          prompt: prompt || 'Generate a 3D model from this image',
-          n: 1,
-          size: '1024x1024'
+          inputs: {
+            image: imageData,
+            prompt: prompt || 'A 3D character model, game-ready, clean topology'
+          }
         })
       })
 
@@ -54,10 +59,15 @@ export class ShapEService {
       const result = await response.json()
       console.log('✅ Shap-E 3D generation successful:', result)
 
+      // Shap-E returns a 3D model file (usually .ply or .obj)
+      // We'll create a data URL for the model
+      const modelBlob = new Blob([result], { type: 'application/octet-stream' })
+      const modelUrl = URL.createObjectURL(modelBlob)
+
       return {
         success: true,
-        modelUrl: result.data?.[0]?.url,
-        taskId: result.id,
+        modelUrl: modelUrl,
+        taskId: Date.now().toString(),
         status: 'succeeded'
       }
 
@@ -77,7 +87,7 @@ export class ShapEService {
     name: string
     rpgClass?: { name: string }
   }): Promise<ShapEResult> {
-    const prompt = `Create a 3D model of ${characterData.name}, a ${characterData.rpgClass?.name || 'character'}. Game-ready 3D character model with clean topology.`
+    const prompt = `A 3D character model of ${characterData.name}, a ${characterData.rpgClass?.name || 'character'}. Game-ready 3D character with clean topology, stylized design.`
 
     return this.imageToModel(imageData, prompt)
   }

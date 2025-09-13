@@ -798,9 +798,25 @@ export const DynamicCharacterPage: React.FC = () => {
                       
                       {/* 3D Generation Options */}
                       <div className="mt-4 space-y-3">
-                        <h5 className="text-white font-semibold text-center mb-3">🎮 Create 3D Model (Latest)</h5>
+                        <h5 className="text-white font-semibold text-center mb-3">🎮 Create 3D Model (Free Options)</h5>
                         
-                        {/* Free 3D Generation */}
+                        {/* Shap-E 3D Generation - Primary Free Option */}
+                        <button
+                          onClick={generateShapE3DCharacter}
+                          disabled={isGeneratingShapE3D}
+                          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg disabled:scale-100 disabled:cursor-not-allowed"
+                        >
+                          {isGeneratingShapE3D ? (
+                            <div className="flex items-center justify-center">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                              Generating Shap-E 3D...
+                            </div>
+                          ) : (
+                            '🎯 Generate Shap-E 3D (FREE!)'
+                          )}
+                        </button>
+                        
+                        {/* Basic Three.js 3D Generation */}
                         <button
                           onClick={generateThreeDCharacter}
                           disabled={isGenerating3D}
@@ -809,14 +825,14 @@ export const DynamicCharacterPage: React.FC = () => {
                           {isGenerating3D ? (
                             <div className="flex items-center justify-center">
                               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                              Generating 3D Model...
+                              Generating Basic 3D...
                             </div>
                           ) : (
-                            '🎮 Generate Free 3D Model'
+                            '🎮 Generate Basic 3D Model'
                           )}
                         </button>
                         
-                        {/* Meshy 3D Generation */}
+                        {/* Meshy 3D Generation - Premium */}
                         <button
                           onClick={generateMeshy3DCharacter}
                           disabled={isGeneratingMeshy3D}
@@ -828,12 +844,12 @@ export const DynamicCharacterPage: React.FC = () => {
                               Generating Meshy 3D...
                             </div>
                           ) : (
-                            '🎨 Generate Premium 3D (Meshy)'
+                            '🎨 Generate Premium 3D (Meshy - Paid)'
                           )}
                         </button>
                         
                         <p className="text-gray-400 text-xs text-center">
-                          Free: Basic 3D model | Premium: High-quality Meshy 3D
+                          Shap-E: AI-powered 3D from image | Basic: Simple geometry | Meshy: Premium quality (paid)
                         </p>
                       </div>
                     </div>
