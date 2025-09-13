@@ -120,14 +120,15 @@ const DynamicCharacterPage: React.FC = () => {
     try {
       const result = await CaricatureGenerator.generateCaricatureFromPhoto(
         characterData.photo!,
+        'cute',
         {
           name: characterData.name,
           age: characterData.age,
           height: characterData.height,
           weight: characterData.weight,
-          gender: characterData.gender,
-          rpgClass: rpgClass?.name || 'adventurer'
-        }
+          gender: characterData.gender
+        },
+        rpgClass
       )
       
       if (result.success && result.imageUrl) {
@@ -167,9 +168,13 @@ const DynamicCharacterPage: React.FC = () => {
     setIsGenerating3D(true)
     
     try {
-      const result = await ThreeDCharacterGenerator.generateThreeDCharacter(characterData)
+      const result = await ThreeDCharacterGenerator.generateThreeDCharacter(
+        caricatureImage!,
+        characterData,
+        rpgClass
+      )
       console.log('🎮 3D Character generated successfully!')
-      setThreeDModelUrl(result.modelUrl)
+      setThreeDModelUrl(result.modelUrl || null)
     } catch (error) {
       console.error('❌ 3D Character generation failed:', error)
     } finally {
