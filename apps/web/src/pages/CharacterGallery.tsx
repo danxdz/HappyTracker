@@ -374,7 +374,8 @@ const CharacterGallery: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl overflow-hidden hover:bg-white/15 transition-all duration-300 group"
+                className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl overflow-hidden hover:bg-white/15 transition-all duration-300 group cursor-pointer"
+                onClick={() => openCharacterDetail(character)}
               >
                 {/* Character Image */}
                 <div className="aspect-square bg-white p-4">
@@ -389,7 +390,10 @@ const CharacterGallery: React.FC = () => {
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-xl font-bold text-white truncate">{character.name}</h3>
-                    <div className="text-2xl">{getClassIcon(character.rpgClass?.name)}</div>
+                    <div className="flex items-center gap-2">
+                      <div className="text-2xl">{getClassIcon(character.rpgClass?.name)}</div>
+                      <Eye className="w-4 h-4 text-gray-400 group-hover:text-white transition-colors" />
+                    </div>
                   </div>
 
                   <div className="space-y-2 text-sm text-gray-300 mb-4">
@@ -416,24 +420,23 @@ const CharacterGallery: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Actions */}
-                  <div className="flex gap-2">
+                  {/* Quick Actions - Show on hover */}
+                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                     <button
-                      onClick={() => openCharacterDetail(character)}
-                      className="flex-1 bg-white/10 hover:bg-white/20 text-white font-semibold py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1"
-                    >
-                      <Eye className="w-4 h-4" />
-                      View Details
-                    </button>
-                    <button
-                      onClick={() => downloadCharacter(character)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        downloadCharacter(character)
+                      }}
                       className="flex-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 font-semibold py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1"
                     >
                       <Download className="w-4 h-4" />
                       Save
                     </button>
                     <button
-                      onClick={() => deleteCharacter(character.id)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        deleteCharacter(character.id)
+                      }}
                       className="bg-red-500/20 hover:bg-red-500/30 text-red-400 font-semibold py-2 px-3 rounded-lg transition-colors flex items-center justify-center"
                     >
                       <Trash2 className="w-4 h-4" />
