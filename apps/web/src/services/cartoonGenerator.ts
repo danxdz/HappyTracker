@@ -645,17 +645,17 @@ export class CaricatureGenerator {
                     photoAnalysis.age < 50 ? 'adult' :
                     photoAnalysis.age < 70 ? 'mature' : 'elderly'
     
-    // Generate class-specific equipment and style
-    const classEquipment = {
-      Warrior: 'equipped with sword, shield, chest armor',
-      Rogue: 'equipped with daggers, leather armor, hood',
-      Mage: 'equipped with staff, robes, magical aura',
-      Cleric: 'equipped with mace, holy symbol, white robes',
-      Bard: 'equipped with lute, colorful clothes, musical notes',
-      Ranger: 'equipped with bow, arrows, green cloak'
+    // Generate class-specific clothing style (no weapons)
+    const classStyle = {
+      Warrior: 'wearing simple tunic and pants',
+      Rogue: 'wearing casual clothes',
+      Mage: 'wearing simple robes',
+      Cleric: 'wearing white robes',
+      Bard: 'wearing colorful clothes',
+      Ranger: 'wearing green clothes'
     }
     
-    const equipment = classEquipment[rpgClass.name as keyof typeof classEquipment] || 'equipped with basic gear'
+    const clothing = classStyle[rpgClass.name as keyof typeof classStyle] || 'wearing simple clothes'
     
     // Height and weight descriptions
     const heightDesc = photoAnalysis.height < 150 ? 'short stature' :
@@ -666,6 +666,66 @@ export class CaricatureGenerator {
                       photoAnalysis.weight < 70 ? 'average build' :
                       photoAnalysis.weight < 90 ? 'solid build' : 'sturdy build'
     
-    return `toybox collectible figure style, oversized round head, small compact body, smooth plastic-like surface, simplified facial features, bright solid colors, cute proportions, minimal details, ${genderText} ${rpgClass.name.toLowerCase()}, ${hairColor} ${hairStyle} hair, ${skinTone} skin tone, ${expression} expression, ${faceShape} face shape, ${equipment}, ${ageGroup} appearance, ${photoAnalysis.age} years old, ${heightDesc}, ${weightDesc}, ${build} build, ONE SINGLE CHARACTER ONLY, NO DUPLICATES, NO MULTIPLE CHARACTERS, centered composition, clean white background, RPG character design, fantasy game art style, front-facing heroic pose, face clearly visible, no helmets, no headgear, no face-covering equipment, photo-realistic facial features, detailed eyes and expression, ${photoAnalysis.height}cm tall, ${photoAnalysis.weight}kg weight, isolated character, no background characters, no reflections, no shadows of other characters`
+    return `toybox collectible figure style, oversized round head, small compact body, smooth plastic-like surface, simplified facial features, bright solid colors, cute proportions, minimal details, ${genderText} ${rpgClass.name.toLowerCase()}, ${hairColor} ${hairStyle} hair, ${skinTone} skin tone, ${expression} expression, ${faceShape} face shape, ${clothing}, ${ageGroup} appearance, ${photoAnalysis.age} years old, ${heightDesc}, ${weightDesc}, ${build} build, ONE SINGLE CHARACTER ONLY, NO DUPLICATES, NO MULTIPLE CHARACTERS, centered composition, clean white background, RPG character design, fantasy game art style, front-facing pose, face clearly visible, no weapons, no equipment, no helmets, no headgear, no face-covering equipment, photo-realistic facial features, detailed eyes and expression, ${photoAnalysis.height}cm tall, ${photoAnalysis.weight}kg weight, isolated character, no background characters, no reflections, no shadows of other characters`
+  }
+
+  /**
+   * Generate character variant with different expression/mood
+   */
+  static async generateCharacterVariant(
+    originalCharacter: any,
+    variantType: 'sleepy' | 'happy' | 'hungry' | 'excited' | 'confused' | 'angry' | 'surprised'
+  ): Promise<{ imageUrl: string; cost: number }> {
+    const startTime = Date.now()
+    
+    try {
+      // Create variant-specific prompt
+      const variantPrompt = this.generateVariantPrompt(originalCharacter, variantType)
+      
+      // Generate variant image
+      const variantImage = await this.generateCaricatureImage(variantPrompt)
+      
+      const processingTime = Date.now() - startTime
+      const cost = 0.03 // Same as regular generation
+      
+      console.log(`✅ ${variantType} variant generated in ${processingTime}ms`)
+      console.log(`💰 Estimated cost: $${cost.toFixed(3)}`)
+      
+      return {
+        imageUrl: variantImage,
+        cost
+      }
+    } catch (error) {
+      console.error(`❌ ${variantType} variant generation failed:`, error)
+      throw error
+    }
+  }
+
+  /**
+   * Generate variant-specific prompt
+   */
+  private static generateVariantPrompt(originalCharacter: any, variantType: string): string {
+    const basePrompt = originalCharacter.characterPrompt || ''
+    
+    // Variant-specific expressions and poses
+    const variantExpressions = {
+      sleepy: 'sleepy expression, droopy eyes, yawning pose, relaxed posture',
+      happy: 'big smile, bright eyes, cheerful expression, joyful pose',
+      hungry: 'hungry expression, looking at food, eager eyes, reaching pose',
+      excited: 'excited expression, wide eyes, energetic pose, enthusiastic',
+      confused: 'confused expression, tilted head, questioning look, puzzled pose',
+      angry: 'angry expression, furrowed brow, clenched fists, stern look',
+      surprised: 'surprised expression, wide eyes, open mouth, shocked pose'
+    }
+    
+    const variantExpression = variantExpressions[variantType as keyof typeof variantExpressions] || 'neutral expression'
+    
+    // Replace the original expression with the variant expression
+    const variantPrompt = basePrompt.replace(
+      /confident expression|neutral expression|happy expression|sad expression|angry expression|surprised expression|sleepy expression|hungry expression|excited expression|confused expression/g,
+      variantExpression
+    )
+    
+    return variantPrompt
   }
 }

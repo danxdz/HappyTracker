@@ -43,6 +43,8 @@ const CharacterGallery: React.FC = () => {
   const [selectedClass, setSelectedClass] = useState('all')
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null)
   const [showModal, setShowModal] = useState(false)
+  const [generatingVariant, setGeneratingVariant] = useState<string | null>(null)
+  const [characterVariants, setCharacterVariants] = useState<Record<string, Record<string, string>>>({})
 
   useEffect(() => {
     loadCharacters()
@@ -107,6 +109,43 @@ const CharacterGallery: React.FC = () => {
         console.error('❌ Error deleting character:', error)
         alert('Failed to delete character')
       }
+    }
+  }
+
+  const generateVariant = async (characterId: string, variantType: 'sleepy' | 'happy' | 'hungry' | 'excited' | 'confused' | 'angry' | 'surprised') => {
+    setGeneratingVariant(`${characterId}-${variantType}`)
+    
+    try {
+      const { CaricatureGenerator } = await import('../services/cartoonGenerator')
+      const character = characters.find(c => c.id === characterId)
+      
+      if (!character) {
+        throw new Error('Character not found')
+      }
+      
+      // Create character data for variant generation
+      const characterData = {
+        characterPrompt: character.generationPrompt || '',
+        ...character
+      }
+      
+      const result = await CaricatureGenerator.generateCharacterVariant(characterData, variantType)
+      
+      // Store the variant
+      setCharacterVariants(prev => ({
+        ...prev,
+        [characterId]: {
+          ...prev[characterId],
+          [variantType]: result.imageUrl
+        }
+      }))
+      
+      console.log(`✅ ${variantType} variant generated for ${character.name}`)
+    } catch (error) {
+      console.error(`❌ Error generating ${variantType} variant:`, error)
+      alert(`Error generating ${variantType} variant. Please try again.`)
+    } finally {
+      setGeneratingVariant(null)
     }
   }
 
@@ -322,6 +361,51 @@ const CharacterGallery: React.FC = () => {
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
+                  </div>
+
+                  {/* Character Variants */}
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-semibold text-white">Generate Variants:</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      {['happy', 'sleepy', 'hungry', 'excited'].map((variant) => (
+                        <button
+                          key={variant}
+                          onClick={() => generateVariant(character.id, variant as any)}
+                          disabled={generatingVariant === `${character.id}-${variant}`}
+                          className="bg-purple-500/20 hover:bg-purple-500/30 disabled:bg-gray-500/20 text-purple-300 disabled:text-gray-400 font-semibold py-2 px-2 rounded-lg transition-colors text-xs"
+                        >
+                          {generatingVariant === `${character.id}-${variant}` ? (
+                            <div className="flex items-center justify-center gap-1">
+                              <div className="animate-spin rounded-full h-3 w-3 border-b border-white"></div>
+                              <span>...</span>
+                            </div>
+                          ) : (
+                            `😊 ${variant.charAt(0).toUpperCase() + variant.slice(1)}`
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                    
+                    {/* Show generated variants */}
+                    {characterVariants[character.id] && (
+                      <div className="mt-3">
+                        <h5 className="text-xs font-semibold text-gray-300 mb-2">Generated Variants:</h5>
+                        <div className="grid grid-cols-2 gap-2">
+                          {Object.entries(characterVariants[character.id]).map(([variantType, imageUrl]) => (
+                            <div key={variantType} className="relative">
+                              <img
+                                src={imageUrl}
+                                alt={`${character.name} - ${variantType}`}
+                                className="w-full h-16 object-contain bg-white rounded-lg"
+                              />
+                              <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs text-center py-1 rounded-b-lg">
+                                {variantType}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </motion.div>
