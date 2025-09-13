@@ -3,7 +3,7 @@
  * 
  * Compresses images to reduce storage size for localStorage
  * 
- * ⚠️ TEMPORARY SOLUTION: For Netlify static hosting only
+ * ⚠️ TEMPORARY SOLUTION: For static hosting only
  * ⚠️ Even compressed, images will fill localStorage quickly
  * ⚠️ For production: Use Render.com with file uploads
  */
