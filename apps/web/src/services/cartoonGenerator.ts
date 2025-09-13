@@ -129,8 +129,8 @@ export class CaricatureGenerator {
         // Create a custom prompt with the selected class
         const classEquipment = this.getClassEquipment(characterData.rpgClass.name)
         
-        // Generate consistent character with level-based progression
-        const fullPrompt = CharacterProgressionSystem.generateLeveledPrompt(
+        // Combine user features with style hints (not full override)
+        const baseCharacterPrompt = CharacterProgressionSystem.generateLeveledPrompt(
           {
             expression: faceAnalysis.expression || 'neutral',
             gender: photoAnalysis.gender,
@@ -138,11 +138,15 @@ export class CaricatureGenerator {
             class: characterData.rpgClass.name,
             hairColor: photoAnalysis.hairColor,
             skinTone: photoAnalysis.skinTone,
-            faceFeatures: `${photoAnalysis.faceShape} face, ${photoAnalysis.expression} expression`
+            faceFeatures: `${photoAnalysis.faceShape} face`
           },
           characterLevel,
-          characterStyle.name === 'Kawaii Chibi' ? 'cute' : 'cool'
+          'cute' // Default to cute/chibi style for consistency
         )
+        
+        // Add subtle style hints based on expression (not full override)
+        const styleHints = this.getSubtleStyleHints(faceAnalysis.expression || 'neutral')
+        const fullPrompt = `${baseCharacterPrompt}, ${styleHints}`
         
         rpgCharacter = {
           ...rpgCharacter,
@@ -584,6 +588,23 @@ export class CaricatureGenerator {
       faceShape,
       build
     }
+  }
+
+  /**
+   * 🎨 Get subtle style hints based on expression
+   * Adds personality without completely changing the character
+   */
+  private static getSubtleStyleHints(expression: string): string {
+    const hints: Record<string, string> = {
+      'happy': 'cheerful expression, bright mood, positive energy',
+      'serious': 'focused expression, determined look, confident stance',
+      'angry': 'intense expression, fierce eyes, strong presence',
+      'surprised': 'wide eyes, amazed expression, dynamic pose',
+      'sad': 'thoughtful expression, introspective mood, gentle demeanor',
+      'neutral': 'balanced expression, calm presence, ready stance'
+    }
+    
+    return hints[expression] || hints['neutral']
   }
 
   /**
