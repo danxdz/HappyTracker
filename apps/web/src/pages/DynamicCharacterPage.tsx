@@ -7,9 +7,11 @@
 
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Calendar, User, Ruler, Weight, Sparkles, ArrowRight, Check, Image } from 'lucide-react'
+import { Calendar, User, Ruler, Weight, Sparkles, ArrowRight, Check, Image, Cube, Download } from 'lucide-react'
 import { CaricatureGenerator } from '../services/cartoonGenerator'
 import { CharacterStorage } from '../services/characterStorage'
+import { ThreeDCharacterGenerator } from '../services/threeDCharacterGenerator'
+import { ThreeDViewer } from '../components/ThreeDViewer'
 
 interface CharacterData {
   photo?: File
@@ -80,6 +82,9 @@ export const DynamicCharacterPage: React.FC = () => {
   const [generationResult, setGenerationResult] = useState<any>(null)
   const [isProcessingPhoto, setIsProcessingPhoto] = useState(false)
   const [isGeneratingCaricature, setIsGeneratingCaricature] = useState(false)
+  const [isGenerating3D, setIsGenerating3D] = useState(false)
+  const [threeDModelUrl, setThreeDModelUrl] = useState<string | null>(null)
+  const [threeDGenerationResult, setThreeDGenerationResult] = useState<any>(null)
 
   // Auto-progress through loading
   useEffect(() => {
@@ -349,6 +354,46 @@ export const DynamicCharacterPage: React.FC = () => {
     }
   }
 
+  const generateThreeDCharacter = async () => {
+    try {
+      console.log('🎮 Starting 3D character generation...')
+      setIsGenerating3D(true)
+      
+      if (!caricatureImage) {
+        console.error('❌ No caricature image available for 3D generation')
+        alert('No caricature image available for 3D generation')
+        return
+      }
+      
+      const result = await ThreeDCharacterGenerator.generateThreeDCharacter(
+        caricatureImage,
+        {
+          name: characterData.name,
+          age: characterData.age,
+          height: characterData.height,
+          weight: characterData.weight,
+          gender: characterData.gender
+        },
+        rpgClass || undefined
+      )
+      
+      if (result.success && result.modelUrl) {
+        console.log('🎮 3D Character generated successfully!')
+        setThreeDModelUrl(result.modelUrl)
+        setThreeDGenerationResult(result)
+      } else {
+        console.error('❌ 3D Character generation failed:', result.error)
+        alert('3D character generation failed. Please try again.')
+      }
+      
+      setIsGenerating3D(false)
+    } catch (error) {
+      console.error('❌ Error generating 3D character:', error)
+      setIsGenerating3D(false)
+      alert('Error generating 3D character')
+    }
+  }
+
   const saveCharacterToGallery = async () => {
     try {
       console.log('💾 Attempting to save character to gallery...')
@@ -378,13 +423,13 @@ export const DynamicCharacterPage: React.FC = () => {
         gender: characterData.gender,
         photo: photoBase64,
         caricatureImage,
-        generationCost: generationCost || 0,
+        generationCost: (generationCost || 0) + (threeDGenerationResult?.cost || 0),
         style: 'cute',
         rpgClass: rpgClass || undefined,
         photoAnalysis: photoAnalysis || undefined,
         aiGuesses: characterData.aiGuesses,
         generationPrompt: generationPrompt || undefined,
-        processingTime: generationResult?.processingTime,
+        processingTime: (generationResult?.processingTime || 0) + (threeDGenerationResult?.processingTime || 0),
         costBreakdown: generationResult?.breakdown
       })
 
