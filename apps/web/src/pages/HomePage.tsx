@@ -1,14 +1,17 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { Camera, ArrowRight, Image, Sparkles } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 export const HomePage: React.FC = () => {
+  const navigate = useNavigate()
+
   const handleCreateCharacter = () => {
-    window.location.href = '/dynamic-character'
+    navigate('/dynamic-character')
   }
 
   const handleViewGallery = () => {
-    window.location.href = '/character-gallery'
+    navigate('/character-gallery')
   }
 
   // Test API keys on component mount
