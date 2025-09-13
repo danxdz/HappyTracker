@@ -12,12 +12,12 @@ interface CharacterData {
   age: number
   height: number
   weight: number
-  gender: 'male' | 'female' | 'unknown'
+  gender: 'male' | 'female' | 'non-binary' | 'unknown'
   aiGuesses?: {
     age: number
     height: number
     weight: number
-    gender: 'male' | 'female' | 'unknown'
+    gender: 'male' | 'female' | 'non-binary' | 'unknown'
   }
 }
 
@@ -98,7 +98,7 @@ const DynamicCharacterPage: React.FC = () => {
         age: Math.floor(Math.random() * 50) + 20,
         height: Math.floor(Math.random() * 30) + 160,
         weight: Math.floor(Math.random() * 40) + 60,
-        gender: ['male', 'female'][Math.floor(Math.random() * 2)] as 'male' | 'female'
+        gender: ['male', 'female', 'non-binary', 'unknown'][Math.floor(Math.random() * 4)] as 'male' | 'female' | 'non-binary' | 'unknown'
       }
       
       logger.log('🎯 AI Analysis complete:', aiGuesses)
@@ -314,24 +314,27 @@ const DynamicCharacterPage: React.FC = () => {
           >
             <h2 className="text-2xl font-bold text-white mb-8">Choose Gender</h2>
             
-            <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
-              {['male', 'female'].map((gender) => (
+            <div className="grid grid-cols-2 gap-4 max-w-lg mx-auto">
+              {[
+                { value: 'male', label: 'Male', icon: '👨' },
+                { value: 'female', label: 'Female', icon: '👩' },
+                { value: 'non-binary', label: 'Non-binary', icon: '🧑' },
+                { value: 'unknown', label: 'Prefer not to say', icon: '❓' }
+              ].map(({ value, label, icon }) => (
                 <button
-                  key={gender}
+                  key={value}
                   onClick={() => {
-                    updateCharacterData({ gender: gender as 'male' | 'female' })
+                    updateCharacterData({ gender: value as any })
                     moveToNextStep()
                   }}
                   className={`p-6 rounded-xl border-2 transition-all duration-200 ${
-                    characterData.gender === gender
+                    characterData.gender === value
                       ? 'border-purple-500 bg-purple-500/20 text-white'
                       : 'border-white/20 bg-white/5 text-gray-300 hover:border-purple-500 hover:bg-purple-500/10'
                   }`}
                 >
-                  <div className="text-2xl mb-2">
-                    {gender === 'male' ? '👨' : '👩'}
-                  </div>
-                  <div className="capitalize font-semibold">{gender}</div>
+                  <div className="text-2xl mb-2">{icon}</div>
+                  <div className="font-semibold">{label}</div>
                 </button>
               ))}
             </div>
