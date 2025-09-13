@@ -68,6 +68,13 @@ const DynamicCharacterPage: React.FC = () => {
       return () => clearTimeout(timer)
     }
   }, [characterData.name, currentStep])
+
+  // Start live face detection when toggle is enabled
+  useEffect(() => {
+    if (liveFaceTransform && videoRef && showCameraModal) {
+      startLiveFaceDetection(videoRef)
+    }
+  }, [liveFaceTransform, videoRef, showCameraModal])
   const [rpgClass, setRpgClass] = useState<{
     name: string
     description: string
@@ -183,7 +190,98 @@ const DynamicCharacterPage: React.FC = () => {
       stream.getTracks().forEach(track => track.stop())
       setStream(null)
     }
+    setLiveFaceTransform(false)
     setShowCameraModal(false)
+  }
+
+  const startLiveFaceDetection = async (video: HTMLVideoElement) => {
+    try {
+      // Import face-api.js
+      const faceapi = await import('face-api.js')
+      
+      // Load models if not already loaded
+      if (!faceapi.nets.tinyFaceDetector.isLoaded) {
+        await faceapi.nets.tinyFaceDetector.loadFromUri('/models')
+        await faceapi.nets.faceLandmark68Net.loadFromUri('/models')
+      }
+      
+      // Create canvas for face overlay
+      const canvas = document.createElement('canvas')
+      canvas.width = video.videoWidth
+      canvas.height = video.videoHeight
+      setFaceDetectionCanvas(canvas)
+      
+      const detectFaces = async () => {
+        if (video.readyState === video.HAVE_ENOUGH_DATA && liveFaceTransform) {
+          const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+            .withFaceLandmarks()
+          
+          // Clear canvas
+          const ctx = canvas.getContext('2d')!
+          ctx.clearRect(0, 0, canvas.width, canvas.height)
+          
+          // Draw character face overlay on detected faces
+          detections.forEach(detection => {
+            const { x, y, width, height } = detection.detection.box
+            const landmarks = detection.landmarks
+            
+            // Draw character face overlay
+            drawCharacterFaceOverlay(ctx, x, y, width, height, landmarks)
+          })
+        }
+        
+        if (liveFaceTransform) {
+          requestAnimationFrame(detectFaces)
+        }
+      }
+      
+      detectFaces()
+      
+    } catch (error) {
+      logger.error('❌ Live face detection failed:', error)
+    }
+  }
+
+  const drawCharacterFaceOverlay = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, landmarks: any) => {
+    // Draw a stylized character face overlay
+    ctx.save()
+    
+    // Create character face shape
+    ctx.fillStyle = '#FFE4B5' // Character skin tone
+    ctx.beginPath()
+    ctx.ellipse(x + width/2, y + height/2, width/2, height/2, 0, 0, 2 * Math.PI)
+    ctx.fill()
+    
+    // Draw character eyes
+    const leftEye = landmarks.getLeftEye()
+    const rightEye = landmarks.getRightEye()
+    
+    // Left eye
+    ctx.fillStyle = '#000'
+    ctx.beginPath()
+    ctx.ellipse(leftEye[0].x, leftEye[0].y, 8, 12, 0, 0, 2 * Math.PI)
+    ctx.fill()
+    
+    // Right eye
+    ctx.beginPath()
+    ctx.ellipse(rightEye[0].x, rightEye[0].y, 8, 12, 0, 0, 2 * Math.PI)
+    ctx.fill()
+    
+    // Draw character nose
+    const nose = landmarks.getNose()
+    ctx.fillStyle = '#FFB6C1'
+    ctx.beginPath()
+    ctx.ellipse(nose[0].x, nose[0].y, 4, 6, 0, 0, 2 * Math.PI)
+    ctx.fill()
+    
+    // Draw character mouth
+    const mouth = landmarks.getMouth()
+    ctx.fillStyle = '#FF69B4'
+    ctx.beginPath()
+    ctx.ellipse(mouth[0].x, mouth[0].y, 6, 3, 0, 0, 2 * Math.PI)
+    ctx.fill()
+    
+    ctx.restore()
   }
 
   const handlePhotoUpload = async (file: File) => {
@@ -1036,12 +1134,27 @@ const DynamicCharacterPage: React.FC = () => {
           <div className="bg-gray-900 rounded-xl p-6 max-w-2xl w-full">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-bold text-white">Take Photo</h3>
-              <button
-                onClick={closeCamera}
-                className="text-gray-400 hover:text-white"
-              >
-                <X className="w-6 h-6" />
-              </button>
+              <div className="flex items-center gap-4">
+                {/* Live Face Transform Toggle */}
+                <button
+                  onClick={() => setLiveFaceTransform(!liveFaceTransform)}
+                  className={`px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 ${
+                    liveFaceTransform
+                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  }`}
+                >
+                  <Sparkles className="w-4 h-4" />
+                  {liveFaceTransform ? 'Live Transform ON' : 'Live Transform OFF'}
+                </button>
+                
+                <button
+                  onClick={closeCamera}
+                  className="text-gray-400 hover:text-white"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
             </div>
             
             <div className="relative">
@@ -1052,6 +1165,21 @@ const DynamicCharacterPage: React.FC = () => {
                 className="w-full h-auto rounded-lg bg-gray-800"
                 style={{ maxHeight: '400px' }}
               />
+              
+              {/* Face Transformation Overlay Canvas */}
+              {liveFaceTransform && (
+                <canvas
+                  ref={setFaceDetectionCanvas}
+                  className="absolute top-0 left-0 w-full h-full rounded-lg pointer-events-none"
+                  style={{ maxHeight: '400px' }}
+                />
+              )}
+              
+              {liveFaceTransform && (
+                <div className="absolute top-2 left-2 bg-purple-500/80 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                  🎭 Live Face Transform Active
+                </div>
+              )}
               
               <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-4">
                 <button
