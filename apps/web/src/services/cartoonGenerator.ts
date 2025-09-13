@@ -1,6 +1,8 @@
 import { HuggingFaceService } from './huggingFaceService'
 import { RPGCharacterGenerator, PhotoAnalysis } from './rpgCharacterGenerator'
 import { LocalFaceAnalysis } from './localFaceAnalysis'
+import { ExpressionPromptGenerator } from './expressionPromptGenerator'
+import { CharacterProgressionSystem } from './characterProgressionSystem'
 
 // PhotoAnalysis interface is now imported from rpgCharacterGenerator
 
@@ -68,16 +70,45 @@ export class CaricatureGenerator {
   static async generateCaricatureFromPhoto(
     photoFile: File,
     style: 'cute' | 'anime' | 'disney' | 'pixar' = 'cute',
-    characterData?: { name: string; age: number; height: number; weight: number; gender: 'male' | 'female' | 'non-binary' | 'unknown' }
+    characterData?: { 
+      name: string; 
+      age: number; 
+      height: number; 
+      weight: number; 
+      gender: 'male' | 'female' | 'non-binary' | 'unknown';
+      level?: number;
+      rpgClass?: {
+        name: string;
+        description: string;
+        stats: {
+          strength: number;
+          agility: number;
+          intelligence: number;
+          wisdom: number;
+          charisma: number;
+          constitution: number;
+          total: number;
+        }
+      }
+    }
   ): Promise<CaricatureGenerationResult> {
     const startTime = Date.now()
     
     try {
       console.log('🎨 Starting AI-powered RPG caricature generation...')
       
-      // Use filename analysis for now (face-api.js models not available)
+      // Analyze face with expression detection
+      const faceAnalysis = await LocalFaceAnalysis.analyzeFace(photoFile)
       const photoAnalysis = this.createFallbackAnalysis(photoFile)
-      console.log('📸 Filename analysis complete:', photoAnalysis)
+      
+      // Get expression-based style
+      const characterStyle = ExpressionPromptGenerator.getStyleFromExpression(faceAnalysis)
+      console.log('🎭 Expression detected:', faceAnalysis.expression, '→ Style:', characterStyle.name)
+      console.log('📸 Analysis complete:', { ...photoAnalysis, expression: faceAnalysis.expression })
+      
+      // Determine character level (start at 1 for new characters)
+      const characterLevel = characterData?.level || 1
+      console.log('⚔️ Character Level:', characterLevel)
       
       // Override with user input if provided (user input takes priority)
       if (characterData) {
@@ -88,9 +119,70 @@ export class CaricatureGenerator {
         console.log('🎯 Using user input for age/height/weight/gender:', characterData)
       }
       
-      // Generate RPG character
+      // Generate RPG character with selected class if provided
       const rpgGenerator = new RPGCharacterGenerator()
-      const rpgCharacter = rpgGenerator.generateRPGCharacter(photoAnalysis, characterData?.name || 'Character')
+      let rpgCharacter = rpgGenerator.generateRPGCharacter(photoAnalysis, characterData?.name || 'Character')
+      
+      // If user selected a specific class, override the suggested one
+      if (characterData?.rpgClass) {
+        console.log('🎮 Using user-selected class:', characterData.rpgClass.name)
+        // Create a custom prompt with the selected class
+        const classEquipment = this.getClassEquipment(characterData.rpgClass.name)
+        
+        // Combine user features with style hints (not full override)
+        const baseCharacterPrompt = CharacterProgressionSystem.generateLeveledPrompt(
+          {
+            expression: faceAnalysis.expression || 'neutral',
+            gender: photoAnalysis.gender,
+            age: photoAnalysis.age,
+            class: characterData.rpgClass.name,
+            hairColor: photoAnalysis.hairColor,
+            skinTone: photoAnalysis.skinTone,
+            faceFeatures: `${photoAnalysis.faceShape} face`
+          },
+          characterLevel,
+          'cute' // Default to cute/chibi style for consistency
+        )
+        
+        // Add subtle style hints based on expression (not full override)
+        const styleHints = this.getSubtleStyleHints(faceAnalysis.expression || 'neutral')
+        const fullPrompt = `${baseCharacterPrompt}, ${styleHints}`
+        
+        rpgCharacter = {
+          ...rpgCharacter,
+          suggestedClass: {
+            ...rpgCharacter.suggestedClass,
+            name: characterData.rpgClass.name,
+            description: characterData.rpgClass.description
+          },
+          stats: characterData.rpgClass.stats,
+          characterPrompt: fullPrompt
+        }
+      } else {
+        // Use expression to suggest a class
+        const suggestedClass = ExpressionPromptGenerator.getClassFromExpression(faceAnalysis.expression || 'neutral')
+        console.log('🎮 Expression-based class suggestion:', suggestedClass)
+        
+        // Generate consistent character with auto-suggested class
+        const basePrompt = CharacterProgressionSystem.generateLeveledPrompt(
+          {
+            expression: faceAnalysis.expression || 'neutral',
+            gender: photoAnalysis.gender,
+            age: photoAnalysis.age,
+            class: suggestedClass,
+            hairColor: photoAnalysis.hairColor,
+            skinTone: photoAnalysis.skinTone,
+            faceFeatures: `${photoAnalysis.faceShape} face`
+          },
+          characterLevel,
+          'cute' // Keep consistent style
+        )
+        
+        // Add subtle hints
+        const styleHints = this.getSubtleStyleHints(faceAnalysis.expression || 'neutral')
+        rpgCharacter.characterPrompt = `${basePrompt}, ${styleHints}`
+      }
+      
       console.log('⚔️ RPG Character:', rpgCharacter.suggestedClass.name, 'Stats:', rpgCharacter.stats)
       
       // Use the RPG-generated prompt
@@ -503,13 +595,45 @@ export class CaricatureGenerator {
   }
 
   /**
+   * 🎨 Get subtle style hints based on expression
+   * Adds personality without completely changing the character
+   */
+  private static getSubtleStyleHints(expression: string): string {
+    const hints: Record<string, string> = {
+      'happy': 'cheerful expression, bright mood, positive energy',
+      'serious': 'focused expression, determined look, confident stance',
+      'angry': 'intense expression, fierce eyes, strong presence',
+      'surprised': 'wide eyes, amazed expression, dynamic pose',
+      'sad': 'thoughtful expression, introspective mood, gentle demeanor',
+      'neutral': 'balanced expression, calm presence, ready stance'
+    }
+    
+    return hints[expression] || hints['neutral']
+  }
+
+  /**
+   * 🎮 Get class-specific equipment
+   */
+  private static getClassEquipment(className: string): string[] {
+    const equipment: Record<string, string[]> = {
+      'Warrior': ['sword', 'shield', 'heavy armor'],
+      'Rogue': ['daggers', 'leather armor', 'hood'],
+      'Mage': ['staff', 'robes', 'spell book'],
+      'Cleric': ['mace', 'holy symbol', 'chain mail'],
+      'Bard': ['lute', 'colorful outfit', 'feathered hat'],
+      'Ranger': ['bow', 'arrows', 'leather armor', 'cloak']
+    }
+    return equipment[className] || ['basic equipment']
+  }
+
+  /**
    * 🔍 Analyze Photo for UI Pre-filling
    * 
    * Uses local face-api.js analysis for immediate UI field population
    * Falls back to filename analysis if face detection fails
    */
   static async analyzePhotoForUI(photoFile: File): Promise<PhotoAnalysis> {
-    console.log('🔍 Analyzing photo for UI with local face-api.js or fallback...')
+    console.log('🔍 Analyzing photo for UI with secure Canvas API...')
     try {
       const faceResult = await LocalFaceAnalysis.analyzeFace(photoFile)
       if (faceResult.faceDetected) {

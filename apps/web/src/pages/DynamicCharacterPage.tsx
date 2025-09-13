@@ -10,6 +10,9 @@ import { motion } from 'framer-motion'
 import { Calendar, User, Ruler, Weight, Sparkles, ArrowRight, Check, Image } from 'lucide-react'
 import { CaricatureGenerator } from '../services/cartoonGenerator'
 import { CharacterStorage } from '../services/characterStorage'
+import { UploadService } from '../services/uploadService'
+import { CloudStorageService } from '../services/cloudStorageService'
+import { Meshy3DService } from '../services/meshy3DService'
 
 interface CharacterData {
   photo?: File
@@ -49,6 +52,10 @@ export const DynamicCharacterPage: React.FC = () => {
   const [generationCost, setGenerationCost] = useState<number | null>(null)
   const [characterSaved, setCharacterSaved] = useState(false)
   const [showImageModal, setShowImageModal] = useState(false)
+  const [isProcessingPhoto, setIsProcessingPhoto] = useState(false)
+  const [is3DGenerating, setIs3DGenerating] = useState(false)
+  const [model3DUrl, setModel3DUrl] = useState<string | null>(null)
+  const [model3DProgress, setModel3DProgress] = useState(0)
   const [rpgClass, setRpgClass] = useState<{
     name: string
     description: string
@@ -61,7 +68,7 @@ export const DynamicCharacterPage: React.FC = () => {
       constitution: number
       total: number
     }
-  } | null>(null)
+  } | undefined>(undefined)
   const [generationPrompt, setGenerationPrompt] = useState<string | null>(null)
   const [photoAnalysis, setPhotoAnalysis] = useState<{
     gender: 'male' | 'female' | 'non-binary' | 'unknown'
@@ -155,6 +162,7 @@ export const DynamicCharacterPage: React.FC = () => {
 
   const handlePhotoUpload = async (photo: File) => {
     try {
+      setIsProcessingPhoto(true) // Start loading
       updateCharacterData('photo', photo)
       
       // Analyze photo for AI guesses
@@ -169,7 +177,10 @@ export const DynamicCharacterPage: React.FC = () => {
       updateCharacterData('gender', aiGuesses.gender)
       
       console.log('✅ Character data updated, moving to next step...')
-      setTimeout(nextStep, 1000) // Give time to show AI analysis
+      setTimeout(() => {
+        setIsProcessingPhoto(false) // Stop loading
+        nextStep()
+      }, 1000) // Give time to show AI analysis
     } catch (error) {
       console.error('❌ Error in photo upload:', error)
       // Fallback to default values
@@ -179,7 +190,10 @@ export const DynamicCharacterPage: React.FC = () => {
       updateCharacterData('height', fallbackGuesses.height)
       updateCharacterData('weight', fallbackGuesses.weight)
       updateCharacterData('gender', fallbackGuesses.gender)
-      setTimeout(nextStep, 1000)
+      setTimeout(() => {
+        setIsProcessingPhoto(false) // Stop loading
+        nextStep()
+      }, 1000)
     }
   }
 
@@ -267,6 +281,74 @@ export const DynamicCharacterPage: React.FC = () => {
     }, 500)
   }
 
+  const generate3DModel = async () => {
+    if (!caricatureImage || is3DGenerating || model3DUrl) return
+    
+    // Check if Meshy is configured
+    if (!Meshy3DService.isConfigured()) {
+      alert('3D generation not configured. Please add Meshy API key to environment variables.')
+      return
+    }
+    
+    try {
+      setIs3DGenerating(true)
+      setModel3DProgress(0)
+      
+      console.log('🎮 Starting 3D model generation...')
+      
+      // First, upload the image to cloud to get a URL
+      let imageUrl = caricatureImage
+      
+      // If it's a data URL, upload to cloud first
+      if (caricatureImage.startsWith('data:')) {
+        const uploadResult = await CloudStorageService.uploadImage(caricatureImage, `3d_${characterData.name}`)
+        if (uploadResult.success && uploadResult.url) {
+          imageUrl = uploadResult.url
+          console.log('📤 Image uploaded for 3D:', imageUrl)
+        } else {
+          throw new Error('Failed to upload image for 3D generation')
+        }
+      }
+      
+      // Start 3D generation
+      const result = await Meshy3DService.imageToModel(imageUrl, {
+        art_style: 'cartoon',
+        target_polycount: 'medium',
+        auto_refine: true
+      })
+      
+      if (!result.success || !result.taskId) {
+        throw new Error(result.error || 'Failed to start 3D generation')
+      }
+      
+      console.log('🎮 3D generation task created:', result.taskId)
+      
+      // Poll for completion
+      const finalResult = await Meshy3DService.waitForModel(result.taskId, {
+        maxWaitTime: 300000, // 5 minutes
+        pollInterval: 3000, // 3 seconds
+        onProgress: (progress) => {
+          setModel3DProgress(progress)
+          console.log(`🔄 3D generation progress: ${progress}%`)
+        }
+      })
+      
+      if (finalResult.success && finalResult.modelUrl) {
+        setModel3DUrl(finalResult.modelUrl)
+        console.log('✅ 3D model ready:', finalResult.modelUrl)
+        alert(`3D model generated successfully! Credits used: ${finalResult.credits_used || 'unknown'}`)
+      } else {
+        throw new Error(finalResult.error || '3D generation failed')
+      }
+      
+    } catch (error) {
+      console.error('❌ 3D generation failed:', error)
+      alert(`Failed to generate 3D model: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setIs3DGenerating(false)
+    }
+  }
+
   const handleCardComplete = async () => {
     try {
       console.log('🎨 Starting caricature generation...')
@@ -278,8 +360,9 @@ export const DynamicCharacterPage: React.FC = () => {
         return
       }
       
-      // Use real Hugging Face caricature generation
+      // Use real Hugging Face caricature generation with class info
       console.log('🚀 Using Hugging Face API for caricature generation...')
+      console.log('🎮 Including RPG class:', rpgClass?.name)
       const result = await CaricatureGenerator.generateCaricatureFromPhoto(
         characterData.photo,
         'cute', // You can make this selectable later
@@ -288,7 +371,8 @@ export const DynamicCharacterPage: React.FC = () => {
           age: characterData.age,
           height: characterData.height,
           weight: characterData.weight,
-          gender: characterData.gender
+          gender: characterData.gender,
+          rpgClass: rpgClass // Pass the selected class
         }
       )
       
@@ -360,7 +444,7 @@ export const DynamicCharacterPage: React.FC = () => {
         caricatureImage,
         generationCost: generationCost || 0,
         style: 'cute',
-        rpgClass: rpgClass || undefined,
+          rpgClass: rpgClass ?? undefined,
         photoAnalysis: photoAnalysis || undefined,
         aiGuesses: characterData.aiGuesses,
         generationPrompt: generationPrompt || undefined,
@@ -370,6 +454,36 @@ export const DynamicCharacterPage: React.FC = () => {
 
       setCharacterSaved(true)
       console.log('💾 Character saved to gallery:', savedCharacter.name)
+      
+      // Try to upload to cloud storage (works with Netlify!)
+      if (caricatureImage) {
+        // First try cloud storage (ImgBB or Cloudinary)
+        CloudStorageService.uploadImage(caricatureImage, characterData.name)
+          .then(result => {
+            if (result.success) {
+              console.log('☁️ Character uploaded to cloud:', result.url)
+              console.log('📦 Storage provider:', result.provider)
+            } else {
+              console.log('⚠️ Cloud upload failed, saved locally:', result.error)
+            }
+          })
+          .catch(err => {
+            console.log('⚠️ Cloud upload error, saved locally:', err)
+          })
+        
+        // Also try backend server if available (for local development)
+        UploadService.saveCharacterFromBase64(caricatureImage, {
+          name: characterData.name,
+          class: rpgClass?.name || 'Warrior',
+          stats: rpgClass?.stats,
+          createdAt: new Date().toISOString(),
+          style: 'cute',
+          gender: characterData.gender,
+          age: characterData.age
+        }).catch(() => {
+          // Silently fail - cloud storage is the primary method
+        })
+      }
       
       // Show success message
       setTimeout(() => {
@@ -636,8 +750,12 @@ export const DynamicCharacterPage: React.FC = () => {
                 </div>
 
                 <div className="text-center">
-                  {/* Photo Preview */}
-                  {characterData.photo ? (
+                  {/* Loading State or Photo Preview */}
+                  {isProcessingPhoto ? (
+                    <div className="w-32 h-32 bg-white/20 rounded-xl mx-auto mb-6 flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-16 w-16 border-4 border-white border-t-transparent"></div>
+                    </div>
+                  ) : characterData.photo ? (
                     <div className="w-32 h-32 bg-white rounded-xl mx-auto mb-6 flex items-center justify-center overflow-hidden">
                       <img 
                         src={URL.createObjectURL(characterData.photo)} 
@@ -651,6 +769,14 @@ export const DynamicCharacterPage: React.FC = () => {
                     </div>
                   )}
                   
+                  {/* Loading Message */}
+                  {isProcessingPhoto && (
+                    <div className="mb-4">
+                      <p className="text-white font-semibold animate-pulse">🤖 Analyzing your photo...</p>
+                      <p className="text-gray-300 text-sm mt-1">AI is detecting features</p>
+                    </div>
+                  )}
+                  
                   {/* File Upload */}
                   <input
                     type="file"
@@ -658,12 +784,13 @@ export const DynamicCharacterPage: React.FC = () => {
                     capture="environment"
                     onChange={(e) => {
                       const file = e.target.files?.[0]
-                      if (file) {
+                      if (file && !isProcessingPhoto) {
                         handlePhotoUpload(file)
                       }
                     }}
                     className="hidden"
                     id="photo-upload"
+                    disabled={isProcessingPhoto}
                   />
                   
                   {/* Camera Capture */}
@@ -673,25 +800,34 @@ export const DynamicCharacterPage: React.FC = () => {
                     capture="user"
                     onChange={(e) => {
                       const file = e.target.files?.[0]
-                      if (file) {
+                      if (file && !isProcessingPhoto) {
                         handlePhotoUpload(file)
                       }
                     }}
                     className="hidden"
                     id="photo-camera"
+                    disabled={isProcessingPhoto}
                   />
                   
                   <div className="space-y-3">
                     <label
                       htmlFor="photo-upload"
-                      className="block w-full py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition-all cursor-pointer"
+                      className={`block w-full py-3 text-white rounded-xl font-semibold transition-all ${
+                        isProcessingPhoto 
+                          ? 'bg-gray-500 cursor-not-allowed opacity-50' 
+                          : 'bg-blue-500 hover:bg-blue-600 cursor-pointer'
+                      }`}
                     >
                       📁 Choose from Gallery
                     </label>
                     
                     <label
                       htmlFor="photo-camera"
-                      className="block w-full py-3 bg-green-500 text-white rounded-xl font-semibold hover:bg-green-600 transition-all cursor-pointer"
+                      className={`block w-full py-3 text-white rounded-xl font-semibold transition-all ${
+                        isProcessingPhoto 
+                          ? 'bg-gray-500 cursor-not-allowed opacity-50' 
+                          : 'bg-green-500 hover:bg-green-600 cursor-pointer'
+                      }`}
                     >
                       📸 Take Photo
                     </label>
@@ -1198,6 +1334,69 @@ export const DynamicCharacterPage: React.FC = () => {
                       : '🎨 Generate Caricature Character'
                   }
                 </motion.button>
+
+                {/* 3D Generation Button - Only shows after 2D is done */}
+                {caricatureGenerated && caricatureImage && !is3DGenerating && !model3DUrl && (
+                  <motion.button
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={generate3DModel}
+                    className="w-full mt-4 py-3 rounded-xl font-semibold transition-all bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
+                  >
+                    🎮 Generate 3D Model (Meshy)
+                  </motion.button>
+                )}
+
+                {/* 3D Generation Progress */}
+                {is3DGenerating && (
+                  <div className="mt-4 bg-black/30 rounded-xl p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-white font-medium">🎮 Creating 3D Model...</span>
+                      <span className="text-purple-300">{model3DProgress}%</span>
+                    </div>
+                    <div className="w-full bg-gray-700 rounded-full h-2">
+                      <motion.div
+                        className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${model3DProgress}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-gray-400 mt-2 text-center">
+                      This may take 1-2 minutes...
+                    </p>
+                  </div>
+                )}
+
+                {/* 3D Model Ready */}
+                {model3DUrl && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="mt-4 bg-gradient-to-r from-purple-900/50 to-pink-900/50 rounded-xl p-4"
+                  >
+                    <p className="text-white font-semibold text-center mb-2">
+                      ✨ 3D Model Ready!
+                    </p>
+                    <div className="flex gap-2">
+                      <a
+                        href={model3DUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 py-2 bg-purple-600 text-white rounded-lg text-center hover:bg-purple-700 transition-colors"
+                      >
+                        📥 Download 3D
+                      </a>
+                      <button
+                        onClick={() => window.open(model3DUrl, '_blank')}
+                        className="flex-1 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors"
+                      >
+                        👁️ View 3D
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
               </div>
             </motion.div>
           )}
