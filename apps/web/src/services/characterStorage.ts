@@ -60,6 +60,12 @@ export interface SavedCharacter {
  * 💾 Character Storage Service
  * 
  * Manages saving and loading character cards to/from localStorage
+ * 
+ * ⚠️ NETLIFY LIMITATION: localStorage has ~5-10MB limit
+ * ⚠️ Base64 images quickly fill storage (only ~3-10 characters)
+ * ⚠️ For production: Use Render.com with backend API + database
+ * 
+ * This is a temporary solution for static hosting only.
  */
 export class CharacterStorage {
   private static readonly STORAGE_KEY = 'saved_characters'
