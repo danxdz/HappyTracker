@@ -7,7 +7,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Calendar, User, Ruler, Weight, Sparkles, ArrowRight, Check, Image, Cube, Download } from 'lucide-react'
+import { Calendar, User, Ruler, Weight, Sparkles, ArrowRight, Check, Image, Box, Download } from 'lucide-react'
 import { CaricatureGenerator } from '../services/cartoonGenerator'
 import { CharacterStorage } from '../services/characterStorage'
 import { ThreeDCharacterGenerator } from '../services/threeDCharacterGenerator'

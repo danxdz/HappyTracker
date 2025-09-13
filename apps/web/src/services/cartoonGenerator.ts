@@ -556,6 +556,7 @@ export class CaricatureGenerator {
    * 🎨 Generate Caricature Image with AI
    * 
    * Uses Stable Diffusion XL for high-quality generation
+   * Returns base64 data URL for persistent storage
    */
   private static async generateCaricatureImage(prompt: string): Promise<string> {
     console.log('🎨 Generating caricature image with AI...')
@@ -581,7 +582,13 @@ export class CaricatureGenerator {
     }
 
     const blob = await response.blob()
-    return URL.createObjectURL(blob)
+    // Convert blob to base64 for persistent storage
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result as string)
+      reader.onerror = reject
+      reader.readAsDataURL(blob)
+    })
   }
 
 
