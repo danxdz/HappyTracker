@@ -2,6 +2,7 @@ import { HuggingFaceService } from './huggingFaceService'
 import { RPGCharacterGenerator, PhotoAnalysis } from './rpgCharacterGenerator'
 import { LocalFaceAnalysis } from './localFaceAnalysis'
 import { ExpressionPromptGenerator } from './expressionPromptGenerator'
+import { CharacterProgressionSystem } from './characterProgressionSystem'
 
 // PhotoAnalysis interface is now imported from rpgCharacterGenerator
 
@@ -75,6 +76,7 @@ export class CaricatureGenerator {
       height: number; 
       weight: number; 
       gender: 'male' | 'female' | 'non-binary' | 'unknown';
+      level?: number;
       rpgClass?: {
         name: string;
         description: string;
@@ -104,6 +106,10 @@ export class CaricatureGenerator {
       console.log('🎭 Expression detected:', faceAnalysis.expression, '→ Style:', characterStyle.name)
       console.log('📸 Analysis complete:', { ...photoAnalysis, expression: faceAnalysis.expression })
       
+      // Determine character level (start at 1 for new characters)
+      const characterLevel = characterData?.level || 1
+      console.log('⚔️ Character Level:', characterLevel)
+      
       // Override with user input if provided (user input takes priority)
       if (characterData) {
         photoAnalysis.age = characterData.age
@@ -123,15 +129,19 @@ export class CaricatureGenerator {
         // Create a custom prompt with the selected class
         const classEquipment = this.getClassEquipment(characterData.rpgClass.name)
         
-        // Use expression-based style as base
-        const fullPrompt = ExpressionPromptGenerator.generateFullPrompt(
-          faceAnalysis,
-          characterStyle,
+        // Generate consistent character with level-based progression
+        const fullPrompt = CharacterProgressionSystem.generateLeveledPrompt(
           {
+            expression: faceAnalysis.expression || 'neutral',
             gender: photoAnalysis.gender,
             age: photoAnalysis.age,
-            additionalDetails: `${characterData.rpgClass.name.toLowerCase()}, equipped with ${classEquipment.join(', ')}`
-          }
+            class: characterData.rpgClass.name,
+            hairColor: photoAnalysis.hairColor,
+            skinTone: photoAnalysis.skinTone,
+            faceFeatures: `${photoAnalysis.faceShape} face, ${photoAnalysis.expression} expression`
+          },
+          characterLevel,
+          characterStyle.name === 'Kawaii Chibi' ? 'cute' : 'cool'
         )
         
         rpgCharacter = {
@@ -149,15 +159,19 @@ export class CaricatureGenerator {
         const suggestedClass = ExpressionPromptGenerator.getClassFromExpression(faceAnalysis.expression || 'neutral')
         console.log('🎮 Expression-based class suggestion:', suggestedClass)
         
-        // Update prompt with expression style
-        rpgCharacter.characterPrompt = ExpressionPromptGenerator.generateFullPrompt(
-          faceAnalysis,
-          characterStyle,
+        // Generate consistent character with auto-suggested class
+        rpgCharacter.characterPrompt = CharacterProgressionSystem.generateLeveledPrompt(
           {
+            expression: faceAnalysis.expression || 'neutral',
             gender: photoAnalysis.gender,
             age: photoAnalysis.age,
-            additionalDetails: rpgCharacter.suggestedClass.name.toLowerCase()
-          }
+            class: suggestedClass,
+            hairColor: photoAnalysis.hairColor,
+            skinTone: photoAnalysis.skinTone,
+            faceFeatures: `${photoAnalysis.faceShape} face, ${photoAnalysis.expression} expression`
+          },
+          characterLevel,
+          characterStyle.name === 'Kawaii Chibi' ? 'cute' : 'cool'
         )
       }
       
