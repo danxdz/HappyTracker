@@ -57,6 +57,8 @@ const CharacterGallery: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'variants' | 'prompts' | 'stats'>('overview')
   const [generatingVariant, setGeneratingVariant] = useState<string | null>(null)
   const [characterVariants, setCharacterVariants] = useState<Record<string, Record<string, string>>>({})
+  const [showImageModal, setShowImageModal] = useState(false)
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string>('')
 
   useEffect(() => {
     loadCharacters()
@@ -926,22 +928,32 @@ const CharacterGallery: React.FC = () => {
                       </div>
                     </div>
                     
+                    {/* Original Character Reference - Clickable */}
+                    <div className="bg-white/5 rounded-xl p-4">
+                      <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
+                        <Image className="w-4 h-4" />
+                        Generated Character (Click to enlarge)
+                      </h4>
+                      <div 
+                        className="aspect-square bg-white rounded-lg overflow-hidden max-w-xs mx-auto cursor-pointer hover:scale-105 transition-transform duration-200"
+                        onClick={() => {
+                          setSelectedImageUrl(selectedCharacter.caricatureImage)
+                          setShowImageModal(true)
+                        }}
+                      >
+                        <img
+                          src={selectedCharacter.caricatureImage}
+                          alt={`${selectedCharacter.name} - Generated`}
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                      <div className="text-center mt-2">
+                        <p className="text-sm text-gray-400">Click image to view full size</p>
+                      </div>
+                    </div>
+
                     {selectedCharacter.variants && Object.keys(selectedCharacter.variants).length > 0 ? (
                       <div className="space-y-4">
-                        {/* Original Character Reference */}
-                        <div className="bg-white/5 rounded-xl p-4">
-                          <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
-                            <Image className="w-4 h-4" />
-                            Original Character (Reference)
-                          </h4>
-                          <div className="aspect-square bg-white rounded-lg overflow-hidden max-w-xs mx-auto">
-                            <img
-                              src={selectedCharacter.caricatureImage}
-                              alt={`${selectedCharacter.name} - Original`}
-                              className="w-full h-full object-contain"
-                            />
-                          </div>
-                        </div>
 
                         {/* Variants Grid */}
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -949,7 +961,13 @@ const CharacterGallery: React.FC = () => {
                             const [variantType, clothingLevel] = variantKey.split('-')
                             return (
                               <div key={variantKey} className="bg-white/5 rounded-xl p-4 group">
-                                <div className="aspect-square bg-white rounded-lg mb-3 overflow-hidden relative">
+                                <div 
+                                  className="aspect-square bg-white rounded-lg mb-3 overflow-hidden relative cursor-pointer hover:scale-105 transition-transform duration-200"
+                                  onClick={() => {
+                                    setSelectedImageUrl(variantData.imageUrl)
+                                    setShowImageModal(true)
+                                  }}
+                                >
                                   <img
                                     src={variantData.imageUrl}
                                     alt={`${selectedCharacter.name} - ${variantType}`}
@@ -957,21 +975,25 @@ const CharacterGallery: React.FC = () => {
                                   />
                                   <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
                                     <button
-                                      onClick={() => {
+                                      onClick={(e) => {
+                                        e.stopPropagation()
                                         const link = document.createElement('a')
                                         link.href = variantData.imageUrl
                                         link.download = `${selectedCharacter.name}-${variantType}-${clothingLevel}.png`
                                         link.click()
                                       }}
                                       className="bg-black/50 hover:bg-black/70 text-white p-1 rounded"
+                                      title="Download"
                                     >
                                       <Download className="w-3 h-3" />
                                     </button>
                                     <button
-                                      onClick={() => {
+                                      onClick={(e) => {
+                                        e.stopPropagation()
                                         navigator.clipboard.writeText(variantData.imageUrl)
                                       }}
                                       className="bg-black/50 hover:bg-black/70 text-white p-1 rounded"
+                                      title="Copy URL"
                                     >
                                       <Copy className="w-3 h-3" />
                                     </button>
@@ -1103,6 +1125,68 @@ const CharacterGallery: React.FC = () => {
             </motion.div>
           </motion.div>
         )}
+
+      {/* Image Modal */}
+      {showImageModal && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={() => setShowImageModal(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.8, opacity: 0 }}
+            className="relative max-w-4xl max-h-[90vh] bg-white rounded-xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setShowImageModal(false)}
+              className="absolute top-4 right-4 z-10 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            
+            {/* Image */}
+            <div className="w-full h-full flex items-center justify-center p-8">
+              <img
+                src={selectedImageUrl}
+                alt="Full size character"
+                className="max-w-full max-h-full object-contain"
+              />
+            </div>
+            
+            {/* Action buttons */}
+            <div className="absolute bottom-4 left-4 right-4 flex gap-2 justify-center">
+              <button
+                onClick={() => {
+                  const link = document.createElement('a')
+                  link.href = selectedImageUrl
+                  link.download = `character-image.png`
+                  link.click()
+                }}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Download
+              </button>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(selectedImageUrl)
+                  // Could add toast notification here
+                }}
+                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+              >
+                <Copy className="w-4 h-4" />
+                Copy URL
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   )
 }
