@@ -39,8 +39,8 @@ export class FaceAnalysisService {
     try {
       console.log('🔧 Loading face-api.js models...')
       
-      // Load models from CDN or local files
-      const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models'
+      // Load models from local files (no CSP issues)
+      const MODEL_URL = '/models'
       
       await Promise.all([
         faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
