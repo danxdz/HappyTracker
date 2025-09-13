@@ -14,6 +14,10 @@ services:
         value: production
       - key: VITE_HUGGINGFACE_TOKEN
         value: your_huggingface_token_here
+      - key: VITE_REPLICATE_TOKEN
+        value: your_replicate_token_here
+      - key: REACT_APP_API_URL
+        value: https://happytracker-api.onrender.com/api
     
   # Backend API Service
   - type: web
