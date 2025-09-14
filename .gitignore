@@ -88,3 +88,75 @@ android/local.properties
 # Temporary files
 tmp/
 temp/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# AI/ML models and data
+*.pth
+*.pt
+*.ckpt
+*.h5
+*.pkl
+*.joblib
+training_data/
+collected_faces/
+face_generated/
+face_cartoon_system/
+outputs/
+simple_generated/
+lightweight_caricature_output/
+validation_gallery/
+contour_outputs/
+point_e_model_cache/
+2d_generated/
+face-api-weights/
+
+# Large files
+*.min.js
+replicate_token.txt
+
+# External repositories
+StyleCariGAN/
+
+# IDE specific
+.cursor/
+.vscode/
+.idea/
+
+# OS specific
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp

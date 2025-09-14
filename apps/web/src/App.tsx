@@ -12,6 +12,7 @@ import { CartoonPage } from './pages/CartoonPage'
 import { Character3DPage } from './pages/Character3DPage'
 import DynamicCharacterPage from './pages/DynamicCharacterPage'
 import CharacterGallery from './pages/CharacterGallery'
+import { Local3DPage } from './pages/Local3DPage'
 import { Navigation } from './components/Navigation'
 import { Footer } from './components/Footer'
 
@@ -135,6 +136,18 @@ function App() {
         <Route 
           path="/character-gallery" 
           element={<CharacterGallery />}
+        />
+        <Route 
+          path="/local-3d" 
+          element={
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Local3DPage />
+            </motion.div>
+          } 
         />
       </Routes>
       

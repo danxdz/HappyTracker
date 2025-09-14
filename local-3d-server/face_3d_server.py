@@ -30,15 +30,106 @@ except ImportError as e:
     AutoFaceCollector = None
     AUTO_COLLECTOR_AVAILABLE = False
 
+# Import WarpGAN integration (streamlined workflow)
+try:
+    from warpgan_integration import WarpGANGenerator, ZeroedModelTrainer
+    WARPGAN_AVAILABLE = True
+    print("✅ WarpGAN integration loaded successfully")
+except ImportError as e:
+    print(f"⚠️ WarpGAN integration not available: {e}")
+    WarpGANGenerator = None
+
+# Import Contour-based training
+try:
+    from contour_based_training import ContourTrainer
+    CONTOUR_TRAINING_AVAILABLE = True
+    print("✅ Contour-based training loaded successfully")
+except ImportError as e:
+    print(f"⚠️ Contour-based training not available: {e}")
+    ContourTrainer = None
+
+# Import Improved caricature model
+try:
+    from improved_caricature_trainer import ImprovedCaricatureTrainer
+    IMPROVED_MODEL_AVAILABLE = True
+    print("✅ Improved caricature model loaded successfully")
+except ImportError as e:
+    print(f"⚠️ Improved caricature model not available: {e}")
+    ImprovedCaricatureTrainer = None
+
+# Import Reference-based training
+try:
+    from reference_based_training import ReferenceTrainer
+    REFERENCE_TRAINING_AVAILABLE = True
+    print("✅ Reference-based training loaded successfully")
+except ImportError as e:
+    print(f"⚠️ Reference-based training not available: {e}")
+    ReferenceTrainer = None
+    ZeroedModelTrainer = None
+    WARPGAN_AVAILABLE = False
+
+# Import StyleCariGAN and improved LoRA trainer (fallback)
+try:
+    from stylecarigan_trainer import StyleCariGANGenerator, StyleCariGANTrainingDataset
+    from improved_lora_trainer import ImprovedLoRATrainer
+    STYLECARIGAN_AVAILABLE = True
+    print("✅ StyleCariGAN components loaded successfully")
+except ImportError as e:
+    print(f"⚠️ StyleCariGAN components not available: {e}")
+    StyleCariGANGenerator = None
+    ImprovedLoRATrainer = None
+    STYLECARIGAN_AVAILABLE = False
+
 # Global model
 model = None
 device = None
 caricature_generator = None
+warpgan_generator = None
+zeroed_trainer = None
+stylecarigan_generator = None
+improved_trainer = None
 
 def load_caricature_generator():
-    """No caricature generator needed - just face-api.js magic!"""
-    print("🎭 Using face-api.js magic instead of AI models!")
-    return True
+    """Load streamlined WarpGAN-based caricature generator"""
+    global warpgan_generator, zeroed_trainer, stylecarigan_generator, improved_trainer
+    
+    # Try WarpGAN integration first (streamlined workflow)
+    if WARPGAN_AVAILABLE:
+        try:
+            # Initialize WarpGAN generator
+            warpgan_generator = WarpGANGenerator()
+            print("✅ WarpGAN generator loaded")
+            
+            # Initialize zeroed model trainer
+            zeroed_trainer = ZeroedModelTrainer()
+            print("✅ Zeroed model trainer loaded")
+            
+            return True
+        except Exception as e:
+            print(f"❌ WarpGAN initialization failed: {e}")
+    
+    # Fallback to StyleCariGAN
+    if STYLECARIGAN_AVAILABLE:
+        try:
+            # Initialize StyleCariGAN generator
+            stylecarigan_generator = StyleCariGANGenerator()
+            print("✅ StyleCariGAN generator loaded")
+            
+            # Try to load improved trainer
+            try:
+                improved_trainer = ImprovedLoRATrainer()
+                print("✅ Improved LoRA trainer loaded")
+            except Exception as e:
+                print(f"⚠️ Improved trainer not available: {e}")
+                improved_trainer = None
+            
+            return True
+        except Exception as e:
+            print(f"❌ StyleCariGAN initialization failed: {e}")
+            return False
+    else:
+        print("🎭 Using face-api.js magic instead of AI models!")
+        return True
 
 def load_text_model():
     """Load the text-conditioned model"""
@@ -1043,20 +1134,39 @@ def get_cartoon_style_config(style):
 
 
 @app.post("/generate-caricature")
-async def generate_caricature_endpoint(file: UploadFile = File(...), style: str = "cartoon"):
-    """Generate caricature from uploaded photo using SDXL"""
+async def generate_caricature_endpoint(file: UploadFile = File(...), style: str = "caricature"):
+    """Generate caricature from uploaded photo using StyleCariGAN or fallback"""
     try:
-        if not caricature_generator:
-            raise HTTPException(status_code=503, detail="Caricature generator not loaded")
-        
         # Save uploaded file temporarily
         temp_path = f"temp_upload_{int(time.time())}.jpg"
         with open(temp_path, "wb") as buffer:
             content = await file.read()
             buffer.write(content)
         
-        # Generate caricature
-        caricature_image, prompt, features = caricature_generator.generate_caricature(temp_path, style)
+        caricature_image = None
+        
+        # Try StyleCariGAN first, then fallback to simple trainer
+        if stylecarigan_generator:
+            try:
+                caricature_image = stylecarigan_generator.generate_caricature(temp_path, style)
+                print(f"🎨 Generated caricature using StyleCariGAN")
+            except Exception as e:
+                print(f"⚠️ StyleCariGAN failed: {e}")
+        
+        # Fallback to improved trainer
+        if not caricature_image and improved_trainer:
+            try:
+                caricature_image = improved_trainer.generate_caricature(temp_path, style)
+                print(f"🎯 Generated caricature using Improved LoRA")
+            except Exception as e:
+                print(f"⚠️ Improved trainer failed: {e}")
+        
+        # Final fallback to simple trainer
+        if not caricature_image:
+            from simple_lora_trainer import SimpleLoRATrainer
+            trainer = SimpleLoRATrainer()
+            caricature_image = trainer.generate_caricature(temp_path, style)
+            print(f"🔄 Generated caricature using Simple LoRA fallback")
         
         if not caricature_image:
             raise HTTPException(status_code=500, detail="Failed to generate caricature")
@@ -1069,7 +1179,7 @@ async def generate_caricature_endpoint(file: UploadFile = File(...), style: str 
         output_filename = f"caricature_{style}_{timestamp}.png"
         output_path = output_dir / output_filename
         
-        caricature_generator.save_caricature(caricature_image, str(output_path), prompt, features)
+        caricature_image.save(str(output_path))
         
         # Clean up temp file
         Path(temp_path).unlink(missing_ok=True)
@@ -1124,7 +1234,7 @@ async def collect_faces(data: dict):
     
     try:
         num_faces = data.get('num_faces', 10)
-        delay_seconds = data.get('delay_seconds', 1)
+        delay_seconds = data.get('delay_seconds', 0)
         
         collector = AutoFaceCollector(max_faces=num_faces)
         collected = collector.collect_faces(delay_seconds=delay_seconds)
@@ -1243,14 +1353,14 @@ async def generate_cartoon(data: dict):
         try:
             from simple_lora_trainer import SimpleLoRATrainer
             model_trainer = SimpleLoRATrainer()
-            caricature_image = model_trainer.generate_caricature(str(latest_photo), style="cartoon")
+            caricature_image = model_trainer.generate_caricature(str(latest_photo), style="caricature")
             print(f"🎯 Generated caricature using TRAINED MODEL!")
         except Exception as e:
             print(f"⚠️ Trained model not available, using basic filters: {e}")
             # Fallback to basic filters if model not available
             caricature_image = generator.create_advanced_caricature(
                 str(latest_photo), 
-                style="cartoon",
+                style="caricature",
                 features=face_features
             )
         print(f"🎭 Caricature image generated: {type(caricature_image)}")
@@ -1284,7 +1394,7 @@ async def generate_cartoon(data: dict):
         training_pair = {
             "photo_path": f"photos/{photo_filename}",
             "caricature_path": f"caricatures/{cartoon_filename}",
-            "style": "cartoon",
+            "style": "caricature",
             "face_id": f"face_{int(time.time())}",
             "created_at": int(time.time())
         }
@@ -1339,22 +1449,99 @@ async def generate_caricature_variations(data: dict):
         caricatures_dir = training_dir / "caricatures"
         caricatures_dir.mkdir(parents=True, exist_ok=True)
         
-        # Generate 3 variations using the trained model
-        try:
-            from simple_lora_trainer import SimpleLoRATrainer
-            model_trainer = SimpleLoRATrainer()
-            variations = model_trainer.generate_caricature_variations(str(latest_photo), style="cartoon", num_variations=3)
-            print(f"🎯 Generated 3 caricature variations using TRAINED MODEL!")
-        except Exception as e:
-            print(f"⚠️ Trained model not available, using basic filters: {e}")
-            # Fallback to basic filters if model not available
-            from procedural_training_generator import ProceduralTrainingGenerator
-            generator = ProceduralTrainingGenerator()
-            face_features = generator.analyze_face_features(str(latest_photo))
-            variations = []
-            for i in range(3):
-                caricature = generator.create_advanced_caricature(str(latest_photo), style="cartoon", features=face_features)
-                variations.append(caricature)
+        # Generate 3 variations using WarpGAN, StyleCariGAN, or fallback
+        variations = []
+        improved_trainer = None  # Initialize to avoid scope issues
+        
+        # Try Reference-based training first (PicMagic-style caricatures)
+        if REFERENCE_TRAINING_AVAILABLE:
+            try:
+                reference_trainer = ReferenceTrainer()
+                
+                # Get PicMagic-style reference images
+                reference_dir = Path("reference_caricatures")
+                reference_images = [str(f) for f in reference_dir.glob("picmagic_*.jpg")][:3]  # Use first 3 PicMagic references
+                
+                if reference_images:
+                    # Generate caricature using reference style
+                    caricature = reference_trainer.generate_caricature_from_reference(str(latest_photo), reference_images[0])
+                    variations = [caricature] * 3  # Create 3 variations of the same style
+                    print(f"🎯 Generated PicMagic-style caricature using reference: {reference_images[0]}")
+                else:
+                    raise Exception("No PicMagic reference images found")
+                    
+            except Exception as e:
+                print(f"⚠️ Reference training failed: {e}")
+                reference_trainer = None
+        
+        # Try Improved Model FIRST (it has trained weights!)
+        if IMPROVED_MODEL_AVAILABLE and not variations:
+            try:
+                improved_trainer = ImprovedCaricatureTrainer()
+                variations = []
+                
+                # Generate 3 variations with different exaggeration levels
+                # Pass face landmarks for better caricature generation
+                landmarks = face_analysis.get('landmarks', []) if face_analysis else []
+                variations = improved_trainer.generate_caricature_variations(str(latest_photo), num_variations=3, landmarks=landmarks)
+                
+                print(f"🎯 Generated 3 sharp caricature variations: Subtle (1.3x), Medium (1.5x), Strong (1.7x)")
+            except Exception as e:
+                print(f"⚠️ Improved model failed: {e}")
+                improved_trainer = None
+        
+        # Try WarpGAN as fallback
+        if warpgan_generator and not IMPROVED_MODEL_AVAILABLE:
+            try:
+                variations = warpgan_generator.generate_caricature_variations(str(latest_photo), num_variations=3)
+                print(f"🎯 Generated 3 subtle caricature variations: Subtle (1.3x), Medium (1.5x), Strong (1.7x)")
+            except Exception as e:
+                print(f"⚠️ WarpGAN failed: {e}")
+        
+        # Try StyleCariGAN second
+        if not variations and stylecarigan_generator:
+            try:
+                variations = []
+                for i in range(3):
+                    exaggeration_level = 1.2 + (i * 0.3)  # Different exaggeration levels
+                    variation = stylecarigan_generator.generate_caricature(
+                        str(latest_photo), 
+                        style="caricature", 
+                        exaggeration_level=exaggeration_level
+                    )
+                    variations.append(variation)
+                print(f"🎨 Generated 3 caricature variations using StyleCariGAN!")
+            except Exception as e:
+                print(f"⚠️ StyleCariGAN failed: {e}")
+        
+        # Fallback to improved trainer
+        if not variations and improved_trainer:
+            try:
+                variations = improved_trainer.generate_caricature_variations(
+                    str(latest_photo), style="caricature", num_variations=3
+                )
+                print(f"🎯 Generated 3 caricature variations using Improved LoRA!")
+            except Exception as e:
+                print(f"⚠️ Improved trainer failed: {e}")
+        
+        # Final fallback to simple trainer
+        if not variations:
+            try:
+                from simple_lora_trainer import SimpleLoRATrainer
+                model_trainer = SimpleLoRATrainer()
+                variations = model_trainer.generate_caricature_variations(str(latest_photo), style="caricature", num_variations=3)
+                print(f"🔄 Generated 3 caricature variations using Simple LoRA fallback!")
+            except Exception as e:
+                print(f"⚠️ Simple trainer failed: {e}")
+                # Ultimate fallback to basic filters
+                from procedural_training_generator import ProceduralTrainingGenerator
+                generator = ProceduralTrainingGenerator()
+                face_features = generator.analyze_face_features(str(latest_photo))
+                variations = []
+                for i in range(3):
+                    caricature = generator.create_advanced_caricature(str(latest_photo), style="caricature", features=face_features)
+                    variations.append(caricature)
+                print(f"🛠️ Generated 3 caricature variations using basic filters!")
         
         # Save all variations
         variation_paths = []
@@ -1371,6 +1558,107 @@ async def generate_caricature_variations(data: dict):
             "variation_paths": variation_paths,
             "message": f"✅ Generated {len(variations)} caricature variations!",
             "download_urls": [f"/download/{Path(p).name}" for p in variation_paths]
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/streamlined-caricature-workflow")
+async def streamlined_caricature_workflow(data: dict):
+    """Streamlined workflow: Photo → face-api.js → WarpGAN → Train Zeroed Model"""
+    try:
+        if not WARPGAN_AVAILABLE:
+            raise HTTPException(status_code=503, detail="WarpGAN integration not available")
+        
+        # Get face analysis data from the request
+        face_analysis = data.get('face_analysis')
+        if not face_analysis:
+            raise HTTPException(status_code=400, detail="Face analysis data required")
+        
+        # Find the latest collected photo
+        collected_dir = Path("collected_faces")
+        if not collected_dir.exists():
+            raise HTTPException(status_code=404, detail="No collected faces found. Please collect faces first.")
+        
+        # Get the most recent photo
+        photo_files = list(collected_dir.glob("face_*.jpg"))
+        if not photo_files:
+            raise HTTPException(status_code=404, detail="No collected photos found")
+        
+        # Sort by modification time to get the latest
+        latest_photo = max(photo_files, key=lambda x: x.stat().st_mtime)
+        
+        # Train zeroed model on this photo-caricature pair
+        success = zeroed_trainer.train_on_single_pair(str(latest_photo), exaggeration_level=1.5)
+        
+        if success:
+            return {
+                "status": "success",
+                "message": "✅ Streamlined workflow completed! Photo → WarpGAN → Zeroed Model trained",
+                "photo_path": str(latest_photo),
+                "training_data_dir": str(zeroed_trainer.training_data_dir),
+                "model_parameters": sum(p.numel() for p in zeroed_trainer.model.parameters())
+            }
+        else:
+            raise HTTPException(status_code=500, detail="Failed to train zeroed model")
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/generate-stylecarigan-training-data")
+async def generate_stylecarigan_training_data(data: dict):
+    """Generate StyleCariGAN training data from collected faces"""
+    try:
+        if not STYLECARIGAN_AVAILABLE:
+            raise HTTPException(status_code=503, detail="StyleCariGAN components not available")
+        
+        # Generate training data using StyleCariGAN
+        from stylecarigan_trainer import StyleCariGANTrainingDataset
+        
+        photos_dir = "./collected_faces"
+        if not Path(photos_dir).exists():
+            raise HTTPException(status_code=404, detail="No collected faces found")
+        
+        # Create StyleCariGAN training dataset
+        dataset = StyleCariGANTrainingDataset(photos_dir)
+        
+        return {
+            "status": "success",
+            "message": f"✅ Generated {len(dataset.training_pairs)} StyleCariGAN training pairs!",
+            "training_pairs": len(dataset.training_pairs),
+            "output_dir": str(dataset.output_dir)
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/train-improved-model")
+async def train_improved_model(data: dict):
+    """Train the improved LoRA model with StyleCariGAN data"""
+    try:
+        if not STYLECARIGAN_AVAILABLE:
+            raise HTTPException(status_code=503, detail="StyleCariGAN components not available")
+        
+        # Initialize improved trainer
+        trainer = ImprovedLoRATrainer()
+        
+        if len(trainer.dataset) == 0:
+            raise HTTPException(status_code=404, detail="No training data available")
+        
+        # Start training (this will run in background)
+        import threading
+        
+        def train_model():
+            trainer.train(num_epochs=10)
+        
+        training_thread = threading.Thread(target=train_model)
+        training_thread.start()
+        
+        return {
+            "status": "success",
+            "message": "🚀 Started improved model training!",
+            "training_pairs": len(trainer.dataset),
+            "model_parameters": sum(p.numel() for p in trainer.model.parameters())
         }
         
     except Exception as e:
@@ -1426,7 +1714,7 @@ async def save_selected_caricature(data: dict):
         training_pair = {
             "photo_path": f"photos/{photo_filename}",
             "caricature_path": f"caricatures/{cartoon_filename}",
-            "style": "cartoon",
+            "style": "caricature",
             "face_id": f"face_{int(time.time())}",
             "created_at": int(time.time())
         }
@@ -1503,9 +1791,9 @@ async def train_model(data: dict):
         photos_dir = training_dir / "photos"
         caricatures_dir = training_dir / "caricatures"
         
-        # Look for training pairs in subdirectories
-        photo_files = list(photos_dir.glob("*.jpg")) if photos_dir.exists() else []
-        caricature_files = list(caricatures_dir.glob("*.jpg")) if caricatures_dir.exists() else []
+        # Look for RECENT training pairs only (ignore old bootstrap data)
+        photo_files = list(photos_dir.glob("face_*.jpg")) if photos_dir.exists() else []  # Only use collected faces
+        caricature_files = list(caricatures_dir.glob("caricature_v*.jpg")) if caricatures_dir.exists() else []  # Only use recent variations
         
         if len(photo_files) == 0 or len(caricature_files) == 0:
             raise HTTPException(
@@ -1537,6 +1825,9 @@ async def train_model(data: dict):
             raise HTTPException(status_code=503, detail="LoRA trainer not available")
         
     except Exception as e:
+        print(f"❌ Training endpoint error: {e}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/model-status")
@@ -1575,7 +1866,7 @@ async def get_latest_face():
         if not face_files:
             raise HTTPException(status_code=404, detail="No face files found")
         
-        # Sort by modification time and get the latest
+        # Always get the most recently downloaded face
         latest_file = max(face_files, key=lambda f: f.stat().st_mtime)
         
         return FileResponse(
@@ -1587,16 +1878,314 @@ async def get_latest_face():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/train-with-references")
+async def train_with_references(data: dict):
+    """Train caricature model using reference images"""
+    try:
+        reference_urls = data.get('reference_urls', [])
+        
+        if not REFERENCE_TRAINING_AVAILABLE:
+            raise HTTPException(status_code=500, detail="Reference training not available")
+        
+        # Create reference trainer
+        trainer = ReferenceTrainer()
+        
+        # Create synthetic reference images
+        reference_images = trainer.create_synthetic_references()
+        
+        # Get content images (collected faces)
+        collected_dir = Path("collected_faces")
+        if not collected_dir.exists():
+            raise HTTPException(status_code=404, detail="No collected faces found")
+        
+        content_images = [str(f) for f in collected_dir.glob("face_*.jpg")][:3]
+        
+        if not content_images:
+            raise HTTPException(status_code=404, detail="No content images found")
+        
+        # Train model
+        trained_model = trainer.train_with_references(content_images, reference_images, epochs=25)
+        
+        # Generate sample caricature
+        if content_images and reference_images:
+            caricature = trainer.generate_caricature_from_reference(content_images[0], reference_images[0])
+            
+            # Save result
+            output_dir = Path("reference_outputs")
+            output_dir.mkdir(exist_ok=True)
+            
+            caricature_path = output_dir / f"reference_caricature_{int(time.time())}.png"
+            caricature.save(caricature_path)
+            
+            print(f"🎯 Reference-based model trained and caricature saved: {caricature_path}")
+            
+            return {
+                "status": "success",
+                "message": "✅ Reference-based model trained successfully!",
+                "caricature_path": str(caricature_path),
+                "reference_images_used": len(reference_images),
+                "content_images_used": len(content_images)
+            }
+        else:
+            return {
+                "status": "success",
+                "message": "✅ Reference-based model trained successfully!",
+                "reference_images_used": len(reference_images),
+                "content_images_used": len(content_images)
+            }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/train-contour-model")
+async def train_contour_model(data: dict):
+    """Train contour-based caricature model using face-api.js landmarks"""
+    try:
+        landmarks = data.get('landmarks', [])
+        exaggeration_level = data.get('exaggeration_level', 1.5)
+        
+        if not landmarks:
+            raise HTTPException(status_code=400, detail="Landmarks required")
+        
+        if not CONTOUR_TRAINING_AVAILABLE:
+            raise HTTPException(status_code=500, detail="Contour training not available")
+        
+        # Create contour trainer
+        trainer = ContourTrainer()
+        
+        # Train on the provided landmarks
+        trained_model = trainer.train_on_contours(landmarks, epochs=15)
+        
+        # Generate sample caricature
+        caricature = trainer.generate_caricature_from_contour(landmarks, exaggeration_level)
+        
+        # Save the caricature
+        output_dir = Path("contour_outputs")
+        output_dir.mkdir(exist_ok=True)
+        
+        caricature_path = output_dir / f"contour_caricature_{int(time.time())}.png"
+        caricature.save(caricature_path)
+        
+        print(f"🎯 Contour-based model trained and caricature saved: {caricature_path}")
+        
+        return {
+            "status": "success",
+            "message": "✅ Contour-based model trained successfully!",
+            "caricature_path": str(caricature_path),
+            "landmarks_used": len(landmarks)
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/record-feedback")
+async def record_feedback(data: dict):
+    """Record user's choice of best caricature variation"""
+    try:
+        photo_path = data.get('photo_path')
+        chosen_variation = data.get('chosen_variation', 0)
+        variation_params = data.get('variation_params', [])
+        
+        if not photo_path:
+            raise HTTPException(status_code=400, detail="Photo path required")
+        
+        # Record the choice
+        feedback_file = Path("training_data/user_feedback.json")
+        feedback_file.parent.mkdir(exist_ok=True)
+        
+        # Load existing feedback
+        if feedback_file.exists():
+            with open(feedback_file, 'r') as f:
+                feedback_data = json.load(f)
+        else:
+            feedback_data = {"choices": [], "preferences": {}}
+        
+        # Add new choice
+        choice = {
+            "photo": photo_path,
+            "chosen_variation": chosen_variation,
+            "variation_params": variation_params,
+            "timestamp": int(time.time())
+        }
+        feedback_data["choices"].append(choice)
+        
+        # Update preferences
+        if variation_params and chosen_variation < len(variation_params):
+            chosen_params = variation_params[chosen_variation]
+            for param, value in chosen_params.items():
+                if param not in feedback_data["preferences"]:
+                    feedback_data["preferences"][param] = []
+                feedback_data["preferences"][param].append(value)
+        
+        # Save feedback
+        with open(feedback_file, 'w') as f:
+            json.dump(feedback_data, f, indent=2)
+        
+        print(f"📝 User chose variation {chosen_variation + 1} for {photo_path}")
+        print(f"🎯 Total choices recorded: {len(feedback_data['choices'])}")
+        
+        return {
+            "status": "success",
+            "message": f"✅ Recorded choice: Variation {chosen_variation + 1}",
+            "total_choices": len(feedback_data["choices"])
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/download/{filename}")
 async def download_file(filename: str):
     """Download generated files"""
+    print(f"🔍 Download request for: {filename}")
     # Check all directories
-    for directory in ["text_generated", "face_generated", "2d_generated"]:
+    for directory in ["text_generated", "face_generated", "2d_generated", "training_data/caricatures", "training_data/photos", "collected_faces"]:
         file_path = Path(directory) / filename
+        print(f"🔍 Checking: {file_path} (exists: {file_path.exists()})")
         if file_path.exists():
+            print(f"✅ Found file: {file_path}")
             return FileResponse(file_path)
     
+    print(f"❌ File not found: {filename}")
     raise HTTPException(status_code=404, detail="File not found")
+
+@app.post("/upload-caricature-example")
+async def upload_caricature_example(
+    original_photo: UploadFile = File(..., description="Original photo"),
+    caricature: UploadFile = File(..., description="Your caricature example")
+):
+    """Upload your own caricature examples to train the model"""
+    try:
+        # Create training examples directory
+        examples_dir = Path("training_data/examples")
+        examples_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Generate unique filenames
+        timestamp = int(time.time())
+        original_filename = f"original_{timestamp}.jpg"
+        caricature_filename = f"caricature_{timestamp}.jpg"
+        
+        # Save original photo
+        original_path = examples_dir / original_filename
+        with open(original_path, "wb") as buffer:
+            content = await original_photo.read()
+            buffer.write(content)
+        
+        # Save caricature example
+        caricature_path = examples_dir / caricature_filename
+        with open(caricature_path, "wb") as buffer:
+            content = await caricature.read()
+            buffer.write(content)
+        
+        # Update training metadata
+        metadata_path = Path("training_data/training_metadata.json")
+        if metadata_path.exists():
+            with open(metadata_path, 'r') as f:
+                metadata = json.load(f)
+        else:
+            metadata = {"training_pairs": []}
+        
+        # Add new training pair
+        new_pair = {
+            "photo_path": f"examples/{original_filename}",
+            "caricature_path": f"examples/{caricature_filename}",
+            "style": "caricature",
+            "face_id": f"example_{timestamp}",
+            "source": "user_upload"
+        }
+        
+        metadata["training_pairs"].append(new_pair)
+        
+        # Save updated metadata
+        with open(metadata_path, 'w') as f:
+            json.dump(metadata, f, indent=2)
+        
+        print(f"🎯 NEW TRAINING EXAMPLE ADDED!")
+        print(f"📸 Original: {original_filename}")
+        print(f"🎨 Caricature: {caricature_filename}")
+        print(f"🎭 Style: {style}")
+        print(f"📝 Description: {description}")
+        print(f"📊 Total training pairs: {len(metadata['training_pairs'])}")
+        print(f"👤 User examples: {sum(1 for p in metadata['training_pairs'] if p.get('source') == 'user_upload')}")
+        
+        return {
+            "success": True,
+            "message": f"✅ Uploaded {style} caricature example!",
+            "original_file": original_filename,
+            "caricature_file": caricature_filename,
+            "training_pairs_total": len(metadata["training_pairs"])
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
+
+@app.get("/training-status")
+async def get_training_status():
+    """Get current training data status"""
+    try:
+        metadata_path = Path("training_data/training_metadata.json")
+        if not metadata_path.exists():
+            return {
+                "training_pairs": 0,
+                "styles": {},
+                "examples": 0
+            }
+        
+        with open(metadata_path, 'r') as f:
+            metadata = json.load(f)
+        
+        training_pairs = metadata.get("training_pairs", [])
+        styles = {}
+        examples = 0
+        
+        for pair in training_pairs:
+            style = pair.get("style", "unknown")
+            styles[style] = styles.get(style, 0) + 1
+            
+            if pair.get("source") == "user_upload":
+                examples += 1
+        
+        return {
+            "training_pairs": len(training_pairs),
+            "styles": styles,
+            "examples": examples,
+            "ready_for_training": len(training_pairs) >= 5
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get training status: {str(e)}")
+
+@app.get("/download/{filename}")
+async def download_file(filename: str):
+    """Download generated files with proper CORS headers"""
+    try:
+        # Check multiple possible locations
+        possible_paths = [
+            Path("text_generated") / filename,
+            Path("face_generated") / filename,
+            Path("2d_generated") / filename,
+            Path("training_data/caricatures") / filename,
+            Path("warpgan_training_data") / filename,
+        ]
+        
+        for path in possible_paths:
+            if path.exists():
+                print(f"✅ Found file: {path}")
+                return FileResponse(
+                    str(path),
+                    media_type="image/jpeg",
+                    filename=filename,
+                    headers={
+                        "Access-Control-Allow-Origin": "*",
+                        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+                        "Access-Control-Allow-Headers": "Content-Type",
+                        "Cross-Origin-Resource-Policy": "cross-origin"
+                    }
+                )
+        
+        raise HTTPException(status_code=404, detail=f"File {filename} not found")
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     print("🚀 Starting Face-API.js + Point-E 3D Generation Server...")

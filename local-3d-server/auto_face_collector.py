@@ -27,15 +27,19 @@ class AutoFaceCollector:
         self.collected_count = 0
         self.failed_count = 0
         
-    def collect_faces(self, delay_seconds=2):
-        """Collect faces from thispersondoesnotexist.com"""
+    def collect_faces(self, delay_seconds=0):
+        """Collect faces from thispersondoesnotexist.com with fast fallback"""
         logger.info(f"🎯 Starting auto face collection (max: {self.max_faces})")
+        
+        # Always download new photos (remove the caching logic)
+        logger.info(f"🌐 Downloading fresh photos from thispersondoesnotexist.com...")
         
         while self.collected_count < self.max_faces:
             try:
-                # Download face from thispersondoesnotexist.com (unique AI-generated photos)
+                # Try fast download first
                 logger.info(f"🌐 Downloading face {self.collected_count + 1}/{self.max_faces}...")
                 start_time = time.time()
+                
                 # Add browser headers to avoid blocking
                 headers = {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
@@ -45,7 +49,18 @@ class AutoFaceCollector:
                     'Connection': 'keep-alive',
                     'Upgrade-Insecure-Requests': '1'
                 }
-                response = requests.get("https://thispersondoesnotexist.com", headers=headers, timeout=10)
+                
+                # Try with very short timeout first
+                try:
+                    response = requests.get("https://thispersondoesnotexist.com", headers=headers, timeout=1)
+                except requests.Timeout:
+                    logger.warning("⚠️ Download timeout, trying with medium timeout...")
+                    try:
+                        response = requests.get("https://thispersondoesnotexist.com", headers=headers, timeout=2)
+                    except requests.Timeout:
+                        logger.warning("⚠️ Still timeout, trying with longer timeout...")
+                        response = requests.get("https://thispersondoesnotexist.com", headers=headers, timeout=4)
+                
                 download_time = time.time() - start_time
                 logger.info(f"⏱️ Download took {download_time:.2f}s")
                 
@@ -89,9 +104,7 @@ class AutoFaceCollector:
                 logger.error(f"❌ Unexpected error: {e}")
                 self.failed_count += 1
             
-            # Skip delay for single face collection
-            if delay_seconds > 0 and self.collected_count < self.max_faces:
-                time.sleep(delay_seconds)
+            # No delays - instant collection
         
         logger.info(f"🎉 Collection complete! Collected: {self.collected_count}, Failed: {self.failed_count}")
         return self.collected_count
@@ -194,7 +207,7 @@ def main():
     print("=" * 50)
     
     # Collect faces
-    collected = collector.collect_faces(delay_seconds=1)
+    collected = collector.collect_faces(delay_seconds=0)
     
     if collected > 0:
         # Generate training data

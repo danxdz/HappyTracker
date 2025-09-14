@@ -70,7 +70,7 @@ class SimpleCaricatureDataset(Dataset):
             return {
                 'photo': dummy,
                 'caricature': dummy,
-                'style': 'cartoon',
+                'style': 'caricature',
                 'face_id': 'dummy'
             }
 
@@ -88,58 +88,57 @@ class SimpleLoRALayer(nn.Module):
         
     def forward(self, x):
         # LoRA: x @ A.T @ B.T * scaling
-        # Correct LoRA formula: x @ (B @ A).T * scaling
-        return F.linear(x, (self.lora_B @ self.lora_A).T) * self.scaling
+        # Simplified to avoid device issues
+        lora_weight = self.lora_B @ self.lora_A
+        return torch.matmul(x, lora_weight.T) * self.scaling
 
 class SimpleCaricatureModel(nn.Module):
-    """Simple caricature generation model"""
+    """Improved caricature generation model with style-specific processing"""
     
     def __init__(self, image_size: int = 512):
         super().__init__()
         self.image_size = image_size
         
-        # Simple encoder-decoder architecture
+        # Encoder
         self.encoder = nn.Sequential(
             nn.Conv2d(3, 64, 3, padding=1),
             nn.ReLU(),
             nn.Conv2d(64, 128, 3, padding=1),
             nn.ReLU(),
-            nn.MaxPool2d(2),
             nn.Conv2d(128, 256, 3, padding=1),
             nn.ReLU(),
-            nn.MaxPool2d(2),
         )
         
-        # LoRA layers for style adaptation
-        self.lora_layers = nn.ModuleDict({
-            'cartoon': SimpleLoRALayer(256, 256),
-            'chibi': SimpleLoRALayer(256, 256),
-            'anime': SimpleLoRALayer(256, 256),
-        })
+        # Single style processing
+        self.style_layers = nn.Sequential(
+            nn.Conv2d(256, 128, 3, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(128, 64, 3, padding=1),
+            nn.ReLU(),
+        )
         
+        # Decoder
         self.decoder = nn.Sequential(
-            nn.ConvTranspose2d(256, 128, 3, stride=2, padding=1, output_padding=1),
+            nn.Conv2d(64, 32, 3, padding=1),
             nn.ReLU(),
-            nn.ConvTranspose2d(128, 64, 3, stride=2, padding=1, output_padding=1),
-            nn.ReLU(),
-            nn.Conv2d(64, 3, 3, padding=1),
+            nn.Conv2d(32, 3, 3, padding=1),
             nn.Sigmoid()
         )
         
-    def forward(self, x, style='cartoon'):
+    def forward(self, x, style='caricature'):
         # Encode
         encoded = self.encoder(x)
         
-        # Apply LoRA for style
-        if style in self.lora_layers:
-            # Reshape for LoRA
-            b, c, h, w = encoded.shape
-            encoded_flat = encoded.view(b, c, -1).permute(0, 2, 1)  # (b, h*w, c)
-            lora_out = self.lora_layers[style](encoded_flat)
-            encoded = lora_out.permute(0, 2, 1).view(b, c, h, w)
+        # Apply style processing
+        styled = self.style_layers(encoded)
         
         # Decode
-        output = self.decoder(encoded)
+        output = self.decoder(styled)
+        
+        # Add caricature-like effects
+        # Increase contrast and saturation for caricature effect
+        output = torch.clamp(output * 1.2, 0, 1)
+        
         return output
 
 class SimpleLoRATrainer:
@@ -153,50 +152,104 @@ class SimpleLoRATrainer:
         # Initialize model
         self.model = SimpleCaricatureModel().to(self.device)
         
-        # Initialize dataset
+        # Try to load the best checkpoint
+        self._load_best_checkpoint()
+        
+        # Initialize dataset with verbose logging
+        logger.info(f"📁 Loading training data from: {training_data_dir}")
         self.dataset = SimpleCaricatureDataset(training_data_dir)
+        
+        # Log dataset details
+        logger.info(f"📊 Dataset loaded: {len(self.dataset)} training pairs")
+        
+        # Check for user-uploaded examples
+        user_examples = 0
+        for pair in self.dataset.training_pairs:
+            if pair.get('source') == 'user_upload':
+                user_examples += 1
+                logger.info(f"👤 User example: {pair['photo_path']} -> {pair['caricature_path']} ({pair['style']})")
+        
+        logger.info(f"🎯 User-uploaded examples: {user_examples}/{len(self.dataset.training_pairs)}")
+        
         self.dataloader = DataLoader(self.dataset, batch_size=2, shuffle=True)
         
-        # Optimizer (only train LoRA parameters)
-        lora_params = []
-        for lora_layer in self.model.lora_layers.values():
-            lora_params.extend([lora_layer.lora_A, lora_layer.lora_B])
-        
-        self.optimizer = torch.optim.AdamW(lora_params, lr=1e-4)
+        # Optimizer for all model parameters
+        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=1e-4)
         self.criterion = nn.MSELoss()
         
-        logger.info(f"✅ Model initialized with {sum(p.numel() for p in lora_params)} LoRA parameters")
+        logger.info(f"✅ Model initialized with {sum(p.numel() for p in self.model.parameters())} parameters")
+    
+    def _load_best_checkpoint(self):
+        """Load the best available checkpoint"""
+        checkpoint_dir = Path(self.training_data_dir) / "checkpoints"
+        
+        # Try to load final model first
+        final_model_path = checkpoint_dir / "final_model.pth"
+        if final_model_path.exists():
+            try:
+                checkpoint = torch.load(final_model_path, map_location=self.device)
+                self.model.load_state_dict(checkpoint['model_state_dict'])
+                logger.info(f"✅ Loaded final model checkpoint")
+                return
+            except Exception as e:
+                logger.warning(f"⚠️ Failed to load final model: {e}")
+        
+        # Try to load latest checkpoint
+        checkpoint_files = list(checkpoint_dir.glob("checkpoint_epoch_*.pth"))
+        if checkpoint_files:
+            latest_checkpoint = max(checkpoint_files, key=lambda x: int(x.stem.split('_')[-1]))
+            try:
+                checkpoint = torch.load(latest_checkpoint, map_location=self.device)
+                self.model.load_state_dict(checkpoint['model_state_dict'])
+                logger.info(f"✅ Loaded checkpoint: {latest_checkpoint.name}")
+                return
+            except Exception as e:
+                logger.warning(f"⚠️ Failed to load checkpoint {latest_checkpoint.name}: {e}")
+        
+        logger.info("ℹ️ No valid checkpoints found, using untrained model")
     
     def train_epoch(self, epoch: int):
-        """Train for one epoch"""
+        """Train for one epoch with verbose logging"""
         self.model.train()
         total_loss = 0
+        
+        logger.info(f"🚀 Starting epoch {epoch} with {len(self.dataloader)} batches")
         
         for batch_idx, batch in enumerate(self.dataloader):
             photos = batch['photo'].to(self.device)
             caricatures = batch['caricature'].to(self.device)
             styles = batch['style']
             
+            logger.info(f"📦 Batch {batch_idx}: Processing {len(styles)} images with styles: {styles}")
+            
             self.optimizer.zero_grad()
             
             # Forward pass for each style in batch
             total_batch_loss = 0
             for i, style in enumerate(styles):
+                logger.info(f"🎨 Processing image {i+1}/{len(styles)} with style: {style}")
+                
                 output = self.model(photos[i:i+1], style)
                 loss = self.criterion(output, caricatures[i:i+1])
                 total_batch_loss += loss
+                
+                logger.info(f"📊 Image {i+1} loss: {loss.item():.4f}")
             
             # Backward pass
+            logger.info(f"⬅️ Backward pass for batch {batch_idx}")
             total_batch_loss.backward()
             self.optimizer.step()
             
             total_loss += total_batch_loss.item()
             
-            if batch_idx % 10 == 0:
-                logger.info(f"Epoch {epoch}, Batch {batch_idx}, Loss: {total_batch_loss.item():.4f}")
+            logger.info(f"✅ Batch {batch_idx} completed. Batch loss: {total_batch_loss.item():.4f}")
+            
+            if batch_idx % 5 == 0:  # More frequent logging
+                logger.info(f"📈 Epoch {epoch}, Batch {batch_idx}, Loss: {total_batch_loss.item():.4f}")
         
         avg_loss = total_loss / len(self.dataloader)
-        logger.info(f"📊 Epoch {epoch} completed. Average loss: {avg_loss:.4f}")
+        logger.info(f"🎯 Epoch {epoch} completed! Average loss: {avg_loss:.4f}")
+        logger.info(f"📊 Total batches processed: {len(self.dataloader)}")
         return avg_loss
     
     def train(self, num_epochs: int = 5):
@@ -222,18 +275,11 @@ class SimpleLoRATrainer:
         filename = "final_model.pth" if final else f"checkpoint_epoch_{epoch}.pth"
         checkpoint_path = checkpoint_dir / filename
         
-        # Save only LoRA parameters
-        lora_state = {}
-        for style, lora_layer in self.model.lora_layers.items():
-            lora_state[style] = {
-                'lora_A': lora_layer.lora_A.cpu(),
-                'lora_B': lora_layer.lora_B.cpu(),
-            }
-        
+        # Save model state
         torch.save({
             'epoch': epoch,
             'loss': loss,
-            'lora_state': lora_state,
+            'model_state_dict': self.model.state_dict(),
             'model_config': {
                 'image_size': self.model.image_size,
             }
@@ -241,23 +287,168 @@ class SimpleLoRATrainer:
         
         logger.info(f"💾 Saved checkpoint: {checkpoint_path}")
     
-    def generate_caricature(self, photo_path: str, style: str = "cartoon") -> Image.Image:
-        """Generate caricature from photo"""
-        self.model.eval()
-        
-        # Load and preprocess photo
-        photo = Image.open(photo_path).convert('RGB').resize((512, 512))
-        photo_tensor = torch.from_numpy(np.array(photo)).float() / 255.0
-        photo_tensor = photo_tensor.permute(2, 0, 1).unsqueeze(0).to(self.device)
-        
-        with torch.no_grad():
-            output = self.model(photo_tensor, style)
-            output = output.squeeze(0).permute(1, 2, 0).cpu().numpy()
-            output = (output * 255).astype(np.uint8)
-        
-        return Image.fromarray(output)
+    def generate_caricature(self, photo_path: str, style: str = "caricature") -> Image.Image:
+        """Generate caricature from photo with fallback to image processing"""
+        try:
+            self.model.eval()
+            
+            # Load and preprocess photo
+            photo = Image.open(photo_path).convert('RGB').resize((512, 512))
+            photo_tensor = torch.from_numpy(np.array(photo)).float() / 255.0
+            photo_tensor = photo_tensor.permute(2, 0, 1).unsqueeze(0).to(self.device)
+            
+            with torch.no_grad():
+                output = self.model(photo_tensor, style)
+                output = output.squeeze(0).permute(1, 2, 0).cpu().numpy()
+                output = (output * 255).astype(np.uint8)
+            
+            # Check if output is too gray/random (model not trained)
+            if self._is_gray_image(output):
+                logger.info(f"⚠️ Model output too gray, using image processing fallback for {style}")
+                return self._apply_image_processing_caricature(photo, style)
+            
+            return Image.fromarray(output)
+        except Exception as e:
+            logger.error(f"❌ Model generation failed: {e}, using fallback")
+            photo = Image.open(photo_path).convert('RGB').resize((512, 512))
+            return self._apply_image_processing_caricature(photo, style)
     
-    def generate_caricature_variations(self, photo_path: str, style: str = "cartoon", num_variations: int = 3) -> list:
+    def _is_gray_image(self, image_array: np.ndarray) -> bool:
+        """Check if image is mostly gray/uniform"""
+        # Calculate variance of each color channel
+        r_var = np.var(image_array[:, :, 0])
+        g_var = np.var(image_array[:, :, 1])
+        b_var = np.var(image_array[:, :, 2])
+        
+        total_variance = r_var + g_var + b_var
+        is_gray = total_variance < 100
+        
+        logger.info(f"🔍 Image analysis: R_var={r_var:.1f}, G_var={g_var:.1f}, B_var={b_var:.1f}, Total={total_variance:.1f}")
+        logger.info(f"🎨 Is gray image: {is_gray} (threshold: 100)")
+        
+        return is_gray
+    
+    def _apply_image_processing_caricature(self, photo: Image.Image, style: str) -> Image.Image:
+        """Apply image processing filters to create caricature-like effects"""
+        import numpy as np
+        from PIL import ImageEnhance, ImageFilter, ImageOps
+        
+        logger.info(f"🎨 Applying enhanced image processing caricature for style: {style}")
+        
+        # Convert to numpy for processing
+        img_array = np.array(photo)
+        h, w = img_array.shape[:2]
+        logger.info(f"📊 Input image shape: {img_array.shape}, dtype: {img_array.dtype}")
+        
+        # Enhanced caricature effects
+        enhanced = photo.copy()
+        
+        # Convert to numpy for advanced processing
+        img_array = img_array.astype(np.float32)
+        
+        # 1. FACE FEATURE EXAGGERATION
+        try:
+            # Detect face center
+            center_x, center_y = w // 2, h // 2
+            
+            # Create distance map from center
+            y, x = np.ogrid[:h, :w]
+            distance = np.sqrt((x - center_x)**2 + (y - center_y)**2)
+            max_distance = np.sqrt(center_x**2 + center_y**2)
+            
+            # Feature exaggeration map
+            feature_map = 1.0 + (1.0 - distance / max_distance) * 0.3
+            
+            # Apply feature exaggeration to different regions
+            # Eyes area (upper third) - enhance brightness
+            eye_mask = (y < h * 0.4) & (distance < max_distance * 0.6)
+            img_array[eye_mask] *= feature_map[eye_mask] * 1.3
+            
+            # Nose area (middle) - enhance contrast
+            nose_mask = (y > h * 0.3) & (y < h * 0.6) & (distance < max_distance * 0.4)
+            img_array[nose_mask] *= feature_map[nose_mask] * 1.4
+            
+            # Mouth area (lower third) - enhance saturation
+            mouth_mask = (y > h * 0.6) & (distance < max_distance * 0.5)
+            img_array[mouth_mask] *= feature_map[mouth_mask] * 1.2
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Feature exaggeration failed: {e}")
+        
+        # 2. COLOR ENHANCEMENT
+        # Boost saturation with caricature-style colors
+        img_array[:, :, 0] = np.clip(img_array[:, :, 0] * 1.4, 0, 255)  # Red
+        img_array[:, :, 1] = np.clip(img_array[:, :, 1] * 1.3, 0, 255)  # Green  
+        img_array[:, :, 2] = np.clip(img_array[:, :, 2] * 1.5, 0, 255)  # Blue
+        
+        # 3. CONTRAST AND SHARPNESS
+        # Apply adaptive contrast
+        mean_intensity = np.mean(img_array)
+        contrast_factor = 1.8
+        img_array = (img_array - mean_intensity) * contrast_factor + mean_intensity
+        img_array = np.clip(img_array, 0, 255)
+        
+        # Convert back to PIL
+        enhanced = Image.fromarray(img_array.astype(np.uint8))
+        
+        # 4. SHAPE EXAGGERATION (simplified)
+        try:
+            enhanced = self._apply_simple_shape_exaggeration(enhanced)
+        except Exception as e:
+            logger.warning(f"⚠️ Shape exaggeration failed: {e}")
+        
+        # 5. CARTOON STYLE EFFECTS
+        # Edge enhancement for cartoon look
+        enhanced = enhanced.filter(ImageFilter.EDGE_ENHANCE_MORE)
+        
+        # Posterization for cartoon effect
+        enhanced = ImageOps.posterize(enhanced, 5)
+        
+        # Final color boost
+        enhanced = ImageEnhance.Color(enhanced).enhance(1.3)
+        enhanced = ImageEnhance.Contrast(enhanced).enhance(1.4)
+        enhanced = ImageEnhance.Sharpness(enhanced).enhance(1.8)
+        
+        logger.info(f"✅ Enhanced image processing caricature completed")
+        return enhanced
+    
+    def _apply_simple_shape_exaggeration(self, image: Image.Image) -> Image.Image:
+        """Apply simple shape exaggeration effects"""
+        try:
+            import cv2
+            # Convert to numpy for processing
+            img_array = np.array(image)
+            h, w = img_array.shape[:2]
+            
+            # Create exaggeration map
+            y, x = np.ogrid[:h, :w]
+            center_x, center_y = w // 2, h // 2
+            
+            # Distance from center
+            distance = np.sqrt((x - center_x)**2 + (y - center_y)**2)
+            max_distance = np.sqrt(center_x**2 + center_y**2)
+            
+            # Exaggeration factor (stronger at edges)
+            exaggeration_factor = 1.0 + (distance / max_distance) * 0.2
+            
+            # Apply warping
+            new_x = center_x + (x - center_x) * exaggeration_factor
+            new_y = center_y + (y - center_y) * exaggeration_factor
+            
+            # Create meshgrid for remapping
+            map_x = new_x.astype(np.float32)
+            map_y = new_y.astype(np.float32)
+            
+            # Apply remapping
+            exaggerated = cv2.remap(img_array, map_x, map_y, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+            
+            return Image.fromarray(exaggerated)
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Simple shape exaggeration failed: {e}")
+            return image
+    
+    def generate_caricature_variations(self, photo_path: str, style: str = "caricature", num_variations: int = 3) -> list:
         """Generate multiple caricature variations from a single photo"""
         variations = []
         

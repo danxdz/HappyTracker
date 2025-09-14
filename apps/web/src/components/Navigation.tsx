@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Home, Palette, Image, Gamepad2 } from 'lucide-react'
+import { Home, Palette, Image, Gamepad2, Box } from 'lucide-react'
 
 export const Navigation: React.FC = () => {
   const location = useLocation()
@@ -9,6 +9,7 @@ export const Navigation: React.FC = () => {
   const navItems = [
     { path: '/', label: 'Home', icon: Home },
     { path: '/dynamic-character', label: 'Create Character', icon: Palette },
+    { path: '/local-3d', label: 'Local 3D', icon: Box },
     { path: '/character-gallery', label: 'Gallery', icon: Image },
   ]
   

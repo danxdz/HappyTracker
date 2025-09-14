@@ -7,17 +7,17 @@ echo ================================================
 
 echo 🔪 Cleaning up existing processes...
 taskkill /F /IM python.exe >nul 2>&1
-timeout /t 2 /nobreak >nul
+REM timeout /t 2 /nobreak >nul
 
 echo 🌐 Starting UI Server...
 start "Face Cartoon UI" cmd /k "venv\Scripts\python.exe ui_server.py"
 
-timeout /t 3 /nobreak >nul
+REM timeout /t 3 /nobreak >nul
 
 echo 🔧 Starting API Server...
 start "Face Analysis API" cmd /k "venv\Scripts\python.exe face_3d_server.py"
 
-timeout /t 3 /nobreak >nul
+REM timeout /t 3 /nobreak >nul
 
 echo ✅ Both servers started!
 echo ================================================
