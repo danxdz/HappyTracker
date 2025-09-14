@@ -1,0 +1,128 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Generated Files
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.tiff
+*.webp
+*.ply
+*.obj
+*.pth
+*.pt
+*.ckpt
+*.safetensors
+
+# Cache Directories
+.cache/
+point_e_model_cache/
+face-api-weights/
+
+# Generated Directories
+collected_faces/
+training_data/
+face_generated/
+2d_generated/
+outputs/
+lightweight_caricature_output/
+simple_generated/
+validation_gallery/
+face-cartoon-system/
+carousel validation/
+
+# Test Files
+test_*.jpg
+test_*.py
+*_test.py
+*_test_*.jpg
+bootstrap_test_*.jpg
+text_test_*.jpg
+text_variation_*.jpg
+
+# Backup Files
+*_backup.*
+*_backup_*
+
+# Temporary Files
+*.tmp
+*.temp
+*.log
+
+# Server Files (keep only main ones)
+server.py
+simple_*.py
+unified_*.py
+working_*.py
+integrated_*.py
+interactive_*.py
+quick_*.py
+start_*.py
+stop_*.py
+ui_server.py
+serve_demo.py
+smart_*.py
+web_interface.py
+try_*.py
+fix_*.py
+minimal_*.py
+run_and_test.py
+simple_*.html
+face_3d_demo*.html
+
+# Keep only essential files
+!face_3d_server.py
+!face_cartoon_ui.html
+!simple_lora_trainer.py
+!procedural_training_generator.py
+!auto_face_collector.py
+!README.md
+!requirements.txt
+!setup.py
+!run.bat
+!run.sh

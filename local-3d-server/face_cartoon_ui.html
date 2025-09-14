@@ -1,0 +1,2801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎭 Face Cartoon Generator</title>
+    
+    <!-- Face-api.js (local copy) -->
+    <script src="face-api.min.js"></script>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-size: 2.5rem;
+        }
+        
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .upload-area {
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-area:hover {
+            border-color: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .upload-area.dragover {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.2);
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+        
+        button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .preview {
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .preview img {
+            max-width: 300px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        
+        .analysis {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .result {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+        
+        .download-links {
+            margin: 15px 0;
+        }
+        
+        .download-links a {
+            color: #4CAF50;
+            text-decoration: none;
+            margin: 0 10px;
+            padding: 8px 16px;
+            border: 1px solid #4CAF50;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .download-links a:hover {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .error {
+            color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .success {
+            color: #4CAF50;
+            background: rgba(76, 175, 80, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎭 Face Cartoon Training System</h1>
+        
+        <div class="section">
+            <div style="text-align: center; margin: 30px 0;">
+                <button onclick="collectOneFace()" style="background: #e74c3c; padding: 15px 30px; font-size: 18px; margin: 10px;">📸 Get 1 Photo</button>
+                <button onclick="document.getElementById('fileInput').click()" style="background: #3498db; padding: 15px 30px; font-size: 18px; margin: 10px;">📷 Upload Photo</button>
+            </div>
+            
+            <!-- Simplified Workflow -->
+            <div style="margin-top: 30px; padding: 20px; background: rgba(0,0,0,0.1); border-radius: 10px;">
+                <h3>🎯 Simplified Workflow</h3>
+                <p style="color: #ccc; margin: 10px 0;">Get photo → Auto-analyze → Generate 3 caricatures → Choose best → Auto-train</p>
+                
+                <!-- Single Action Button -->
+                <div style="margin: 15px 0; padding: 15px; background: rgba(0,0,0,0.1); border-radius: 8px; text-align: center;">
+                    <button onclick="startCompleteWorkflow()" style="background: #e74c3c; padding: 15px 30px; font-size: 16px;" id="workflowBtn">🚀 Start Complete Workflow</button>
+                    <div id="workflowStatus" style="margin-top: 10px; color: #ccc;">Ready to start</div>
+                </div>
+                
+                <!-- Manual Caricature Generation (appears after face analysis) -->
+                <div id="caricatureGenerationSection" style="margin: 15px 0; padding: 15px; background: rgba(0,0,0,0.1); border-radius: 8px; text-align: center; display: none;">
+                    <h4>🎭 Generate Caricatures</h4>
+                    <button onclick="generateCaricatureFromAnalysis()" style="background: #f39c12; padding: 15px 30px; font-size: 16px;" id="caricatureBtn">🎨 Generate 3 Variations</button>
+                    <div id="caricatureStatus" style="margin-top: 10px; color: #ccc;">Ready to generate caricatures</div>
+                </div>
+                
+                
+                <!-- Workflow Output -->
+                <div id="workflowOutput" style="margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; font-family: monospace; font-size: 12px; min-height: 100px; overflow-y: auto;"></div>
+            </div>
+            
+            <!-- Hidden file input for upload button -->
+            <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                
+                
+                <div class="preview" id="preview">
+                    <!-- Image preview will appear here -->
+                </div>
+                
+            </div>
+            
+            <!-- Face Analysis Results -->
+            <div class="section" id="faceAnalysisSection" style="display: none;">
+                <h2>🔍 Face Analysis Results</h2>
+                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 300px;">
+                        <h3>📷 Face Detection Preview</h3>
+                        <div style="display: flex; gap: 10px;">
+                            <div style="flex: 1;">
+                                <h4 style="color: #4CAF50; margin: 5px 0;">Face Detection</h4>
+                                <canvas id="faceCanvas" style="max-width: 100%; border: 2px solid rgba(255,255,255,0.3); border-radius: 10px;"></canvas>
+                            </div>
+                            <div style="flex: 1;">
+                                <h4 style="color: #FF6B6B; margin: 5px 0;">Facial Landmarks</h4>
+                                <canvas id="landmarkCanvas" style="max-width: 100%; border: 2px solid rgba(255,0,0,0.5); border-radius: 10px; background: rgba(0,0,0,0.05);"></canvas>
+                            </div>
+                        </div>
+                        <div style="margin-top: 10px; font-size: 12px; color: #ccc;">
+                            <span style="color: #4CAF50;">■</span> Face Detection | 
+                            <span style="color: #FF6B6B;">■</span> Facial Landmarks
+                        </div>
+                        
+                        <!-- Caricature Variations -->
+                        <div id="caricatureVariationsSection" style="margin-top: 20px; display: none;">
+                            <h4 style="color: #f39c12; margin: 10px 0;">🎭 Caricature Variations</h4>
+                            <div id="caricatureVariations" style="display: flex; gap: 15px; flex-wrap: wrap; margin: 10px 0;">
+                                <!-- Variations will appear here -->
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <button onclick="saveSelectedCaricature()" style="background: #27ae60; padding: 10px 20px;" id="saveBtn" disabled>✅ Save Selected for Training</button>
+                                <span id="caricatureSelectionStatus" style="margin-left: 15px; color: #ccc;">Click a caricature to select</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="flex: 1; min-width: 300px;">
+                        <h3>📊 Face Details</h3>
+                        <div id="faceDetails" style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px;">
+                            <!-- Enhanced face analysis details will appear here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>🔍 Processing...</p>
+            </div>
+            
+            <div id="analysis" class="analysis" style="display: none;">
+                <!-- Face analysis results will appear here -->
+            </div>
+            
+            <div id="result" class="result" style="display: none;">
+                <!-- Results will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8002';
+        
+        // Face-api.js models loaded flag
+        let modelsLoaded = false;
+        
+        // Auto collection functions
+        async function collectOneFace() {
+            console.log('📸 Getting 1 photo...');
+            
+            try {
+                const response = await fetch(`${API_BASE}/collect-faces`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        num_faces: 1,
+                        delay_seconds: 1
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    console.log(`✅ Got 1 photo successfully!`);
+                    await loadLatestCollectedPhoto();
+                } else {
+                    console.log(`❌ Collection failed: ${data.detail}`);
+                }
+                
+            } catch (error) {
+                console.log(`❌ Error collecting photo: ${error.message}`);
+            }
+        }
+        
+        async function collectFaces(numFaces) {
+            showTrainingOutput(`📸 Collecting ${numFaces} diverse faces...`);
+            
+            try {
+                const response = await fetch(`${API_BASE}/collect-faces`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        num_faces: numFaces,
+                        delay_seconds: 1
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showTrainingOutput(`✅ Collected ${data.collected} faces successfully!`);
+                    showTrainingOutput(`📁 Faces saved to: collected_faces/`);
+                } else {
+                    showTrainingOutput(`❌ Collection failed: ${data.detail}`);
+                }
+                
+            } catch (error) {
+                showTrainingOutput(`❌ Error collecting photos: ${error.message}`);
+            }
+        }
+        
+        async function generateTrainingData() {
+            showTrainingOutput(`🎨 Generating training data from collected faces...`);
+            
+            try {
+                const response = await fetch(`${API_BASE}/generate-training-data`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showTrainingOutput(`✅ Generated ${data.generated} training images!`);
+                    showTrainingOutput(`📁 Training data saved to: training_data/`);
+                } else {
+                    showTrainingOutput(`❌ Generation failed: ${data.detail}`);
+                }
+                
+            } catch (error) {
+                showTrainingOutput(`❌ Error generating training data: ${error.message}`);
+            }
+        }
+        
+        async function getTrainingStats() {
+            try {
+                const response = await fetch(`${API_BASE}/training-stats`);
+                const data = await response.json();
+                
+                showTrainingOutput(`📊 Training Data Statistics:`);
+                showTrainingOutput(`   📸 Collected faces: ${data.collected_faces}`);
+                showTrainingOutput(`   🎨 Training images: ${data.training_images}`);
+                showTrainingOutput(`   ✅ Ready for training: ${data.ready_for_training ? 'Yes' : 'No'}`);
+                showTrainingOutput(`   🎯 Training data ready: ${data.training_data_ready ? 'Yes' : 'No'}`);
+                
+            } catch (error) {
+                showTrainingOutput(`❌ Error getting stats: ${error.message}`);
+            }
+        }
+        
+        async function trainModel() {
+            showTrainingOutput(`🚀 Starting LoRA model training...`);
+            showTrainingOutput(`⏳ This may take several minutes...`);
+            
+            try {
+                const response = await fetch(`${API_BASE}/train-model`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        epochs: 5,
+                        learning_rate: 1e-4
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showTrainingOutput(`✅ Model training completed!`);
+                    showTrainingOutput(`📁 Model saved as: ${data.result}`);
+                    showTrainingOutput(`🎯 Training files used: ${data.training_files}`);
+                } else {
+                    showTrainingOutput(`❌ Training failed: ${data.detail}`);
+                }
+                
+            } catch (error) {
+                showTrainingOutput(`❌ Error training model: ${error.message}`);
+            }
+        }
+        
+        async function getModelStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/model-status`);
+                const data = await response.json();
+                
+                showTrainingOutput(`🔍 Model Status:`);
+                showTrainingOutput(`   📁 Checkpoints: ${data.checkpoints}`);
+                showTrainingOutput(`   🎨 Training data: ${data.training_data}`);
+                showTrainingOutput(`   ✅ Model ready: ${data.model_ready ? 'Yes' : 'No'}`);
+                
+                if (data.checkpoint_files.length > 0) {
+                    showTrainingOutput(`   📄 Checkpoint files:`);
+                    data.checkpoint_files.forEach(file => {
+                        showTrainingOutput(`      - ${file}`);
+                    });
+                }
+                
+            } catch (error) {
+                showTrainingOutput(`❌ Error getting model status: ${error.message}`);
+            }
+        }
+        
+        // Complete Workflow Function
+        async function startCompleteWorkflow() {
+            showWorkflowOutput('🚀 Starting complete workflow...');
+            updateWorkflowStatus('⏳ Getting photo...', '#e74c3c');
+            
+            try {
+                // Step 1: Get photo
+                showWorkflowOutput('📸 Step 1: Getting photo...');
+                await collectOneFace();
+                
+                // Step 2: Auto-analyze
+                showWorkflowOutput('🔍 Step 2: Auto-analyzing face...');
+                updateWorkflowStatus('⏳ Analyzing...', '#3498db');
+                
+                // Wait for face analysis to complete and store the result
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Check if we have face analysis data
+                if (!window.currentFaceAnalysis) {
+                    showWorkflowOutput('❌ No face analysis data available. Please analyze face first.');
+                    updateWorkflowStatus('❌ Analysis failed', '#e74c3c');
+                    return;
+                }
+                
+                // Step 3: Generate caricatures
+                showWorkflowOutput('🎭 Step 3: Generating 3 caricature variations...');
+                updateWorkflowStatus('⏳ Generating caricatures...', '#f39c12');
+                await generateCaricatureFromAnalysis();
+                
+                updateWorkflowStatus('✅ Ready to select caricature', '#27ae60');
+                showWorkflowOutput('👀 Choose the best caricature below, then click "Save Selected for Training"');
+                
+            } catch (error) {
+                updateWorkflowStatus('❌ Workflow failed', '#e74c3c');
+                showWorkflowOutput(`❌ Workflow failed: ${error.message}`);
+            }
+        }
+        
+        function updateWorkflowStatus(message, color) {
+            const statusDiv = document.getElementById('workflowStatus');
+            if (statusDiv) {
+                statusDiv.textContent = message;
+                statusDiv.style.color = color;
+            }
+        }
+        
+        // Step 3: Generate 3 Caricature Variations from Analysis
+        async function generateCaricatureFromAnalysis() {
+            showWorkflowOutput('🎭 Step 3: Generating 3 caricature variations...');
+            
+            // Update caricature status
+            const caricatureStatus = document.getElementById('caricatureStatus');
+            if (caricatureStatus) {
+                caricatureStatus.textContent = '⏳ Generating caricatures...';
+                caricatureStatus.style.color = '#f39c12';
+            }
+            
+            try {
+                // Check if we have face analysis
+                if (!window.currentFaceAnalysis) {
+                    throw new Error('No face analysis data available');
+                }
+                
+                // Send face analysis to generate 3 variations
+                const response = await fetch(`${API_BASE}/generate-caricature-variations`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        face_analysis: window.currentFaceAnalysis
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    
+                    // Show the variations for selection
+                    showCaricatureVariations(data.download_urls);
+                    
+                    // Store variations for later selection
+                    window.currentVariations = data.variation_paths;
+                    window.currentDownloadUrls = data.download_urls;
+                    
+                    let details = `✅ Generated ${data.variations} caricature variations!\n`;
+                    details += `👀 Choose the best one below, then click "Save Selected for Training"`;
+                    showWorkflowOutput(details);
+                    
+                    // Update caricature status
+                    const caricatureStatus = document.getElementById('caricatureStatus');
+                    if (caricatureStatus) {
+                        caricatureStatus.textContent = '✅ Caricatures generated! Choose your favorite below.';
+                        caricatureStatus.style.color = '#27ae60';
+                    }
+                } else {
+                    throw new Error(data.detail || 'Caricature generation failed');
+                }
+                
+            } catch (error) {
+                showWorkflowOutput(`❌ Caricature generation failed: ${error.message}`);
+                
+                // Update caricature status
+                const caricatureStatus = document.getElementById('caricatureStatus');
+                if (caricatureStatus) {
+                    caricatureStatus.textContent = `❌ Generation failed: ${error.message}`;
+                    caricatureStatus.style.color = '#e74c3c';
+                }
+            }
+        }
+        
+        // Show caricature variations for selection
+        function showCaricatureVariations(downloadUrls) {
+            const variationsSection = document.getElementById('caricatureVariationsSection');
+            const variationsDiv = document.getElementById('caricatureVariations');
+            
+            // Clear previous variations
+            variationsDiv.innerHTML = '';
+            
+            // Create variation cards
+            downloadUrls.forEach((url, index) => {
+                const variationDiv = document.createElement('div');
+                variationDiv.style.cssText = `
+                    border: 2px solid rgba(255,255,255,0.3);
+                    border-radius: 10px;
+                    padding: 10px;
+                    text-align: center;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    background: rgba(0,0,0,0.2);
+                `;
+                
+                variationDiv.innerHTML = `
+                    <img src="${API_BASE}${url}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px;" />
+                    <div style="margin-top: 8px; font-size: 12px;">Variation ${index + 1}</div>
+                `;
+                
+                // Add click handler
+                variationDiv.onclick = () => selectVariation(index, variationDiv);
+                
+                variationsDiv.appendChild(variationDiv);
+            });
+            
+            // Show variations section
+            variationsSection.style.display = 'block';
+        }
+        
+        // Select a variation
+        function selectVariation(index, element) {
+            // Remove previous selection
+            document.querySelectorAll('#caricatureVariations > div').forEach(div => {
+                div.style.border = '2px solid rgba(255,255,255,0.3)';
+                div.style.background = 'rgba(0,0,0,0.2)';
+            });
+            
+            // Highlight selected
+            element.style.border = '2px solid #27ae60';
+            element.style.background = 'rgba(39, 174, 96, 0.2)';
+            
+            // Store selection
+            window.selectedVariationIndex = index;
+            document.getElementById('saveBtn').disabled = false;
+            document.getElementById('caricatureSelectionStatus').textContent = `Selected Variation ${index + 1}`;
+            document.getElementById('caricatureSelectionStatus').style.color = '#27ae60';
+        }
+        
+        // Save selected caricature for training
+        async function saveSelectedCaricature() {
+            if (window.selectedVariationIndex === undefined) {
+                showWorkflowOutput('❌ Please select a caricature variation first!');
+                return;
+            }
+            
+            try {
+                updateWorkflowStatus('⏳ Saving and training...', '#9b59b6');
+                showWorkflowOutput('💾 Saving selected caricature...');
+                
+                // Copy the selected variation to training data
+                const response = await fetch(`${API_BASE}/save-selected-caricature`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        variation_index: window.selectedVariationIndex,
+                        variation_path: window.currentVariations[window.selectedVariationIndex]
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showWorkflowOutput(`✅ Selected caricature saved!\n📁 Photo: ${data.photo_filename}\n🎭 Caricature: ${data.cartoon_filename}`);
+                    
+                    // Auto-train the model
+                    showWorkflowOutput('🚀 Auto-training model...');
+                    await trainModelFromCartoon();
+                    
+                    // Hide selection
+                    document.getElementById('caricatureVariationsSection').style.display = 'none';
+                    
+                    updateWorkflowStatus('✅ Workflow complete! Ready for next photo', '#27ae60');
+                    showWorkflowOutput('🎉 Workflow complete! Click "Start Complete Workflow" for the next photo.');
+                    
+                } else {
+                    throw new Error(data.detail || 'Failed to save selected caricature');
+                }
+                
+            } catch (error) {
+                updateWorkflowStatus('❌ Save failed', '#e74c3c');
+                showWorkflowOutput(`❌ Failed to save selected caricature: ${error.message}`);
+            }
+        }
+        
+        // Step 3.5: Preview Caricatures
+        async function previewCaricatures() {
+            showWorkflowOutput('👀 Step 3.5: Previewing caricatures...');
+            updateStepStatus('previewStatus', '⏳ Loading preview...', '#3498db');
+            
+            try {
+                const response = await fetch(`${API_BASE}/preview-caricatures`);
+                const data = await response.json();
+                
+                if (data.training_pairs && data.training_pairs.length > 0) {
+                    updateStepStatus('previewStatus', '✅ Preview ready', '#27ae60');
+                    document.getElementById('trainBtn').disabled = false;
+                    
+                    // Show preview details
+                    let preview = `👀 Caricature Preview:\n`;
+                    preview += `📊 Training Pairs: ${data.training_pairs.length}\n`;
+                    preview += `📸 Photos: ${data.total_photos}\n`;
+                    preview += `🎭 Caricatures: ${data.total_caricatures}\n\n`;
+                    
+                    preview += `🎯 Training Pairs:\n`;
+                    data.training_pairs.forEach((pair, index) => {
+                        preview += `   ${index + 1}. ${pair.photo_name} → ${pair.caricature_name}\n`;
+                    });
+                    
+                    preview += `\n✅ Ready for training! Click "Train Model" to proceed.`;
+                    showWorkflowOutput(preview);
+                } else {
+                    updateStepStatus('previewStatus', '❌ No caricatures found', '#e74c3c');
+                    showWorkflowOutput('❌ No caricatures found. Please generate some caricatures first.');
+                }
+                
+            } catch (error) {
+                updateStepStatus('previewStatus', '❌ Preview failed', '#e74c3c');
+                showWorkflowOutput(`❌ Preview failed: ${error.message}`);
+            }
+        }
+        
+        // Step 4: Train Model from Caricature
+        async function trainModelFromCartoon() {
+            showWorkflowOutput('🚀 Step 4: Training model with caricature data...');
+            updateStepStatus('step4Status', '⏳ Training...', '#9b59b6');
+            
+            try {
+                // Send training request
+                const response = await fetch(`${API_BASE}/train-model`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        epochs: 5,
+                        learning_rate: 1e-4
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    updateStepStatus('step4Status', '✅ Model trained', '#27ae60');
+                    
+                    // Show detailed training results
+                    let details = `✅ Model training completed!\n`;
+                    details += `📊 Training Statistics:\n`;
+                    details += `   • Training pairs: ${data.training_pairs || 0}\n`;
+                    details += `   • Photos: ${data.photos || 0}\n`;
+                    details += `   • Caricatures: ${data.caricatures || 0}\n`;
+                    details += `   • Epochs: 5\n`;
+                    details += `   • Learning rate: 1e-4\n`;
+                    
+                    if (data.result) {
+                        details += `\n🎯 Training Result: ${JSON.stringify(data.result, null, 2)}`;
+                    }
+                    
+                    showWorkflowOutput(details);
+                } else {
+                    throw new Error(data.detail || 'Training failed');
+                }
+                
+            } catch (error) {
+                updateStepStatus('step4Status', '❌ Failed', '#e74c3c');
+                showWorkflowOutput(`❌ Training failed: ${error.message}`);
+            }
+        }
+        
+        // Workflow state
+        let currentFaceData = null;
+        let currentAnalysis = null;
+        let currentCartoon = null;
+        let trainedModel = null;
+        
+        // Step-by-step workflow functions
+        async function pickOneFace() {
+            const startTime = Date.now();
+            showWorkflowOutput('📸 Step 1: Getting 1 face...');
+            updateStepStatus('step1Status', '⏳ Collecting...', '#f39c12');
+            
+            // Start timer
+            const timer = setInterval(() => {
+                const elapsed = Math.round((Date.now() - startTime) / 1000);
+                updateStepStatus('step1Status', `⏳ Collecting... (${elapsed}s)`, '#f39c12');
+            }, 1000);
+            
+            try {
+                const response = await fetch(`${API_BASE}/collect-faces`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ num_faces: 1, delay_seconds: 0 })
+                });
+                
+                clearInterval(timer);
+                const totalTime = Math.round((Date.now() - startTime) / 1000);
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    // Load the face into UI
+                    await loadLatestCollectedPhoto();
+                    currentFaceData = 'collected';
+                    
+                    updateStepStatus('step1Status', `✅ Face collected (${totalTime}s)`, '#27ae60');
+                    document.getElementById('analyzeBtn').disabled = false;
+                    showWorkflowOutput(`✅ Face collected successfully in ${totalTime} seconds! Ready for analysis.`);
+                } else {
+                    updateStepStatus('step1Status', `❌ Failed (${totalTime}s)`, '#e74c3c');
+                    showWorkflowOutput(`❌ Collection failed after ${totalTime}s: ${data.detail}`);
+                }
+                
+            } catch (error) {
+                clearInterval(timer);
+                const totalTime = Math.round((Date.now() - startTime) / 1000);
+                updateStepStatus('step1Status', `❌ Error (${totalTime}s)`, '#e74c3c');
+                showWorkflowOutput(`❌ Error after ${totalTime}s: ${error.message}`);
+            }
+        }
+        
+        async function analyzeCurrentFace() {
+            showWorkflowOutput('🔍 Step 2: Analyzing face...');
+            updateStepStatus('step2Status', '⏳ Analyzing...', '#f39c12');
+            
+            try {
+                // Check if we have a current image in the preview
+                const preview = document.getElementById('preview');
+                const img = preview.querySelector('img');
+                if (!img) {
+                    throw new Error('No image found for analysis');
+                }
+                
+                // Use face-api.js directly
+                const detections = await faceapi.detectAllFaces(img, new faceapi.TinyFaceDetectorOptions())
+                    .withFaceLandmarks()
+                    .withFaceExpressions()
+                    .withAgeAndGender();
+                
+                if (detections.length === 0) {
+                    throw new Error('No faces detected');
+                }
+                
+                // Create face analysis object and store it
+                const faceAnalysis = {
+                    faces_detected: detections.length,
+                    primary_face: detections[0],
+                    landmarks: detections[0].landmarks.positions,
+                    expressions: detections[0].expressions,
+                    age: Math.round(detections[0].age),
+                    gender: detections[0].gender,
+                    genderConfidence: detections[0].genderConfidence
+                };
+                
+                // Store the analysis globally AND call showAnalysis to update UI
+                window.currentFaceAnalysis = faceAnalysis;
+                showAnalysis(faceAnalysis); // This updates the UI and stores the data
+                
+                currentAnalysis = 'completed';
+                
+                updateStepStatus('step2Status', '✅ Analysis complete', '#27ae60');
+                
+                // Show caricature generation section
+                const caricatureSection = document.getElementById('caricatureGenerationSection');
+                if (caricatureSection) {
+                    caricatureSection.style.display = 'block';
+                }
+                
+                showWorkflowOutput('✅ Face analysis complete! Ready for caricature generation.');
+                
+            } catch (error) {
+                updateStepStatus('step2Status', '❌ Failed', '#e74c3c');
+                showWorkflowOutput(`❌ Analysis failed: ${error.message}`);
+            }
+        }
+        
+        async function trainModelFromFace() {
+            showWorkflowOutput('🚀 Step 3: Training model...');
+            updateStepStatus('step3Status', '⏳ Training...', '#f39c12');
+            
+            try {
+                const response = await fetch(`${API_BASE}/train-model`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ epochs: 3, learning_rate: 1e-4 })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    trainedModel = 'ready';
+                    updateStepStatus('step3Status', '✅ Model trained', '#27ae60');
+                    document.getElementById('generateBtn').disabled = false;
+                    showWorkflowOutput('✅ Model training complete! Ready to generate characters.');
+                } else {
+                    updateStepStatus('step3Status', '❌ Failed', '#e74c3c');
+                    showWorkflowOutput(`❌ Training failed: ${data.detail}`);
+                }
+                
+            } catch (error) {
+                updateStepStatus('step3Status', '❌ Error', '#e74c3c');
+                showWorkflowOutput(`❌ Training error: ${error.message}`);
+            }
+        }
+        
+        async function generateThreeCharacters() {
+            showWorkflowOutput('🎨 Step 4: Generating 3 characters...');
+            updateStepStatus('step4Status', '⏳ Generating...', '#f39c12');
+            
+            try {
+                // Generate 3 different character variations
+                generatedCharacters = [];
+                for (let i = 1; i <= 3; i++) {
+                    showWorkflowOutput(`🎨 Generating character ${i}/3...`);
+                    // This would call the actual generation API
+                    generatedCharacters.push(`character_${i}.jpg`);
+                }
+                
+                updateStepStatus('step4Status', '✅ 3 characters ready', '#27ae60');
+                document.getElementById('characterSelection').style.display = 'block';
+                updateStepStatus('step5Status', '⏳ Select best character', '#f39c12');
+                showWorkflowOutput('✅ 3 characters generated! Please select the best one.');
+                
+            } catch (error) {
+                updateStepStatus('step4Status', '❌ Failed', '#e74c3c');
+                showWorkflowOutput(`❌ Generation failed: ${error.message}`);
+            }
+        }
+        
+        function selectCharacter(characterNum) {
+            if (characterNum === 0) {
+                showWorkflowOutput('❌ No character selected. Starting over...');
+                resetWorkflow();
+            } else {
+                showWorkflowOutput(`⭐ Character #${characterNum} selected!`);
+                updateStepStatus('step5Status', `✅ Character #${characterNum} selected`, '#27ae60');
+                showWorkflowOutput('🎉 Workflow complete! Ready for next iteration.');
+            }
+        }
+        
+        function resetWorkflow() {
+            currentFaceData = null;
+            currentAnalysis = null;
+            trainedModel = null;
+            generatedCharacters = [];
+            
+            document.getElementById('analyzeBtn').disabled = true;
+            document.getElementById('trainBtn').disabled = true;
+            document.getElementById('generateBtn').disabled = true;
+            document.getElementById('characterSelection').style.display = 'none';
+            
+            updateStepStatus('step1Status', 'Not started', '#ccc');
+            updateStepStatus('step2Status', 'No face selected', '#ccc');
+            updateStepStatus('step3Status', 'No analysis data', '#ccc');
+            updateStepStatus('step4Status', 'No trained model', '#ccc');
+            updateStepStatus('step5Status', 'No characters generated', '#ccc');
+        }
+        
+        function updateStepStatus(elementId, text, color) {
+            const element = document.getElementById(elementId);
+            element.textContent = text;
+            element.style.color = color;
+        }
+        
+        function showWorkflowOutput(message) {
+            const output = document.getElementById('workflowOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            output.innerHTML += `[${timestamp}] ${message}<br>`;
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        function showTrainingOutput(message) {
+            const output = document.getElementById('workflowOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            output.innerHTML += `[${timestamp}] ${message}<br>`;
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        async function loadLatestCollectedPhoto() {
+            try {
+                const response = await fetch(`${API_BASE}/get-latest-face`);
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const imageUrl = URL.createObjectURL(blob);
+                    
+                    // Load the image into the UI using the existing handleFile function
+                    const file = new File([blob], 'collected_face.jpg', { type: 'image/jpeg' });
+                    handleFile(file);
+                    console.log('📷 Photo loaded and ready for processing!');
+                } else {
+                    console.log('❌ Could not load collected photo');
+                }
+                
+            } catch (error) {
+                console.log(`❌ Error loading photo: ${error.message}`);
+            }
+        }
+        
+        // Load face-api.js models
+        async function loadFaceModels() {
+            try {
+                console.log('Loading face-api.js models...');
+                
+                // Load models from local weights
+                await Promise.all([
+                    faceapi.nets.tinyFaceDetector.loadFromUri('./face-api-weights'),
+                    faceapi.nets.faceLandmark68Net.loadFromUri('./face-api-weights'),
+                    faceapi.nets.faceRecognitionNet.loadFromUri('./face-api-weights'),
+                    faceapi.nets.faceExpressionNet.loadFromUri('./face-api-weights'),
+                    faceapi.nets.ageGenderNet.loadFromUri('./face-api-weights')
+                ]);
+                
+                modelsLoaded = true;
+                console.log('✅ Face-api.js models loaded successfully!');
+                
+                // Update UI
+                const statusDiv = document.querySelector('.success');
+                if (statusDiv) {
+                    statusDiv.innerHTML += '<p>🎭 Face detection: Ready</p>';
+                }
+                
+            } catch (error) {
+                console.error('❌ Failed to load face-api.js models:', error);
+                showError('Failed to load face detection models. Please refresh the page.');
+            }
+        }
+        
+        // Analyze face with face-api.js
+        async function analyzeFaceWithFaceAPI(imageElement) {
+            if (!modelsLoaded) {
+                showError('Face detection models not loaded yet. Please wait...');
+                return null;
+            }
+            
+            try {
+                console.log('🔍 Analyzing face with face-api.js...');
+                
+                // Detect faces and get detailed analysis with more aggressive settings
+                let detections = await faceapi
+                    .detectAllFaces(imageElement, new faceapi.TinyFaceDetectorOptions({
+                        inputSize: 320,  // Smaller input size for better detection
+                        scoreThreshold: 0.3  // Lower threshold for more sensitive detection
+                    }))
+                    .withFaceLandmarks()
+                    .withFaceExpressions()
+                    .withAgeAndGender();
+                
+                if (detections.length === 0) {
+                    console.log('🔄 No faces detected with TinyFaceDetector, trying SsdMobilenetv1...');
+                    
+                    // Try with a different detector as fallback
+                    const fallbackDetections = await faceapi
+                        .detectAllFaces(imageElement, new faceapi.SsdMobilenetv1Options({
+                            minConfidence: 0.3  // Lower confidence threshold
+                        }))
+                        .withFaceLandmarks()
+                        .withFaceExpressions()
+                        .withAgeAndGender();
+                    
+                    if (fallbackDetections.length === 0) {
+                        return { faces_detected: 0, error: "No faces detected with any method" };
+                    }
+                    
+                    // Use fallback detections
+                    detections = fallbackDetections;
+                }
+                
+                // Get the largest face
+                const face = detections.reduce((prev, current) => 
+                    (prev.detection.box.area > current.detection.box.area) ? prev : current
+                );
+                
+                // Extract basic analysis data
+                const basicAnalysis = {
+                    faces_detected: detections.length,
+                    primary_face: {
+                        x: Math.round(face.detection.box.x),
+                        y: Math.round(face.detection.box.y),
+                        width: Math.round(face.detection.box.width),
+                        height: Math.round(face.detection.box.height),
+                        confidence: face.detection.score
+                    },
+                    landmarks: face.landmarks.positions.map(pos => ({
+                        x: Math.round(pos.x),
+                        y: Math.round(pos.y)
+                    })),
+                    expressions: face.expressions,
+                    age: Math.round(face.age),
+                    gender: face.gender,
+                    genderConfidence: face.genderProbability
+                };
+                
+                // Enhanced face analysis for cartoon generation
+                const enhancedAnalysis = await enhanceFaceAnalysis(basicAnalysis, imageElement);
+                
+                const analysis = { ...basicAnalysis, ...enhancedAnalysis };
+                
+                console.log('✅ Face analysis complete:', analysis);
+                return analysis;
+                
+            } catch (error) {
+                console.error('❌ Face analysis error:', error);
+                return { error: `Face analysis failed: ${error.message}` };
+            }
+        }
+        
+        // Enhanced face analysis for cartoon generation
+        async function enhanceFaceAnalysis(basicAnalysis, imageElement) {
+            try {
+                console.log('🔍 Enhancing face analysis for cartoon generation...');
+                
+                const landmarks = basicAnalysis.landmarks;
+                const face = basicAnalysis.primary_face;
+                
+                // Face shape analysis using landmarks
+                const faceShape = analyzeFaceShape(landmarks);
+                
+                // Facial proportions analysis
+                const proportions = analyzeFacialProportions(landmarks);
+                
+                // Eye analysis
+                const eyeAnalysis = analyzeEyes(landmarks);
+                
+                // Mouth analysis
+                const mouthAnalysis = analyzeMouth(landmarks);
+                
+                // Nose analysis
+                const noseAnalysis = analyzeNose(landmarks);
+                
+                // Color analysis (basic)
+                const colorAnalysis = await analyzeColors(imageElement, face, landmarks);
+                
+                // Expression analysis enhancement
+                const expressionAnalysis = enhanceExpressionAnalysis(basicAnalysis.expressions);
+                
+                // Age classification for cartoon styling
+                const ageCategory = classifyAgeForCartoon(basicAnalysis.age);
+                
+                // Gender confidence enhancement
+                const genderAnalysis = enhanceGenderAnalysis(basicAnalysis.gender, basicAnalysis.genderConfidence);
+                
+                const enhancedData = {
+                    face_shape: faceShape,
+                    proportions: proportions,
+                    eyes: eyeAnalysis,
+                    mouth: mouthAnalysis,
+                    nose: noseAnalysis,
+                    colors: colorAnalysis,
+                    expressions: expressionAnalysis,
+                    age_category: ageCategory,
+                    gender_analysis: genderAnalysis,
+                    cartoon_features: {
+                        eye_size_ratio: eyeAnalysis.size_ratio,
+                        face_width_ratio: proportions.width_height_ratio,
+                        jaw_strength: faceShape.jaw_strength,
+                        cheek_prominence: faceShape.cheek_prominence,
+                        overall_cuteness: calculateCutenessFactor(basicAnalysis.age, faceShape, eyeAnalysis)
+                    }
+                };
+                
+                console.log('✅ Enhanced face analysis complete:', enhancedData);
+                return enhancedData;
+                
+            } catch (error) {
+                console.error('❌ Enhanced face analysis error:', error);
+                return {
+                    face_shape: { type: 'oval', confidence: 0.5 },
+                    proportions: { width_height_ratio: 1.0 },
+                    eyes: { size_ratio: 1.0, shape: 'normal' },
+                    mouth: { width_ratio: 1.0, shape: 'normal' },
+                    nose: { size_ratio: 1.0, shape: 'normal' },
+                    colors: { skin_tone: 'medium', hair_color: 'unknown', eye_color: 'unknown' },
+                    expressions: basicAnalysis.expressions,
+                    age_category: 'young_adult',
+                    gender_analysis: { confidence: basicAnalysis.genderConfidence },
+                    cartoon_features: { overall_cuteness: 0.5 }
+                };
+            }
+        }
+        
+        // Analyze face shape using landmarks
+        function analyzeFaceShape(landmarks) {
+            // Face contour landmarks (0-16)
+            const contour = landmarks.slice(0, 17);
+            
+            // Calculate face dimensions
+            const faceWidth = Math.abs(contour[0].x - contour[16].x);
+            const faceHeight = Math.abs(contour[8].y - contour[0].y);
+            const jawWidth = Math.abs(contour[4].x - contour[12].x);
+            const cheekWidth = Math.abs(contour[1].x - contour[15].x);
+            
+            // Calculate ratios
+            const widthHeightRatio = faceWidth / faceHeight;
+            const jawCheekRatio = jawWidth / cheekWidth;
+            const jawFaceRatio = jawWidth / faceWidth;
+            
+            // Determine face shape
+            let faceType = 'oval';
+            let confidence = 0.5;
+            
+            if (widthHeightRatio > 1.1) {
+                if (jawCheekRatio > 0.9) {
+                    faceType = 'square';
+                    confidence = 0.8;
+                } else {
+                    faceType = 'round';
+                    confidence = 0.7;
+                }
+            } else if (widthHeightRatio < 0.9) {
+                faceType = 'long';
+                confidence = 0.7;
+            } else {
+                if (jawFaceRatio < 0.7) {
+                    faceType = 'heart';
+                    confidence = 0.8;
+                } else {
+                    faceType = 'oval';
+                    confidence = 0.6;
+                }
+            }
+            
+            return {
+                type: faceType,
+                confidence: confidence,
+                width_height_ratio: widthHeightRatio,
+                jaw_strength: jawFaceRatio,
+                cheek_prominence: cheekWidth / faceWidth,
+                measurements: {
+                    face_width: faceWidth,
+                    face_height: faceHeight,
+                    jaw_width: jawWidth,
+                    cheek_width: cheekWidth
+                }
+            };
+        }
+        
+        // Analyze facial proportions
+        function analyzeFacialProportions(landmarks) {
+            // Key facial points
+            const forehead = landmarks[8]; // Top of head
+            const eyes = landmarks.slice(36, 48); // Eye landmarks
+            const nose = landmarks.slice(27, 36); // Nose landmarks
+            const mouth = landmarks.slice(48, 68); // Mouth landmarks
+            const chin = landmarks[8]; // Chin point
+            
+            // Calculate proportions
+            const eyeLevel = (eyes[0].y + eyes[6].y) / 2;
+            const noseLevel = (nose[0].y + nose[6].y) / 2;
+            const mouthLevel = (mouth[0].y + mouth[6].y) / 2;
+            
+            const foreheadToEyes = Math.abs(forehead.y - eyeLevel);
+            const eyesToNose = Math.abs(eyeLevel - noseLevel);
+            const noseToMouth = Math.abs(noseLevel - mouthLevel);
+            const mouthToChin = Math.abs(mouthLevel - chin.y);
+            
+            return {
+                width_height_ratio: landmarks[16].x - landmarks[0].x / (chin.y - forehead.y),
+                eye_nose_ratio: eyesToNose / noseToMouth,
+                face_sections: {
+                    forehead: foreheadToEyes,
+                    eyes_to_nose: eyesToNose,
+                    nose_to_mouth: noseToMouth,
+                    mouth_to_chin: mouthToChin
+                },
+                golden_ratio_compliance: calculateGoldenRatioCompliance(foreheadToEyes, eyesToNose, noseToMouth, mouthToChin)
+            };
+        }
+        
+        // Analyze eye features
+        function analyzeEyes(landmarks) {
+            // Left eye landmarks (36-41)
+            const leftEye = landmarks.slice(36, 42);
+            // Right eye landmarks (42-47)
+            const rightEye = landmarks.slice(42, 48);
+            
+            // Calculate eye dimensions
+            const leftEyeWidth = Math.abs(leftEye[3].x - leftEye[0].x);
+            const leftEyeHeight = Math.abs(leftEye[4].y - leftEye[1].y);
+            const rightEyeWidth = Math.abs(rightEye[3].x - rightEye[0].x);
+            const rightEyeHeight = Math.abs(rightEye[4].y - rightEye[1].y);
+            
+            const avgEyeWidth = (leftEyeWidth + rightEyeWidth) / 2;
+            const avgEyeHeight = (leftEyeHeight + rightEyeHeight) / 2;
+            
+            // Eye shape analysis
+            const eyeShape = avgEyeHeight / avgEyeWidth > 0.3 ? 'round' : 'almond';
+            
+            // Eye size relative to face
+            const faceWidth = Math.abs(landmarks[16].x - landmarks[0].x);
+            const eyeSizeRatio = avgEyeWidth / faceWidth;
+            
+            return {
+                size_ratio: eyeSizeRatio,
+                shape: eyeShape,
+                width: avgEyeWidth,
+                height: avgEyeHeight,
+                asymmetry: Math.abs(leftEyeWidth - rightEyeWidth) / avgEyeWidth,
+                eye_distance: Math.abs(leftEye[3].x - rightEye[0].x),
+                measurements: {
+                    left_width: leftEyeWidth,
+                    left_height: leftEyeHeight,
+                    right_width: rightEyeWidth,
+                    right_height: rightEyeHeight
+                }
+            };
+        }
+        
+        // Analyze mouth features
+        function analyzeMouth(landmarks) {
+            // Mouth landmarks (48-67)
+            const mouth = landmarks.slice(48, 68);
+            
+            // Calculate mouth dimensions
+            const mouthWidth = Math.abs(mouth[6].x - mouth[0].x);
+            const mouthHeight = Math.abs(mouth[3].y - mouth[9].y);
+            
+            // Mouth shape analysis
+            const mouthShape = mouthHeight / mouthWidth > 0.2 ? 'full' : 'thin';
+            
+            // Smile analysis
+            const leftCorner = mouth[0];
+            const rightCorner = mouth[6];
+            const centerTop = mouth[3];
+            const centerBottom = mouth[9];
+            
+            const smileCurve = Math.abs((leftCorner.y + rightCorner.y) / 2 - (centerTop.y + centerBottom.y) / 2);
+            const isSmiling = smileCurve > 2;
+            
+            return {
+                width_ratio: mouthWidth / (landmarks[16].x - landmarks[0].x),
+                shape: mouthShape,
+                width: mouthWidth,
+                height: mouthHeight,
+                smile_intensity: smileCurve,
+                is_smiling: isSmiling,
+                lip_thickness: mouthHeight / mouthWidth
+            };
+        }
+        
+        // Analyze nose features
+        function analyzeNose(landmarks) {
+            // Nose landmarks (27-35)
+            const nose = landmarks.slice(27, 36);
+            
+            // Calculate nose dimensions
+            const noseWidth = Math.abs(nose[4].x - nose[8].x);
+            const noseHeight = Math.abs(nose[0].y - nose[6].y);
+            const noseLength = Math.abs(nose[0].y - nose[4].y);
+            
+            // Nose shape analysis
+            const noseShape = noseWidth / noseLength > 0.8 ? 'wide' : (noseWidth / noseLength < 0.6 ? 'narrow' : 'normal');
+            
+            return {
+                size_ratio: noseWidth / (landmarks[16].x - landmarks[0].x),
+                shape: noseShape,
+                width: noseWidth,
+                height: noseHeight,
+                length: noseLength,
+                bridge_width: Math.abs(nose[1].x - nose[2].x)
+            };
+        }
+        
+        // Basic color analysis
+        async function analyzeColors(imageElement, face, landmarks) {
+            try {
+                // Create canvas to extract colors
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = imageElement.naturalWidth;
+                canvas.height = imageElement.naturalHeight;
+                ctx.drawImage(imageElement, 0, 0);
+                
+                // Sample colors from face regions
+                const faceCenter = {
+                    x: face.x + face.width / 2,
+                    y: face.y + face.height / 2
+                };
+                
+                // Sample skin tone from cheek area
+                const skinColor = sampleColor(ctx, faceCenter.x, faceCenter.y);
+                
+                // Sample hair color from top of head
+                const hairColor = sampleColor(ctx, faceCenter.x, face.y - 10);
+                
+                // Sample eye color from eye center
+                const eyeCenter = landmarks[36]; // Left eye center
+                const eyeColor = sampleColor(ctx, eyeCenter.x, eyeCenter.y);
+                
+                return {
+                    skin_tone: classifySkinTone(skinColor),
+                    hair_color: classifyHairColor(hairColor),
+                    eye_color: classifyEyeColor(eyeColor),
+                    rgb_values: {
+                        skin: skinColor,
+                        hair: hairColor,
+                        eyes: eyeColor
+                    }
+                };
+            } catch (error) {
+                console.error('Color analysis error:', error);
+                return {
+                    skin_tone: 'medium',
+                    hair_color: 'unknown',
+                    eye_color: 'unknown',
+                    rgb_values: { skin: [128, 128, 128], hair: [64, 64, 64], eyes: [128, 128, 128] }
+                };
+            }
+        }
+        
+        // Sample color from canvas
+        function sampleColor(ctx, x, y) {
+            const imageData = ctx.getImageData(Math.round(x), Math.round(y), 1, 1);
+            const data = imageData.data;
+            return [data[0], data[1], data[2]]; // RGB values
+        }
+        
+        // Classify skin tone
+        function classifySkinTone(rgb) {
+            const [r, g, b] = rgb;
+            const brightness = (r + g + b) / 3;
+            const redness = r - (g + b) / 2;
+            
+            if (brightness > 200) return 'light';
+            if (brightness > 150) return 'medium_light';
+            if (brightness > 100) return 'medium';
+            if (brightness > 70) return 'medium_dark';
+            return 'dark';
+        }
+        
+        // Classify hair color
+        function classifyHairColor(rgb) {
+            const [r, g, b] = rgb;
+            const brightness = (r + g + b) / 3;
+            
+            if (brightness < 50) return 'black';
+            if (brightness < 100) return 'dark_brown';
+            if (brightness < 150) return 'brown';
+            if (brightness < 200) return 'light_brown';
+            if (r > g && r > b) return 'red';
+            if (brightness > 200) return 'blonde';
+            return 'unknown';
+        }
+        
+        // Classify eye color
+        function classifyEyeColor(rgb) {
+            const [r, g, b] = rgb;
+            const brightness = (r + g + b) / 3;
+            
+            if (brightness < 50) return 'dark';
+            if (g > r && g > b) return 'green';
+            if (b > r && b > g) return 'blue';
+            if (r > g && r > b) return 'brown';
+            return 'unknown';
+        }
+        
+        // Enhance expression analysis
+        function enhanceExpressionAnalysis(expressions) {
+            const dominantExpression = Object.entries(expressions)
+                .reduce((max, [emotion, confidence]) => 
+                    confidence > max.confidence ? { emotion, confidence } : max, 
+                    { emotion: 'neutral', confidence: 0 }
+                );
+            
+            return {
+                dominant: dominantExpression.emotion,
+                confidence: dominantExpression.confidence,
+                intensity: dominantExpression.confidence > 0.7 ? 'strong' : 
+                          dominantExpression.confidence > 0.4 ? 'moderate' : 'subtle',
+                all_expressions: expressions
+            };
+        }
+        
+        // Classify age for cartoon styling
+        function classifyAgeForCartoon(age) {
+            if (age < 12) return 'child';
+            if (age < 18) return 'teen';
+            if (age < 30) return 'young_adult';
+            if (age < 50) return 'adult';
+            return 'senior';
+        }
+        
+        // Enhance gender analysis
+        function enhanceGenderAnalysis(gender, confidence) {
+            return {
+                gender: gender,
+                confidence: confidence,
+                certainty: confidence > 0.8 ? 'high' : confidence > 0.6 ? 'medium' : 'low'
+            };
+        }
+        
+        // Calculate cuteness factor for cartoon generation
+        function calculateCutenessFactor(age, faceShape, eyeAnalysis) {
+            let cuteness = 0.5;
+            
+            // Age factor
+            if (age < 18) cuteness += 0.2;
+            if (age < 12) cuteness += 0.1;
+            
+            // Face shape factor
+            if (faceShape.type === 'round') cuteness += 0.1;
+            if (faceShape.type === 'heart') cuteness += 0.15;
+            
+            // Eye size factor
+            if (eyeAnalysis.size_ratio > 0.15) cuteness += 0.1;
+            if (eyeAnalysis.shape === 'round') cuteness += 0.05;
+            
+            return Math.min(1.0, Math.max(0.0, cuteness));
+        }
+        
+        // Calculate golden ratio compliance
+        function calculateGoldenRatioCompliance(forehead, eyesToNose, noseToMouth, mouthToChin) {
+            const goldenRatio = 1.618;
+            const total = forehead + eyesToNose + noseToMouth + mouthToChin;
+            
+            const idealForehead = total / (goldenRatio + 1);
+            const idealEyesToNose = total / (goldenRatio + 1) / goldenRatio;
+            
+            const foreheadDeviation = Math.abs(forehead - idealForehead) / idealForehead;
+            const eyesToNoseDeviation = Math.abs(eyesToNose - idealEyesToNose) / idealEyesToNose;
+            
+            return 1.0 - (foreheadDeviation + eyesToNoseDeviation) / 2;
+        }
+        
+        // Draw face preview with original image and detection overlay
+        function drawFacePreview(imageElement, analysis) {
+            const canvas = document.getElementById('faceCanvas');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Get the actual displayed image size (not the original image size)
+            const displayedWidth = imageElement.clientWidth || imageElement.width;
+            const displayedHeight = imageElement.clientHeight || imageElement.height;
+            
+            // Set canvas size to match displayed image size
+            canvas.width = displayedWidth;
+            canvas.height = displayedHeight;
+            
+            console.log('🖼️ Original image size:', imageElement.width, 'x', imageElement.height);
+            console.log('🖼️ Natural image size:', imageElement.naturalWidth, 'x', imageElement.naturalHeight);
+            console.log('🖼️ Displayed image size:', displayedWidth, 'x', displayedHeight);
+            console.log('📐 Canvas size:', canvas.width, 'x', canvas.height);
+            
+            // Draw the original image
+            ctx.drawImage(imageElement, 0, 0, canvas.width, canvas.height);
+            
+            if (analysis.faces_detected > 0) {
+                const face = analysis.primary_face;
+                
+                // Calculate scaling factors from natural image to displayed size
+                const scaleX = displayedWidth / imageElement.naturalWidth;
+                const scaleY = displayedHeight / imageElement.naturalHeight;
+                
+                // Scale face coordinates
+                const scaledFace = {
+                    x: face.x * scaleX,
+                    y: face.y * scaleY,
+                    width: face.width * scaleX,
+                    height: face.height * scaleY
+                };
+                
+                console.log('📏 Scale factors:', scaleX, scaleY);
+                console.log('👤 Original face:', face.x, face.y, face.width, face.height);
+                console.log('👤 Scaled face:', scaledFace.x, scaledFace.y, scaledFace.width, scaledFace.height);
+                
+                // Draw bounding box
+                ctx.strokeStyle = '#4CAF50';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(scaledFace.x, scaledFace.y, scaledFace.width, scaledFace.height);
+                
+                // Draw confidence score
+                ctx.fillStyle = '#4CAF50';
+                ctx.font = 'bold 16px Arial';
+                ctx.fillText(`Confidence: ${(face.confidence * 100).toFixed(1)}%`, scaledFace.x, scaledFace.y - 10);
+                
+                // Draw landmark count
+                ctx.fillStyle = '#CCCCCC';
+                ctx.font = '12px Arial';
+                ctx.fillText(`Landmarks: ${analysis.landmarks ? analysis.landmarks.length : 0}`, scaledFace.x, scaledFace.y + scaledFace.height + 40);
+                
+                // Draw landmarks on both canvases
+                drawLandmarksOnSeparateCanvas(imageElement, analysis, scaledFace, scaleX, scaleY);
+                drawLandmarksOnMainCanvas(ctx, analysis, scaleX, scaleY);
+                
+                // Draw age and gender info with scaled coordinates
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = 'bold 14px Arial';
+                ctx.fillText(`Age: ${analysis.age} | ${analysis.gender}`, scaledFace.x, scaledFace.y + scaledFace.height + 20);
+                
+                // Draw landmark count with scaled coordinates
+                ctx.fillStyle = '#CCCCCC';
+                ctx.font = '12px Arial';
+                ctx.fillText(`Landmarks: ${analysis.landmarks ? analysis.landmarks.length : 0}`, scaledFace.x, scaledFace.y + scaledFace.height + 40);
+            }
+        }
+        
+        // Draw landmarks on separate canvas with perfect alignment
+        function drawLandmarksOnSeparateCanvas(imageElement, analysis, scaledFace, scaleX, scaleY) {
+            const landmarkCanvas = document.getElementById('landmarkCanvas');
+            if (!landmarkCanvas) {
+                console.log('❌ Landmark canvas not found!');
+                return;
+            }
+            console.log('✅ Found landmark canvas:', landmarkCanvas);
+            
+            const ctx = landmarkCanvas.getContext('2d');
+            
+            // Get the actual displayed image size
+            const displayedWidth = imageElement.clientWidth || imageElement.width;
+            const displayedHeight = imageElement.clientHeight || imageElement.height;
+            
+            // Set landmark canvas size to match displayed image
+            landmarkCanvas.width = displayedWidth;
+            landmarkCanvas.height = displayedHeight;
+            
+            // Clear the canvas and add white background
+            ctx.clearRect(0, 0, landmarkCanvas.width, landmarkCanvas.height);
+            
+            // Add white background so landmarks are visible
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, landmarkCanvas.width, landmarkCanvas.height);
+            
+            if (analysis.landmarks && analysis.landmarks.length > 0) {
+                console.log('🎯 Drawing landmarks on separate canvas:', analysis.landmarks.length, 'landmarks');
+                console.log('📐 Landmark canvas size:', landmarkCanvas.width, 'x', landmarkCanvas.height);
+                
+                // Draw landmarks with perfect alignment + interpolated points for more detail
+                const allLandmarks = [...analysis.landmarks];
+                
+                // Add interpolated points between existing landmarks for more detail
+                for (let i = 0; i < analysis.landmarks.length - 1; i++) {
+                    const current = analysis.landmarks[i];
+                    const next = analysis.landmarks[i + 1];
+                    
+                    // Add 2 interpolated points between each pair
+                    for (let j = 1; j <= 2; j++) {
+                        const t = j / 3; // 0.33, 0.66
+                        const interpolated = {
+                            x: current.x + (next.x - current.x) * t,
+                            y: current.y + (next.y - current.y) * t
+                        };
+                        allLandmarks.push(interpolated);
+                    }
+                }
+                
+                console.log(`🎯 Drawing ${allLandmarks.length} landmarks (${analysis.landmarks.length} original + ${allLandmarks.length - analysis.landmarks.length} interpolated)`);
+                
+                allLandmarks.forEach((landmark, index) => {
+                    // Scale landmark coordinates to match canvas
+                    const relativeX = landmark.x * scaleX;
+                    const relativeY = landmark.y * scaleY;
+                    
+                    // Much smaller landmarks for more precision
+                    let radius = 0.8;
+                    let color = '#FF0000'; // All red dots
+                    
+                    // Check if this is an interpolated point (index >= original count)
+                    const isInterpolated = index >= analysis.landmarks.length;
+                    
+                    if (isInterpolated) {
+                        radius = 0.6;
+                        color = '#FF6666'; // Lighter red for interpolated points
+                    } else {
+                        // Original landmarks - slightly larger
+                        radius = 0.8;
+                        color = '#FF0000'; // Bright red for all original landmarks
+                    }
+                    
+                    // Draw the landmark with perfect centering - clean and small
+                    ctx.fillStyle = color;
+                    ctx.beginPath();
+                    ctx.arc(relativeX, relativeY, radius, 0, 2 * Math.PI);
+                    ctx.fill();
+                    
+                    // Debug: Log first few landmarks
+                    if (index < 5) {
+                        console.log(`✅ Drew landmark ${index} at (${relativeX}, ${relativeY})`);
+                    }
+                });
+                
+                // Draw landmark connections for better visualization
+                ctx.lineWidth = 0.8;
+                
+                // Draw face contour connections (0-16) with smart distance checking
+                ctx.strokeStyle = 'rgba(255, 0, 0, 0.6)';
+                for (let i = 0; i <= 16; i++) {
+                    if (i < analysis.landmarks.length - 1) {
+                        const x1 = analysis.landmarks[i].x * scaleX;
+                        const y1 = analysis.landmarks[i].y * scaleY;
+                        const x2 = analysis.landmarks[i + 1].x * scaleX;
+                        const y2 = analysis.landmarks[i + 1].y * scaleY;
+                        
+                        // Calculate distance between points
+                        const distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                        
+                        // Only draw line if points are close enough (avoid big lines)
+                        if (distance < 30) { // Max 30 pixels for face contour
+                            ctx.beginPath();
+                            ctx.moveTo(x1, y1);
+                            ctx.lineTo(x2, y2);
+                            ctx.stroke();
+                        }
+                    }
+                }
+                
+                // Draw eye connections (36-47) with smart distance checking
+                ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
+                for (let i = 36; i <= 47; i++) {
+                    if (i < analysis.landmarks.length - 1) {
+                        const x1 = analysis.landmarks[i].x * scaleX;
+                        const y1 = analysis.landmarks[i].y * scaleY;
+                        const x2 = analysis.landmarks[i + 1].x * scaleX;
+                        const y2 = analysis.landmarks[i + 1].y * scaleY;
+                        
+                        // Calculate distance between points
+                        const distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                        
+                        // Only draw line if points are close enough (avoid big lines)
+                        if (distance < 20) { // Max 20 pixels for eye connections
+                            ctx.beginPath();
+                            ctx.moveTo(x1, y1);
+                            ctx.lineTo(x2, y2);
+                            ctx.stroke();
+                        }
+                    }
+                }
+                
+                // Draw nose connections (27-35) with smart distance checking
+                ctx.strokeStyle = 'rgba(255, 0, 0, 0.7)';
+                for (let i = 27; i <= 35; i++) {
+                    if (i < analysis.landmarks.length - 1) {
+                        const x1 = analysis.landmarks[i].x * scaleX;
+                        const y1 = analysis.landmarks[i].y * scaleY;
+                        const x2 = analysis.landmarks[i + 1].x * scaleX;
+                        const y2 = analysis.landmarks[i + 1].y * scaleY;
+                        
+                        // Calculate distance between points
+                        const distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                        
+                        // Only draw line if points are close enough (avoid big lines)
+                        if (distance < 25) { // Max 25 pixels for nose connections
+                            ctx.beginPath();
+                            ctx.moveTo(x1, y1);
+                            ctx.lineTo(x2, y2);
+                            ctx.stroke();
+                        }
+                    }
+                }
+                
+                // Draw mouth connections (48-67) with smart distance checking
+                ctx.strokeStyle = 'rgba(255, 0, 0, 0.7)';
+                for (let i = 48; i <= 67; i++) {
+                    if (i < analysis.landmarks.length - 1) {
+                        const x1 = analysis.landmarks[i].x * scaleX;
+                        const y1 = analysis.landmarks[i].y * scaleY;
+                        const x2 = analysis.landmarks[i + 1].x * scaleX;
+                        const y2 = analysis.landmarks[i + 1].y * scaleY;
+                        
+                        // Calculate distance between points
+                        const distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                        
+                        // Only draw line if points are close enough (avoid big lines)
+                        if (distance < 25) { // Max 25 pixels for mouth connections
+                            ctx.beginPath();
+                            ctx.moveTo(x1, y1);
+                            ctx.lineTo(x2, y2);
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Draw landmarks on main canvas (face detection canvas)
+        function drawLandmarksOnMainCanvas(ctx, analysis, scaleX, scaleY) {
+            if (analysis.landmarks && analysis.landmarks.length > 0) {
+                // Draw landmarks with perfect alignment
+                analysis.landmarks.forEach((landmark, index) => {
+                    // Scale landmark coordinates to match canvas
+                    const relativeX = landmark.x * scaleX;
+                    const relativeY = landmark.y * scaleY;
+                    
+                    // Small landmarks for main canvas
+                    let radius = 1.5;
+                    let color = '#FF0000'; // Red dots
+                    
+                    // Eye landmarks (36-47) - most important
+                    if (index >= 36 && index <= 47) {
+                        radius = 2;
+                        color = '#FF0000'; // Bright red for eyes
+                    }
+                    // Nose landmarks (27-35)
+                    else if (index >= 27 && index <= 35) {
+                        radius = 1.8;
+                        color = '#FF4444'; // Medium red for nose
+                    }
+                    // Mouth landmarks (48-67)
+                    else if (index >= 48 && index <= 67) {
+                        radius = 1.8;
+                        color = '#FF6666'; // Light red for mouth
+                    }
+                    // Face contour (0-16)
+                    else if (index >= 0 && index <= 16) {
+                        radius = 1.5;
+                        color = '#FF8888'; // Very light red for contour
+                    }
+                    
+                    // Draw the landmark
+                    ctx.fillStyle = color;
+                    ctx.beginPath();
+                    ctx.arc(relativeX, relativeY, radius, 0, 2 * Math.PI);
+                    ctx.fill();
+                });
+            }
+        }
+        
+        // Draw face analysis on canvas
+        function drawFaceAnalysis(canvas, analysis) {
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (analysis.faces_detected > 0) {
+                const face = analysis.primary_face;
+                
+                // Get the actual image element to calculate proper scaling
+                const imageElement = document.getElementById('uploadedImage');
+                if (!imageElement) return;
+                
+                // Calculate scaling factors from original image to canvas
+                const scaleX = canvas.width / imageElement.naturalWidth;
+                const scaleY = canvas.height / imageElement.naturalHeight;
+                
+                console.log('🔍 Face detection scaling debug:');
+                console.log('📐 Canvas size:', canvas.width, 'x', canvas.height);
+                console.log('🖼️ Image natural size:', imageElement.naturalWidth, 'x', imageElement.naturalHeight);
+                console.log('📏 Scale factors:', scaleX, scaleY);
+                console.log('👤 Original face:', face.x, face.y, face.width, face.height);
+                
+                // Scale face coordinates
+                const scaledFace = {
+                    x: face.x * scaleX,
+                    y: face.y * scaleY,
+                    width: face.width * scaleX,
+                    height: face.height * scaleY
+                };
+                
+                console.log('👤 Scaled face:', scaledFace.x, scaledFace.y, scaledFace.width, scaledFace.height);
+                
+                // Draw bounding box with scaled coordinates
+                ctx.strokeStyle = '#4CAF50';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(scaledFace.x, scaledFace.y, scaledFace.width, scaledFace.height);
+                
+                // Draw confidence score with scaled coordinates
+                ctx.fillStyle = '#4CAF50';
+                ctx.font = '14px Arial';
+                ctx.fillText(`Confidence: ${(face.confidence * 100).toFixed(1)}%`, scaledFace.x, scaledFace.y - 5);
+                
+                // Landmarks are now drawn on separate canvas
+                
+                // Draw analysis text with scaled coordinates
+                ctx.fillStyle = '#4CAF50';
+                ctx.font = '16px Arial';
+                ctx.fillText(`Age: ${analysis.age}`, scaledFace.x, scaledFace.y - 10);
+                ctx.fillText(`Gender: ${analysis.gender}`, scaledFace.x, scaledFace.y + scaledFace.height + 20);
+                
+                // Draw expressions with scaled coordinates
+                let yOffset = scaledFace.y + scaledFace.height + 40;
+                Object.entries(analysis.expressions).forEach(([emotion, confidence]) => {
+                    if (confidence > 0.1) {
+                        ctx.fillText(`${emotion}: ${(confidence * 100).toFixed(1)}%`, scaledFace.x, yOffset);
+                        yOffset += 20;
+                    }
+                });
+            }
+        }
+        
+        // File upload handling
+        const fileInput = document.getElementById('fileInput');
+        const preview = document.getElementById('preview');
+        const loading = document.getElementById('loading');
+        const analysis = document.getElementById('analysis');
+        const result = document.getElementById('result');
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+        
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                showError('Please select an image file.');
+                return;
+            }
+            
+            // Show preview with face analysis
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.maxWidth = '300px';
+                img.style.borderRadius = '10px';
+                
+                // Create canvas for face analysis overlay
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                canvas.style.position = 'absolute';
+                canvas.style.top = '0';
+                canvas.style.left = '0';
+                
+                const container = document.createElement('div');
+                container.style.position = 'relative';
+                container.style.display = 'inline-block';
+                container.appendChild(img);
+                container.appendChild(canvas);
+                
+                preview.innerHTML = '';
+                preview.appendChild(container);
+                
+                // Wait for image to load
+                img.onload = async () => {
+                    // Analyze face with face-api.js
+                    const faceAnalysis = await analyzeFaceWithFaceAPI(img);
+                    
+                    if (faceAnalysis && !faceAnalysis.error) {
+                        // Draw face analysis on canvas
+                        drawFaceAnalysis(canvas, faceAnalysis);
+                        
+                        // Also draw on the face preview canvas
+                        drawFacePreview(img, faceAnalysis);
+                        
+                        // Show analysis results
+                        showAnalysis(faceAnalysis);
+                        
+                        // Generate 3D from face analysis
+                        generateFromFaceAnalysis(faceAnalysis, file);
+                    } else {
+                        showError(faceAnalysis?.error || 'No face detected');
+                    }
+                };
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        async function generateFromFaceAnalysis(faceAnalysis, file) {
+            showLoading();
+            hideResults();
+            
+            try {
+                // Send face analysis data to server
+                const response = await fetch(`${API_BASE}/generate-from-face-analysis`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        face_analysis: faceAnalysis,
+                        prompt: `character based on ${faceAnalysis.gender} age ${faceAnalysis.age}`
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult(data);
+                } else {
+                    showError(data.detail || 'Generation failed');
+                }
+                
+            } catch (error) {
+                showError(`Error: ${error.message}`);
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        async function generateFromFace(file) {
+            showLoading();
+            hideResults();
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                const response = await fetch(`${API_BASE}/generate-from-face`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAnalysis(data.face_analysis);
+                    showResult(data);
+                } else {
+                    showError(data.detail || 'Generation failed');
+                }
+                
+            } catch (error) {
+                showError(`Error: ${error.message}`);
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        async function generateFromText() {
+            const prompt = document.getElementById('textPrompt').value.trim();
+            if (!prompt) {
+                showError('Please enter a text prompt.');
+                return;
+            }
+            
+            showLoading();
+            hideResults();
+            
+            try {
+                const response = await fetch(`${API_BASE}/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        resolution: 64,
+                        steps: 20
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult(data);
+                } else {
+                    showError(data.detail || 'Generation failed');
+                }
+                
+            } catch (error) {
+                showError(`Error: ${error.message}`);
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        function showLoading() {
+            loading.style.display = 'block';
+        }
+        
+        function hideLoading() {
+            loading.style.display = 'none';
+        }
+        
+        function showAnalysis(faceAnalysis) {
+            // Store face analysis globally for caricature generation
+            window.currentFaceAnalysis = faceAnalysis;
+            
+            // Show the face analysis section
+            const faceAnalysisSection = document.getElementById('faceAnalysisSection');
+            const faceDetailsDiv = document.getElementById('faceDetails');
+            
+            if (faceAnalysisSection && faceDetailsDiv) {
+                faceAnalysisSection.style.display = 'block';
+                
+                // Create enhanced detailed analysis HTML
+                const detailsHTML = `
+                    <div style="margin-bottom: 15px;">
+                        <h4>👥 Detection Summary</h4>
+                        <p><strong>Faces Found:</strong> ${faceAnalysis.faces_detected}</p>
+                        <p><strong>Primary Face Confidence:</strong> ${(faceAnalysis.primary_face.confidence * 100).toFixed(1)}%</p>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <h4>👤 Demographics</h4>
+                        <p><strong>Age:</strong> ${faceAnalysis.age} years old (${faceAnalysis.age_category || 'unknown'})</p>
+                        <p><strong>Gender:</strong> ${faceAnalysis.gender} (${faceAnalysis.gender_analysis?.certainty || 'medium'} confidence: ${(faceAnalysis.genderConfidence * 100).toFixed(1)}%)</p>
+                    </div>
+                    
+                    ${faceAnalysis.face_shape ? `
+                    <div style="margin-bottom: 15px;">
+                        <h4>🎭 Face Shape & Features</h4>
+                        <p><strong>Face Shape:</strong> ${faceAnalysis.face_shape.type} (${(faceAnalysis.face_shape.confidence * 100).toFixed(1)}% confidence)</p>
+                        <p><strong>Jaw Strength:</strong> ${(faceAnalysis.face_shape.jaw_strength * 100).toFixed(1)}%</p>
+                        <p><strong>Cheek Prominence:</strong> ${(faceAnalysis.face_shape.cheek_prominence * 100).toFixed(1)}%</p>
+                        <p><strong>Overall Cuteness:</strong> ${(faceAnalysis.cartoon_features?.overall_cuteness * 100 || 50).toFixed(1)}%</p>
+                    </div>
+                    ` : ''}
+                    
+                    ${faceAnalysis.eyes ? `
+                    <div style="margin-bottom: 15px;">
+                        <h4>👁️ Eye Analysis</h4>
+                        <p><strong>Eye Shape:</strong> ${faceAnalysis.eyes.shape}</p>
+                        <p><strong>Eye Size Ratio:</strong> ${(faceAnalysis.eyes.size_ratio * 100).toFixed(1)}%</p>
+                        <p><strong>Eye Distance:</strong> ${faceAnalysis.eyes.eye_distance.toFixed(1)}px</p>
+                        <p><strong>Asymmetry:</strong> ${(faceAnalysis.eyes.asymmetry * 100).toFixed(1)}%</p>
+                    </div>
+                    ` : ''}
+                    
+                    ${faceAnalysis.nose ? `
+                    <div style="margin-bottom: 15px;">
+                        <h4>👃 Nose Analysis</h4>
+                        <p><strong>Nose Shape:</strong> ${faceAnalysis.nose.shape}</p>
+                        <p><strong>Nose Size Ratio:</strong> ${(faceAnalysis.nose.size_ratio * 100).toFixed(1)}%</p>
+                        <p><strong>Bridge Width:</strong> ${faceAnalysis.nose.bridge_width.toFixed(1)}px</p>
+                    </div>
+                    ` : ''}
+                    
+                    ${faceAnalysis.mouth ? `
+                    <div style="margin-bottom: 15px;">
+                        <h4>👄 Mouth Analysis</h4>
+                        <p><strong>Mouth Shape:</strong> ${faceAnalysis.mouth.shape}</p>
+                        <p><strong>Mouth Width Ratio:</strong> ${(faceAnalysis.mouth.width_ratio * 100).toFixed(1)}%</p>
+                        <p><strong>Lip Thickness:</strong> ${(faceAnalysis.mouth.lip_thickness * 100).toFixed(1)}%</p>
+                        <p><strong>Smiling:</strong> ${faceAnalysis.mouth.is_smiling ? 'Yes' : 'No'} (intensity: ${faceAnalysis.mouth.smile_intensity.toFixed(1)})</p>
+                    </div>
+                    ` : ''}
+                    
+                    ${faceAnalysis.colors ? `
+                    <div style="margin-bottom: 15px;">
+                        <h4>🎨 Color Analysis</h4>
+                        <p><strong>Skin Tone:</strong> ${faceAnalysis.colors.skin_tone}</p>
+                        <p><strong>Hair Color:</strong> ${faceAnalysis.colors.hair_color}</p>
+                        <p><strong>Eye Color:</strong> ${faceAnalysis.colors.eye_color}</p>
+                    </div>
+                    ` : ''}
+                    
+                    <div style="margin-bottom: 15px;">
+                        <h4>😊 Facial Expressions</h4>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px;">
+                            ${Object.entries(faceAnalysis.expressions)
+                                .sort(([,a], [,b]) => b - a)
+                                .map(([emotion, confidence]) => 
+                                    `<div style="display: flex; justify-content: space-between;">
+                                        <span>${emotion.charAt(0).toUpperCase() + emotion.slice(1)}:</span>
+                                        <span>${(confidence * 100).toFixed(1)}%</span>
+                                    </div>`
+                                ).join('')}
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <h4>📍 Face Position</h4>
+                        <p><strong>X:</strong> ${faceAnalysis.primary_face.x}px</p>
+                        <p><strong>Y:</strong> ${faceAnalysis.primary_face.y}px</p>
+                        <p><strong>Width:</strong> ${faceAnalysis.primary_face.width}px</p>
+                        <p><strong>Height:</strong> ${faceAnalysis.primary_face.height}px</p>
+                    </div>
+                    
+                    <div>
+                        <h4>🎯 Landmarks</h4>
+                        <p><strong>Total Landmarks:</strong> ${faceAnalysis.landmarks.length}</p>
+                        <p><small>Red dots on the preview show facial feature points</small></p>
+                        <!-- 3D generation temporarily disabled -->
+                    </div>
+                `;
+                
+                faceDetailsDiv.innerHTML = detailsHTML;
+            }
+            
+            // Also show the original analysis section
+            analysis.innerHTML = `
+                <h3>🔍 Face Analysis Results</h3>
+                <p><strong>Faces Detected:</strong> ${faceAnalysis.faces_detected}</p>
+                ${faceAnalysis.primary_face ? `
+                    <p><strong>Primary Face:</strong> ${faceAnalysis.primary_face.width}x${faceAnalysis.primary_face.height} pixels</p>
+                    <p><strong>Confidence:</strong> ${(faceAnalysis.primary_face.confidence * 100).toFixed(1)}%</p>
+                ` : ''}
+                ${faceAnalysis.emotion ? `<p><strong>Emotion:</strong> ${faceAnalysis.emotion}</p>` : ''}
+                ${faceAnalysis.age ? `<p><strong>Age:</strong> ${faceAnalysis.age} years</p>` : ''}
+                ${faceAnalysis.gender ? `<p><strong>Gender:</strong> ${faceAnalysis.gender}</p>` : ''}
+            `;
+            analysis.style.display = 'block';
+        }
+        
+        function showResult(data) {
+            result.innerHTML = `
+                <h3>🎉 3D Generation Complete!</h3>
+                <p class="success">${data.status}</p>
+                <p><small>Files saved as: ${data.files.ply.split('/').pop()}</small></p>
+                <p><em>3D generation temporarily disabled in UI</em></p>
+            `;
+            result.style.display = 'block';
+        }
+        
+        function showError(message) {
+            result.innerHTML = `
+                <div class="error">
+                    <h3>❌ Error</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+            result.style.display = 'block';
+        }
+        
+        function hideResults() {
+            analysis.style.display = 'none';
+            result.style.display = 'none';
+        }
+        
+        // Check server health on load
+        async function checkServerHealth() {
+            try {
+                const response = await fetch(`${API_BASE}/health`, {
+                    method: 'GET'
+                });
+                const data = await response.json();
+                console.log('Server health:', data);
+                
+                // Show server status
+                const statusDiv = document.createElement('div');
+                statusDiv.innerHTML = `
+                    <div class="success">
+                        <h3>✅ Server Connected!</h3>
+                        <p>Model loaded: ${data.model_loaded ? 'Yes' : 'No'}</p>
+                        <p>Device: ${data.device}</p>
+                        <p>Features: ${data.features.join(', ')}</p>
+                    </div>
+                `;
+                document.querySelector('.container').insertBefore(statusDiv, document.querySelector('.section'));
+                
+            } catch (error) {
+                console.error('Server not available:', error);
+                showError('Server not available. Please make sure the Face-3D server is running on port 8002.');
+            }
+        }
+        
+        // Test functions
+        async function test2DImage(prompt) {
+            showLoading();
+            hideResults();
+            
+            try {
+                const response = await fetch(`${API_BASE}/generate-2d`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        width: 512,
+                        height: 512
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    show2DResult(data);
+                } else {
+                    showError(data.detail || `Failed to generate 2D image: ${prompt}`);
+                }
+                
+            } catch (error) {
+                showError(`Error generating 2D image: ${error.message}`);
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        function show2DResult(data) {
+            result.innerHTML = `
+                <h3>🎨 2D Image Generation Complete!</h3>
+                <p class="success">${data.status}</p>
+                <div class="download-links">
+                    <a href="${API_BASE}${data.download_url}" download>📥 Download PNG</a>
+                </div>
+                <div style="margin-top: 20px;">
+                    <img src="${API_BASE}${data.download_url}" alt="Generated 2D Image" 
+                         style="max-width: 100%; border-radius: 10px; border: 2px solid rgba(255,255,255,0.3);">
+                </div>
+            `;
+            result.style.display = 'block';
+        }
+        
+        async function testCartoonGeneration(style) {
+            showLoading();
+            hideResults();
+            
+            try {
+                // Create mock face analysis for testing
+                const mockFaceAnalysis = {
+                    faces_detected: 1,
+                    primary_face: {
+                        x: 100, y: 100, width: 200, height: 200, confidence: 0.95
+                    },
+                    face_shape: "oval",
+                    age: 25,
+                    emotion: "happy",
+                    gender: "female",
+                    cartoon_features: {
+                        cuteness_factor: 0.8,
+                        character_type: "friendly",
+                        style_suitability: {
+                            anime: 0.9,
+                            disney: 0.8,
+                            cartoon: 0.7,
+                            chibi: 0.95
+                        }
+                    }
+                };
+                
+                const response = await fetch(`${API_BASE}/generate-cartoon`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        face_analysis: mockFaceAnalysis,
+                        style: style,
+                        custom_prompt: ""
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showCartoonResult(data, style);
+                } else {
+                    showError(data.detail || `Failed to generate ${style} cartoon`);
+                }
+                
+            } catch (error) {
+                showError(`Error generating ${style} cartoon: ${error.message}`);
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        async function testCaricatureGeneration(style) {
+            // Check if we have face analysis results
+            if (!window.currentFaceAnalysis || window.currentFaceAnalysis.faces_detected === 0) {
+                alert('Please analyze a face first! Upload a photo and click "Analyze Face" before generating caricatures.');
+                return;
+            }
+            
+            showLoading();
+            hideResults();
+            
+            try {
+                console.log(`🎨 Generating ${style} caricature from face analysis...`);
+                
+                // Use the current face analysis data
+                const faceAnalysis = window.currentFaceAnalysis;
+                
+                // Create a caricature prompt from the face analysis
+                const caricaturePrompt = generateCaricaturePromptFromAnalysis(faceAnalysis, style);
+                
+                // Generate caricature using the SDXL caricature endpoint
+                // First, we need to send the image data to the caricature endpoint
+                const imageElement = document.getElementById('uploadedImage');
+                if (!imageElement || !imageElement.src) {
+                    showError('No image available for caricature generation');
+                    return;
+                }
+                
+                // Convert image to blob for upload
+                const response = await fetch(imageElement.src);
+                const blob = await response.blob();
+                
+                const formData = new FormData();
+                formData.append('file', blob, 'face_image.jpg');
+                formData.append('style', style);
+                
+                const caricatureResponse = await fetch(`${API_BASE}/generate-caricature`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await caricatureResponse.json();
+                
+                if (data.success) {
+                    showCaricatureResult(data, style, faceAnalysis);
+                } else {
+                    showError(data.detail || `Failed to generate ${style} caricature`);
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showError(`❌ Error generating ${style} caricature: ${error.message}`);
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        function generateCaricaturePromptFromAnalysis(faceAnalysis, style) {
+            let prompt = `caricature ${style} character, exaggerated features, `;
+            
+            // Add face shape exaggeration
+            if (faceAnalysis.face_shape) {
+                switch(faceAnalysis.face_shape) {
+                    case 'oval': prompt += 'balanced oval face, '; break;
+                    case 'round': prompt += 'wide round face, '; break;
+                    case 'square': prompt += 'strong square jaw, '; break;
+                    case 'heart': prompt += 'heart-shaped face, '; break;
+                    case 'long': prompt += 'elongated face, '; break;
+                }
+            }
+            
+            // Add age-appropriate features
+            if (faceAnalysis.age) {
+                if (faceAnalysis.age < 18) {
+                    prompt += 'youthful features, ';
+                } else if (faceAnalysis.age > 50) {
+                    prompt += 'mature features, ';
+                }
+            }
+            
+            // Add expression
+            if (faceAnalysis.emotion) {
+                prompt += `${faceAnalysis.emotion} expression, `;
+            }
+            
+            // Add style-specific elements
+            switch(style) {
+                case 'chibi':
+                    prompt += 'chibi proportions, huge eyes, tiny body, kawaii style, ';
+                    break;
+                case 'anime':
+                    prompt += 'anime style, manga illustration, detailed anime art, ';
+                    break;
+                case 'disney':
+                    prompt += 'Disney cartoon style, Pixar character, family-friendly animation, ';
+                    break;
+                default:
+                    prompt += 'cartoon illustration, colorful, funny caricature, ';
+            }
+            
+            return prompt;
+        }
+        
+        function showCartoonResult(data, style) {
+            result.innerHTML = `
+                <h3>🎭 ${style.charAt(0).toUpperCase() + style.slice(1)} Cartoon Character Generated!</h3>
+                <p class="success">${data.status}</p>
+                
+                <div style="margin: 20px 0; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                    <h4>📝 Generated Prompt:</h4>
+                    <p style="font-style: italic; color: #ccc;">${data.prompt}</p>
+                </div>
+                
+                <div style="margin: 20px 0; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                    <h4>⚙️ Style Configuration:</h4>
+                    <p><strong>Model:</strong> ${data.style_config.model}</p>
+                    <p><strong>LoRA:</strong> ${data.style_config.lora}</p>
+                    <p><strong>Steps:</strong> ${data.style_config.steps}</p>
+                    <p><strong>Guidance Scale:</strong> ${data.style_config.guidance_scale}</p>
+                </div>
+                
+                <div class="download-links">
+                    <a href="${API_BASE}${data.download_url}" download>📥 Download Cartoon PNG</a>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <img src="${API_BASE}${data.download_url}" alt="Generated Cartoon Character" 
+                         style="max-width: 100%; border-radius: 10px; border: 2px solid rgba(255,255,255,0.3);">
+                </div>
+            `;
+            result.style.display = 'block';
+        }
+        
+        function showCaricatureResult(data, style, faceAnalysis) {
+            result.innerHTML = `
+                <h3>🎨 ${style.charAt(0).toUpperCase() + style.slice(1)} Caricature Generated!</h3>
+                <p class="success">${data.status}</p>
+                
+                <div style="margin: 20px 0; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                    <h4>📝 Generated Prompt:</h4>
+                    <p style="font-style: italic; color: #ccc;">${data.prompt}</p>
+                </div>
+                
+                <div style="margin: 20px 0; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                    <h4>🎯 Face Analysis Used:</h4>
+                    <p><strong>Face Shape:</strong> ${faceAnalysis.face_shape || 'unknown'}</p>
+                    <p><strong>Age:</strong> ${faceAnalysis.age || 'unknown'} years old</p>
+                    <p><strong>Gender:</strong> ${faceAnalysis.gender || 'unknown'}</p>
+                    <p><strong>Expression:</strong> ${faceAnalysis.emotion || 'unknown'}</p>
+                    <p><strong>Confidence:</strong> ${(faceAnalysis.primary_face?.confidence * 100 || 0).toFixed(1)}%</p>
+                </div>
+                
+                <div class="download-links">
+                    <a href="${API_BASE}${data.download_url}" download>📥 Download Caricature PNG</a>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <img src="${API_BASE}${data.download_url}" alt="Generated Caricature" 
+                         style="max-width: 100%; border-radius: 10px; border: 2px solid rgba(255,255,255,0.3);">
+                </div>
+            `;
+            result.style.display = 'block';
+        }
+        
+        async function testTextGeneration() {
+            showLoading();
+            hideResults();
+            
+            try {
+                const response = await fetch(`${API_BASE}/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        prompt: "a blue balloon",
+                        resolution: 64,
+                        steps: 20
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult(data);
+                } else {
+                    showError(data.detail || 'Test generation failed');
+                }
+                
+            } catch (error) {
+                showError(`Test error: ${error.message}`);
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        async function testServerHealth() {
+            try {
+                const response = await fetch(`${API_BASE}/health`, {
+                    method: 'GET'
+                });
+                const data = await response.json();
+                
+                showResult({
+                    success: true,
+                    status: "Server is healthy!",
+                    files: {},
+                    download_urls: {}
+                });
+                
+                console.log('Health check:', data);
+                
+            } catch (error) {
+                showError(`Health check failed: ${error.message}`);
+            }
+        }
+        
+        async function testDownload() {
+            try {
+                // Test downloading an existing file
+                const testFilename = "a%20red%20sports%20car_1757841568.obj";
+                const response = await fetch(`${API_BASE}/download/${testFilename}`);
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'test_download.obj';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    showResult({
+                        success: true,
+                        status: "Download test successful!",
+                        files: {},
+                        download_urls: {}
+                    });
+                } else {
+                    showError(`Download test failed: ${response.status}`);
+                }
+                
+            } catch (error) {
+                showError(`Download test error: ${error.message}`);
+            }
+        }
+        
+        async function testShape(shapeName) {
+            showLoading();
+            hideResults();
+            
+            try {
+                const response = await fetch(`${API_BASE}/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        prompt: shapeName,
+                        resolution: 64,
+                        steps: 20
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult(data);
+                } else {
+                    showError(data.detail || `Failed to generate ${shapeName}`);
+                }
+                
+            } catch (error) {
+                showError(`Error generating ${shapeName}: ${error.message}`);
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        async function generateCartoonFromLandmarks() {
+            try {
+                if (!currentFaceAnalysis || !currentFaceAnalysis.landmarks) {
+                    showError('No face landmarks available. Please analyze a face first.');
+                    return;
+                }
+                
+                showLoading('🎨 Generating cartoon from landmarks...');
+                
+                // Get the current image as base64
+                const imageElement = document.getElementById('imagePreview');
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                canvas.width = imageElement.naturalWidth;
+                canvas.height = imageElement.naturalHeight;
+                ctx.drawImage(imageElement, 0, 0);
+                
+                const imageData = canvas.toDataURL('image/jpeg', 0.8);
+                
+                // Prepare landmarks data
+                const landmarksData = {
+                    image: imageData,
+                    landmarks: currentFaceAnalysis.landmarks,
+                    faceBox: currentFaceAnalysis.primary_face
+                };
+                
+                console.log('🎯 Sending landmarks data:', {
+                    landmarksCount: landmarksData.landmarks.length,
+                    faceBox: landmarksData.faceBox
+                });
+                
+                const response = await fetch(`${API_BASE}/generate-cartoon-from-landmarks`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(landmarksData)
+                });
+                
+                if (response.ok) {
+                    // Get the cartoon image
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    
+                    // Display the cartoon result
+                    showResult({
+                        success: true,
+                        status: "✅ Cartoon generated from landmarks!",
+                        files: {
+                            cartoon: url
+                        },
+                        download_urls: {
+                            cartoon: url
+                        }
+                    });
+                    
+                    // Also show the cartoon image
+                    const cartoonImg = document.createElement('img');
+                    cartoonImg.src = url;
+                    cartoonImg.style.maxWidth = '400px';
+                    cartoonImg.style.border = '3px solid #27ae60';
+                    cartoonImg.style.borderRadius = '10px';
+                    cartoonImg.style.margin = '20px 0';
+                    
+                    const resultDiv = document.getElementById('result');
+                    resultDiv.appendChild(cartoonImg);
+                    
+                } else {
+                    const errorData = await response.json();
+                    showError(`Cartoon generation failed: ${errorData.detail || 'Unknown error'}`);
+                }
+                
+            } catch (error) {
+                showError(`Cartoon generation error: ${error.message}`);
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // Training System Functions
+        async function collectFaces(numFaces = 10) {
+            showTrainingOutput(`📸 Collecting ${numFaces} faces...`);
+            
+            try {
+                const response = await fetch(`${API_BASE}/collect-faces`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        num_faces: numFaces,
+                        delay_seconds: 1
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showTrainingOutput(`✅ Collected ${data.collected} faces successfully!`);
+                } else {
+                    showTrainingOutput(`❌ Collection failed: ${data.detail}`);
+                }
+                
+            } catch (error) {
+                showTrainingOutput(`❌ Error collecting faces: ${error.message}`);
+            }
+        }
+        
+        async function generateTrainingData() {
+            showTrainingOutput('🎨 Generating training data...');
+            
+            try {
+                const response = await fetch(`${API_BASE}/generate-training-data`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showTrainingOutput(`✅ Generated ${data.generated} training images!`);
+                } else {
+                    showTrainingOutput(`❌ Generation failed: ${data.detail}`);
+                }
+                
+            } catch (error) {
+                showTrainingOutput(`❌ Error generating training data: ${error.message}`);
+            }
+        }
+        
+        async function trainModel(epochs = 5) {
+            showTrainingOutput(`🧠 Training model with ${epochs} epochs...`);
+            
+            try {
+                const response = await fetch(`${API_BASE}/train-model`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        epochs: epochs,
+                        learning_rate: 1e-4
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showTrainingOutput(`✅ Model training completed!`);
+                    showTrainingOutput(`📊 Training files: ${data.training_files}`);
+                    showTrainingOutput(`🎯 Epochs: ${epochs}`);
+                } else {
+                    showTrainingOutput(`❌ Training failed: ${data.detail}`);
+                }
+                
+            } catch (error) {
+                showTrainingOutput(`❌ Error training model: ${error.message}`);
+            }
+        }
+        
+        async function getTrainingStats() {
+            showTrainingOutput('📊 Getting training statistics...');
+            
+            try {
+                const response = await fetch(`${API_BASE}/training-stats`);
+                const data = await response.json();
+                
+                showTrainingOutput(`📸 Collected faces: ${data.collected_faces}`);
+                showTrainingOutput(`🎨 Training images: ${data.training_images}`);
+                showTrainingOutput(`✅ Ready for training: ${data.ready_for_training}`);
+                showTrainingOutput(`✅ Training data ready: ${data.training_data_ready}`);
+                
+            } catch (error) {
+                showTrainingOutput(`❌ Error getting stats: ${error.message}`);
+            }
+        }
+        
+        async function getModelStatus() {
+            showTrainingOutput('🔍 Getting model status...');
+            
+            try {
+                const response = await fetch(`${API_BASE}/model-status`);
+                const data = await response.json();
+                
+                showTrainingOutput(`🧠 Model checkpoints: ${data.checkpoints}`);
+                showTrainingOutput(`📊 Training data: ${data.training_data}`);
+                showTrainingOutput(`✅ Model ready: ${data.model_ready}`);
+                
+                if (data.checkpoint_files.length > 0) {
+                    showTrainingOutput(`📁 Checkpoint files:`);
+                    data.checkpoint_files.forEach(file => {
+                        showTrainingOutput(`   - ${file}`);
+                    });
+                }
+                
+            } catch (error) {
+                showTrainingOutput(`❌ Error getting model status: ${error.message}`);
+            }
+        }
+        
+        function showTrainingOutput(message) {
+            const resultsDiv = document.getElementById('trainingResults');
+            const outputDiv = document.getElementById('trainingOutput');
+            
+            resultsDiv.style.display = 'block';
+            outputDiv.textContent += message + '\n';
+            outputDiv.scrollTop = outputDiv.scrollHeight;
+        }
+        
+        // Bulk Upload Functions
+        let bulkFiles = [];
+        
+        function processBulkUpload() {
+            if (bulkFiles.length === 0) {
+                alert('Please select files first!');
+                return;
+            }
+            
+            showTrainingOutput(`📚 Processing ${bulkFiles.length} photos one by one...`);
+            
+            // Process files one by one
+            processNextFile(0);
+        }
+        
+        function processNextFile(index) {
+            if (index >= bulkFiles.length) {
+                showTrainingOutput('✅ All photos processed!');
+                return;
+            }
+            
+            const file = bulkFiles[index];
+            showTrainingOutput(`📸 Processing photo ${index + 1}/${bulkFiles.length}: ${file.name}`);
+            
+            // Create a temporary file input for this file
+            const tempInput = document.createElement('input');
+            tempInput.type = 'file';
+            tempInput.files = [file];
+            
+            // Use the existing file processing logic
+            handleFileUpload(tempInput, () => {
+                // After processing, move to next file
+                setTimeout(() => {
+                    processNextFile(index + 1);
+                }, 1000); // Small delay between files
+            });
+        }
+        
+        
+        // Check server on page load and load face models
+        checkServerHealth();
+        loadFaceModels();
+    </script>
+</body>
+</html>
